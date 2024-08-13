@@ -17,8 +17,9 @@ const s3 = new S3Client({
 
 // Function to generate a presigned URL
 async function generatePresignedUrl() {
+  const id = new Date().toISOString().split('.')[0];
   const bucketName = process.env.S3_BUCKET!;
-  const objectKey = `${process.env.S3_FOLDER ?? 'output'}/${Date.now()}.mp4`;
+  const objectKey = `${process.env.S3_FOLDER ?? 'output'}/video-${id}.mp4`;
   const expiresIn = 3600; // URL expiration time in seconds (1 hour)
 
   const command = new PutObjectCommand({
@@ -37,7 +38,7 @@ async function generatePresignedUrl() {
 async function main(presignedUrl: string) {
   try {
     // or 'comp' for short
-    const composition = new core.Composition();
+    const composition = new core.Composition({ backend: 'webgl' });
 
     // fetch the video
     const source = await core.VideoSource // convenience function for fetch -> blob -> file
