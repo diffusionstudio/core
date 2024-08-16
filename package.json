@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^5.5.3",
     "vite": "^5.4.0"
+  },
+  "dependencies": {
+    "@diffusionstudio/core": "^1.0.0-beta.7",
+    "lucide": "^0.427.0"
   }
 }

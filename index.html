@@ -1,12 +1,55 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Diffusion Studio</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/examples/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/examples/style.css">
+  <title>Diffusion Studio Examples</title>
+</head>
+
+<body>
+  <div id="app">
+    <div id="title-container">
+      <h1>Diffusion Studio Examples</h1>
+      <select name="scripts">
+        <option value="filters">Filters</option>
+        <option value="captions">Captions</option>
+        <option value="drag-and-drop">Drag and Drop</option>
+        <option value="custom-captions">Custiom Captions</option>
+        <option value="font">Custom Font</option>
+        <option value="split-video">Split Video</option>
+        <option value="video-trimming">Video Trimming</option>
+        <option value="custom-captions">Custom Captions</option>
+      </select>
+    </div>
+
+    <div id="player-container">
+      <div id="player"></div>
+    </div>
+    <div id="controls">
+      <div id="playback">
+        <i data-lucide="skip-back"></i>
+        <i data-lucide="play"></i>
+        <i data-lucide="pause" style="display: none;"></i>
+        <i data-lucide="skip-forward"></i>
+      </div>
+      <span id="time">00:00 / 00:00</span>
+      <button id="export" type="button">
+        <div class="loader" style="display: none;"></div>
+        Export
+      </button>
+    </div>
+    <p class="read-the-docs">
+      Use a Chromium-based browser for an optimal experience
+    </p>
+
+  </div>
+  <script type="module" src="/examples/main.ts"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+
 </html>
