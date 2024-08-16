@@ -102,7 +102,7 @@ The composition, the track and the clips are each in a relationship of `1:n`. Yo
 
 Clone the repository and run `npm install && npm run dev` to conveniently test these examples.
 
-![Sample Render](./assets/font.mp4)
+https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
 > Two very impressive video processing libraries were already available when we started this project, which differ from Diffusion Studio as follows
 
