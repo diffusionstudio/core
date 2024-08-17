@@ -51,7 +51,6 @@ Diffusion Studio's render implementation was recently migrated to [Pixi.js](http
 ```typescript
 import * as core from '@diffusionstudio/core';
 
-// fetch the video
 const source = await core.VideoSource // convenience function for fetch -> blob -> file
   .from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4');
 
@@ -74,7 +73,7 @@ new core.WebcodecsEncoder(composition, { fps: 25 })
   .export(); // use resolution = 2 to render at 4k 
 ```
 
-This may look familiar to some. That is because the API is heavily inspired by **Moviepy** and Swift UI. It models the structure of popular video editing applications such as Adobe Premiere or CapCut. The current state can be vizualized like so:
+This may look familiar to some. That is because the API is heavily inspired by **Moviepy** and Swift UI. It models the structure of popular video editing applications such as Adobe Premiere or CapCut. The current status can be visualized as follows:
 
 ![Composition Visulization](./assets/composition.png)
 
