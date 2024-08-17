@@ -103,6 +103,12 @@ Clone the repository and run `npm install && npm run dev` to conveniently test t
 
 https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
+## Documentation (WIP)
+- [Getting Started](/docs/guide/video.md)
+- [Api Reference](/docs/api/index.md)
+--- 
+<br> 
+
 > Two very impressive video processing libraries were already available when we started this project, which differ from Diffusion Studio as follows
 
 ## How does Diffusion Studio compare to Remotion and Motion Canvas?

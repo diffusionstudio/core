@@ -209,18 +209,7 @@ const video = new VideoClip(source)
 await composition.appendClip(video);
 
 const encoder = new WebcodecsEncoder(composition, { resolution: 2, fps: 25 });
-
-const fileHandle = await window.showSaveFilePicker({
-  suggestedName: 'untitled_video.mp4',
-  types: [
-    {
-      description: 'Video File',
-      accept: { 'video/mp4': ['.mp4'] },
-    },
-  ],
-});
-
-await encoder.export(fileHandle);
+await encoder.export();
 ```
 
 <br> 

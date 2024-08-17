@@ -52,6 +52,8 @@ async function loadScript(name: string) {
 
   time.textContent = comp.time();
 
+  comp.seek(0);
+
   return () => {
     playButton.removeEventListener('click', handlePlay);
     pauseButton.removeEventListener('click', handlePause);
@@ -90,7 +92,7 @@ async function fileApiExport(composition: core.Composition) {
     if (e instanceof DOMException) {
       // user canceled file picker
     } else if (e instanceof core.ExportError) {
-      alert(e.msg);
+      alert(e.message);
     } else {
       alert(String(e))
     }
