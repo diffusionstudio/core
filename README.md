@@ -126,16 +126,26 @@ One notable advantage of Diffusion Studio being client-side software is that it 
 ✅ Supported 
 ⏰ Not yet supported 
 ❌ Not planned 
-🔬 Not tested 
+🔬 Not tested
+
+Desktop
 
 | Browser           |    | Operating System  |    |
 | ----------------- | -- | ----------------- | -- |
-| Chrome            | ✅ | Windows           | ✅ |
-| Edge              | ✅ | Macos             | ✅ |
-| Firefox           | ⏰ | Linux             | ✅ |
-| Opera             | 🔬 | Android           | 🔬 |
-| Safari            | ⏰ | iOS               | ⏰ |
-| Chrome Android    | 🔬 |
+| Brave             | ⏰ | Windows           | ✅ |
+| Chrome            | ✅ | Macos             | ✅ |
+| Edge              | ✅ | Linux             | ✅ |
+| Firefox           | ⏰ |
+| Vivaldi           | 🔬 |
+| Opera             | 🔬 |
+| Safari            | ⏰ |
+
+Mobile
+
+| Browser           |    | Operating System  |    |
+| ----------------- | -- | ----------------- | -- |
+| Brave Android     | 🔬 | Android           | 🔬 |
+| Chrome Android    | 🔬 | iOS               | ⏰ |
 | Firefox Android   | ⏰ |
 | Opera Android     | 🔬 |
 | Safari iOS        | ⏰ |
