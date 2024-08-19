@@ -5,12 +5,11 @@ export const comp = new core.Composition();
 const source = await core.VideoSource.from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4');
 
 const video0 = await comp.appendClip(
-  new core.VideoClip(source)
-    .set({
-      position: 'center',
-      scale: new core.Keyframe([0, 30], [0.1, 1], { easing: 'easeOut' }),
-      rotation: new core.Keyframe([0, 30], [0, 360], { easing: 'easeOut' }),
-    })
+  new core.VideoClip(source, {
+    position: 'center',
+    scale: new core.Keyframe([0, 30], [0.1, 1], { easing: 'easeOut' }),
+    rotation: new core.Keyframe([0, 30], [0, 360], { easing: 'easeOut' }),
+  })
 );
 
 // split at frame. If no argument is provided

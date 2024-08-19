@@ -74,7 +74,7 @@ async function fileApiExport(composition: core.Composition) {
   }
 
   try {
-    const encoder = new core.WebcodecsEncoder(composition);
+    const encoder = new core.WebcodecsEncoder(composition, { debug: true });
 
     const fileHandle = await window.showSaveFilePicker({
       suggestedName: `untitled_video.mp4`,

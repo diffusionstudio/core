@@ -73,7 +73,7 @@ new core.WebcodecsEncoder(composition, { fps: 25 })
   .export(); // use resolution = 2 to render at 4k 
 ```
 
-This may look familiar to some. That is because the API is heavily inspired by **Moviepy** and Swift UI. It models the structure of popular video editing applications such as Adobe Premiere or CapCut. The current status can be visualized as follows:
+This may look familiar to some. That is because the API is heavily inspired by **Moviepy** and Swift UI. It models the structure of popular video editing applications such as Adobe Premiere or CapCut. The current state can be visualized as follows:
 
 ![Composition Visulization](./assets/composition.png)
 

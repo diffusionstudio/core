@@ -49,8 +49,12 @@ async function main(presignedUrl: string) {
       .subclip(0, 150); // The base unit is frames at 30 FPS
 
     // create a text clip and stylize it
-    const text = new core.TextClip('Bunny - Our Brave Hero')
-      .set({ position: 'center', stop: 90, stroke: { color: '#000000' } })
+    const text = new core.TextClip({
+      text: 'Bunny - Our Brave Hero',
+      position: 'center',
+      stop: 90,
+      stroke: { color: '#000000' }
+    });
 
     // this is how to compose your clips
     await composition.appendClip(video);

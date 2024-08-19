@@ -10,18 +10,18 @@ const sources = await Promise.all([
 
 // add a background image
 await comp.appendClip(
-  new core.ImageClip(sources[0])
-  .set({ stop: core.Timestamp.fromSeconds(22) })
+  new core.ImageClip(sources[0], {
+    stop: core.Timestamp.fromSeconds(22)
+  })
 );
 
 // MediaClip is the base of an Audio or Video Clip
-const media = new core.MediaClip()
-  .set({ transcript: sources[1].optimize() });
+const media = new core.MediaClip({ transcript: sources[1].optimize() });
 
 // Now let's add all available caption preset
 (await comp.appendTrack(core.CaptionTrack)
   .from(media)
-  .create(core.ClassicCaptionPreset)) 
+  .create(core.ClassicCaptionPreset))
   .apply((clip) => clip.set({ x: '73%' }));
 
 (await comp.appendTrack(core.CaptionTrack)

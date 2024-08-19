@@ -70,7 +70,11 @@ Now, create a `VideoClip` from the `VideoSource`:
 ```typescript
 import { VideoClip } from '@diffusionstudio/core';
 
-const video = new VideoClip(source); // also accepts new File(...)
+const video = new VideoClip(source, { // also accepts new File(...)
+  position: 'center', // ensures the clip is centered
+  height: '100%', // stretches the clip to the full height
+  width: '100%', // stretches the clip to the full width
+}); 
 ```
 
 ### Performing Video Manipulations
@@ -79,13 +83,8 @@ You can perform various manipulations on the `VideoClip`:
 
 ```typescript
 video
-  .offsetBy(-30) // time offset in frames
-  .subclip(0, 180) // trims the clip from start to end frames
-  .set({
-    position: 'center',
-    height: '100%',
-    width: '100%',
-  });
+  .offsetBy(-30) // time offset in frames (relative to current offset)
+  .subclip(0, 180); // trims the clip from start to end frames
 ```
 
 This sets the video's start time to `-30 frames` at `30 FPS`, resulting in a 5-second visible clip (`180 - 30 = 150 frames`). The video is centered and scaled to fill the entire composition. Specifying either height or width maintains the aspect ratio, while setting both does not.
@@ -197,14 +196,13 @@ composition.attachPlayer(player);
 
 const source = await VideoSource.from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4');
 
-const video = new VideoClip(source)
-  .offsetBy(-30)
-  .subclip(0, 180)
-  .set({
+const video = new VideoClip(source, {
     position: 'center',
     height: '100%',
     width: '100%',
-  });
+})
+  .offsetBy(-30)
+  .subclip(0, 180);
 
 await composition.appendClip(video);
 

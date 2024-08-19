@@ -3,8 +3,10 @@ import * as core from '@diffusionstudio/core';
 export const comp = new core.Composition();
 
 const text = await comp.appendClip(
-  new core.TextClip('Drop mp4/webm in Window')
-    .set({ position: 'center' })
+  new core.TextClip({
+    text: 'Drop mp4/webm in Window', 
+    position: 'center' 
+  })
 )
 
 // Handle the file drop event
@@ -21,8 +23,10 @@ async function handleFileDrop(event: DragEvent): Promise<void> {
 
   // use file to construct instance
   await comp.appendClip(
-    new core.VideoClip(file)
-      .set({ height: '100%', position: 'center' })
+    new core.VideoClip(file, { 
+      height: '100%', 
+      position: 'center' 
+    })
   )
 }
 

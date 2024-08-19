@@ -11,7 +11,8 @@ import { TextClip } from '@diffusionstudio/core';
 
 const font = Font.fromFamily({ family: 'Geologica', weight: '400' });
 
-const text = new TextClip('Hello World').set({
+const text = new TextClip({
+  text: 'Hello World',
   textAlign: 'left',
   textBaseline: 'top',
   fillStyle: '#FFFFFF',
@@ -70,36 +71,36 @@ We have tested various methods to render text with differently styled subsection
 ```typescript
 import { ComplexTextClip } from '@diffusionstudio/core';
 
-const text = new core.ComplexTextClip('Complex Text')
-  .set({
-    stop: composition.duration,
-    textAlign: 'center',
-    textBaseline: 'middle',
-    font: core.Font.fromFamily({ family: 'Geologica', weight: '800' }),
-    textCase: 'upper',
-    fontSize: 18,
-    anchor: 0.5,
-    stroke: {
-      width: 3,
-      color: '#000000',
-    },
-    position: {
-      y: '85%',
-      x: '50%',
-    },
-    shadow: {
-      alpha: 0.7,
-      blur: 12,
-      distance: 8,
-    },
-    styles: [{
-      fillStyle: '#19fa2c'
-    }],
-    segments: [{
-      start: 8,
-      index: 0
-    }]
-  });
+const text = new core.ComplexTextClip({
+  text: 'Complex Text',
+  stop: composition.duration,
+  textAlign: 'center',
+  textBaseline: 'middle',
+  font: core.Font.fromFamily({ family: 'Geologica', weight: '800' }),
+  textCase: 'upper',
+  fontSize: 18,
+  anchor: 0.5,
+  stroke: {
+    width: 3,
+    color: '#000000',
+  },
+  position: {
+    y: '85%',
+    x: '50%',
+  },
+  shadow: {
+    alpha: 0.7,
+    blur: 12,
+    distance: 8,
+  },
+  styles: [{
+    fillStyle: '#19fa2c'
+  }],
+  segments: [{
+    start: 8,
+    index: 0
+  }]
+});
 ```
 
 The `ComplexTextClip` is derived from the `TextClip`, with the notable addition of `styles` and `segments` properties. The `styles` array allows you to define the styles you want to override for specific sections of the `ComplexTextClip`. Currently available styles include:

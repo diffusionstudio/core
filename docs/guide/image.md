@@ -9,7 +9,7 @@ import { ImageSource, ImageClip } from '@diffusionstudio/core';
 
 const source = await ImageSource.from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/images/lenna.png');
 
-const image = new ImageClip(source).set({ start: 20, stop: 120 });
+const image = new ImageClip(source, { start: 20, stop: 120 });
 
 await composition.appendClip(image);
 ```

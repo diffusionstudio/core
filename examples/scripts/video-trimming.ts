@@ -6,7 +6,7 @@ const source = await core.VideoSource
   .from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4');
 
 // we use this for labelling our clips
-const text = new core.TextClip().set({
+const text = new core.TextClip({
   textAlign: 'center',
   textBaseline: 'middle',
   fontSize: 12,
@@ -15,11 +15,18 @@ const text = new core.TextClip().set({
 });
 
 const video = await comp.appendClip(
-  new core.VideoClip(source).set({ scale: 0.5, muted: true })
+  new core.VideoClip(source, { 
+    scale: 0.5, 
+    muted: true,
+  })
 );
 
 await comp.appendClip(
-  text.set({ text: 'Cut by composition duration', x: '25%', y: '25%' })
+  text.set({ 
+    text: 'Cut by composition duration', 
+    x: '25%', 
+    y: '25%' 
+  })
 );
 
 // The video duration is 20 seconds
@@ -28,25 +35,44 @@ const duration = video.duration.frames;
 comp.duration = duration - 30;
 
 await comp.appendClip(
-  video.copy().set({ x: '50%' }).subclip(30, duration - 60)
+  video.copy()
+    .set({ x: '50%' })
+    .subclip(30, duration - 60)
 );
 
 await comp.appendClip(
-  text.copy().set({ text: 'Trimmed start and stop', x: '75%', y: '25%' })
+  text.copy().set({ 
+    text: 'Trimmed start and stop', 
+    x: '75%', 
+    y: '25%' 
+  })
 );
 
 await comp.appendClip(
-  video.copy().set({ y: '50%' }).offsetBy(-60)
+  video.copy()
+    .set({ y: '50%' })
+    .offsetBy(-60)
 );
 
 await comp.appendClip(
-  text.copy().set({ text: 'Negative offset', x: '25%', y: '75%' })
+  text.copy().set({ 
+    text: 'Negative offset', 
+    x: '25%', 
+    y: '75%',
+  })
 );
 
 await comp.appendClip(
-  video.copy().set({ x: '50%', y: '50%' }).offsetBy(60).subclip(30, duration - 180)
+  video.copy()
+    .set({ x: '50%', y: '50%' })
+    .offsetBy(60)
+    .subclip(30, duration - 180)
 );
 
 await comp.appendClip(
-  text.copy().set({ text: 'Positive offset & Trim', x: '75%', y: '75%' })
+  text.copy().set({ 
+    text: 'Positive offset & Trim', 
+    x: '75%', 
+    y: '75%',
+  })
 );

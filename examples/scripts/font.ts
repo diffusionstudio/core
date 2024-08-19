@@ -13,26 +13,26 @@ const duration = video.duration.frames;
 comp.duration = duration;
 
 await comp.appendClip(
-  new core.TextClip('Hello World')
-    .set({
-      position: 'center', // use one of the default fonts
-      font: core.Font.fromFamily({ family: 'The Bold Font', weight: '500' }),
-      rotation: new core.Keyframe(
-        [0, 15],
-        [243, 360 * 2],
-        { type: 'degrees' }
+  new core.TextClip({
+    text: 'Hello World',
+    position: 'center', // use one of the default fonts
+    font: core.Font.fromFamily({ family: 'The Bold Font', weight: '500' }),
+    rotation: new core.Keyframe(
+      [0, 15],
+      [243, 360 * 2],
+      { type: 'degrees' }
+    ),
+    translate: {
+      x: new core.Keyframe(
+        [duration - 10, duration],
+        [0, -2000],
+        { easing: 'easeIn' }
       ),
-      translate: {
-        x: new core.Keyframe(
-          [duration - 10, duration],
-          [0, -2000],
-          { easing: 'easeIn' }
-        ),
-        y: 0,
-      },
-      scale: new core.Keyframe([0, 10], [0.3, 1]),
-      fontSize: 34
-    })
+      y: 0,
+    },
+    scale: new core.Keyframe([0, 10], [0.3, 1]),
+    fontSize: 34
+  })
 );
 
 // provide custom web font. Local font strings are also supported
@@ -45,26 +45,26 @@ const roboto = new core.Font({
 });
 
 await comp.appendClip(
-  new core.TextClip('Diffusion Studio')
-    .set({
-      textAlign: 'right',
-      textBaseline: 'bottom',
-      font: roboto,
-      fontSize: 9,
-      x: '95%',
-      y: '93%'
-    })
+  new core.TextClip({
+    text: 'Diffusion Studio',
+    textAlign: 'right',
+    textBaseline: 'bottom',
+    font: roboto,
+    fontSize: 9,
+    x: '95%',
+    y: '93%'
+  })
 );
 
 await comp.appendClip(
-  new core.TextClip('August 2024')
-    .set({
-      textAlign: 'right',
-      textBaseline: 'top',
-      fillStyle: '#000000',
-      font: roboto,
-      fontSize: 9,
-      x: '95%',
-      y: '7%'
-    })
+  new core.TextClip({
+    text: 'August 2024',
+    textAlign: 'right',
+    textBaseline: 'top',
+    fillStyle: '#000000',
+    font: roboto,
+    fontSize: 9,
+    x: '95%',
+    y: '7%'
+  })
 );

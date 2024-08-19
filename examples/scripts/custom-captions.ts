@@ -37,22 +37,22 @@ class TikTokCaptionPreset implements core.CaptionPresetStrategy {
     // use a range of values to randomize the output e.g. [2, 6]
     for (const words of track.clip.transcript.iter({ duration: [4] })) {
       await track.appendClip(
-        new core.TextClip(words.text).
-          set({
-            start: words.start,
-            stop: words.stop,
-            font,
-            textAlign: 'center',
-            fontSize: 14,
-            stroke: {
-              width: 4,
-            },
-            position: {
-              x: '50%',
-              y: '70%',
-            },
-            maxWidth: 700,
-          })
+        new core.TextClip({
+          text: words.text,
+          start: words.start,
+          stop: words.stop,
+          font,
+          textAlign: 'center',
+          fontSize: 14,
+          stroke: {
+            width: 4,
+          },
+          position: {
+            x: '50%',
+            y: '70%',
+          },
+          maxWidth: 700,
+        })
       );
     }
   }

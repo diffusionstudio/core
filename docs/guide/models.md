@@ -48,7 +48,7 @@ import { Timestamp, ImageClip } from '@diffusionstudio/core';
 
 const timestamp = new Timestamp(1000); // in milliseconds
 
-new ImageClip().set({ stop: timestamp });
+new ImageClip({ stop: timestamp });
 
 timestamp.frames;  // 30
 timestamp.millis;  // 1000

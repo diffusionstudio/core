@@ -59,7 +59,7 @@ Construct a `HtmlClip` from your source with the following code:
 ```typescript
 import { HtmlClip } from '@diffusionstudio/core';
 
-const html = new HtmlClip(source).set({ position: 'center' });
+const html = new HtmlClip(source, { position: 'center' });
 
 await composition.appendClip(html);
 ```
