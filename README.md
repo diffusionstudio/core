@@ -128,19 +128,20 @@ One notable advantage of Diffusion Studio being client-side software is that it 
 ❌ Not planned 
 🔬 Not tested
 
-Desktop
+### Desktop
 
 | Browser           |    | Operating System  |    |
 | ----------------- | -- | ----------------- | -- |
-| Brave             | ⏰ | Windows           | ✅ |
-| Chrome            | ✅ | Macos             | ✅ |
-| Edge              | ✅ | Linux             | ✅ |
-| Firefox           | ⏰ |
-| Vivaldi           | 🔬 |
-| Opera             | 🔬 |
+| Chrome            | ✅ | Windows           | ✅ |
+| Edge              | ✅ | Macos             | ✅ |
+| Firefox           | ⏰ | Linux             | ✅ |
 | Safari            | ⏰ |
+| Opera             | 🔬 |
+| Brave             | ✅ |
+| Vivaldi           | 🔬 |
 
-Mobile
+
+### Mobile
 
 | Browser           |    | Operating System  |    |
 | ----------------- | -- | ----------------- | -- |
