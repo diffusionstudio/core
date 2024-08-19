@@ -59,8 +59,12 @@ const video = new core.VideoClip(source) // compatible with the File API
   .subclip(0, 160); // The base unit is frames at 30 FPS
 
 // create a text clip and add styles
-const text = new core.TextClip('Bunny - Our Brave Hero')
-  .set({ position: 'center', stop: 80, stroke: { color: '#000000' } })
+const text = new core.TextClip({ 
+  text: 'Bunny - Our Brave Hero', 
+  position: 'center', 
+  stop: 80, 
+  stroke: { color: '#000000' } 
+});
 
 const composition = new core.Composition(); // 1920x1080
 
