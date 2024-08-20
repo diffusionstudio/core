@@ -8,6 +8,7 @@ This guide provides a comprehensive overview of using the Diffusion Studio libra
 * [Image Clip](/docs/guide/image.md)
 * [Text Clip](/docs/guide/text.md)
 * [Models](/docs/guide/models.md)
+* [Canvas Encoder](/docs/guide/canvas.md)
 
 ## Setting Up a Composition
 

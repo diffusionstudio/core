@@ -54,3 +54,5 @@ timestamp.frames;  // 30
 timestamp.millis;  // 1000
 timestamp.seconds; // 1
 ```
+
+**Next:** [Canvas Encoder](/docs/guide/canvas.md)
