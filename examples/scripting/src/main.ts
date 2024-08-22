@@ -120,7 +120,6 @@ async function fileApiExport(composition: core.Composition) {
 }
 
 let removeListeners: () => void;
-loadScript(select.value).then(cb => (removeListeners = cb));
 
 select.addEventListener('change', async (event) => {
   loader.style.display = 'block';
@@ -128,3 +127,5 @@ select.addEventListener('change', async (event) => {
   removeListeners = await loadScript((event.target as HTMLSelectElement).value);
   loader.style.display = 'none';
 });
+
+select.dispatchEvent(new Event('change'));
