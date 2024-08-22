@@ -115,11 +115,12 @@ async function fileApiExport(composition: core.Composition) {
   }
 }
 
-let removeListeners = await loadScript(select.value);
+let removeListeners: () => void;
+loadScript(select.value).then(cb => (removeListeners = cb));
 
 select.addEventListener('change', async (event) => {
   loader.style.display = 'block';
-  removeListeners();
+  removeListeners?.();
   removeListeners = await loadScript((event.target as HTMLSelectElement).value);
   loader.style.display = 'none';
 });
