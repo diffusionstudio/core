@@ -16,5 +16,8 @@
   },
   "dependencies": {
     "@diffusionstudio/core": "^1.0.0-beta.10"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
   }
 }
