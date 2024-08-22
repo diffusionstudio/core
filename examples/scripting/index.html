@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/examples/style.css">
+  <link rel="stylesheet" href="/src/style.css">
   <title>Diffusion Studio Examples</title>
 </head>
 
@@ -26,6 +26,9 @@
 
     <div id="player-container">
       <div id="player"></div>
+      <div id="progress" style="display: none;">
+        <h1>80%</h1>
+      </div>
     </div>
     <div id="controls">
       <div id="playback">
@@ -41,11 +44,12 @@
       </button>
     </div>
     <p class="read-the-docs">
-      For the Best Experience Please Use Chrome
+      For more information, please refer to our 
+      <a href="https://docs.diffusion.studio" target="_blank">documentation</a>
     </p>
 
   </div>
-  <script type="module" src="/examples/main.ts"></script>
+  <script type="module" src="/src/main.ts"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
     lucide.createIcons();

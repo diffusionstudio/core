@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/wicg-file-system-access": "^2023.10.5",
     "typescript": "^5.5.3",
     "vite": "^5.4.0"
   },

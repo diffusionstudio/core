@@ -2,6 +2,8 @@ import * as core from '@diffusionstudio/core';
 
 const select = document.querySelector('select') as HTMLSelectElement;
 const container = document.querySelector('[id="player-container"]') as HTMLDivElement;
+const progressContainer = document.querySelector('[id="progress"]') as HTMLDivElement;
+const progressText = document.querySelector('[id="progress"] > h1') as HTMLHeadingElement;
 const player = document.querySelector('[id="player"]') as HTMLDivElement;
 const loader = document.querySelector('.loader') as HTMLDivElement;
 const time = document.querySelector('[id="time"]') as HTMLSpanElement;
@@ -12,7 +14,7 @@ const backButton = document.querySelector('[data-lucide="skip-back"]') as HTMLEl
 const forwardButton = document.querySelector('[data-lucide="skip-forward"]') as HTMLElement;
 
 async function loadScript(name: string) {
-  const comp = (await import(`./scripts/${name}.ts`)).comp as core.Composition;
+  const comp = (await import(`./${name}.ts`)).comp as core.Composition;
 
   const handlePlay = () => comp.play();
   const handlePause = () => comp.pause();
@@ -40,19 +42,22 @@ async function loadScript(name: string) {
 
   comp.attachPlayer(player);
 
-  const scale = Math.min(
-    container.clientWidth / comp.width,
-    container.clientHeight / comp.height
-  );
+  const observer = new ResizeObserver(() => {
+    const scale = Math.min(
+      container.clientWidth / comp.width,
+      container.clientHeight / comp.height
+    );
 
-  player.style.width = `${comp.width}px`;
-  player.style.height = `${comp.height}px`;
-  player.style.transform = `scale(${scale})`;
-  player.style.transformOrigin = 'center';
+    player.style.width = `${comp.width}px`;
+    player.style.height = `${comp.height}px`;
+    player.style.transform = `scale(${scale})`;
+    player.style.transformOrigin = 'center';
+  });
 
+  observer.observe(document.body);
   time.textContent = comp.time();
-
   comp.seek(0);
+
 
   return () => {
     playButton.removeEventListener('click', handlePlay);
@@ -63,6 +68,8 @@ async function loadScript(name: string) {
 
     comp.off(playId, pauseId, frameId);
     comp.detachPlayer(player);
+
+    observer.unobserve(document.body);
   }
 }
 
@@ -75,6 +82,12 @@ async function fileApiExport(composition: core.Composition) {
 
   try {
     const encoder = new core.WebcodecsEncoder(composition, { debug: true });
+
+    encoder.on('render', (event) => {
+      const { progress, total } = event.detail;
+      progressContainer.style.display = 'flex';
+      progressText.innerHTML = `${Math.round(progress * 100 / total)}%`;
+    })
 
     const fileHandle = await window.showSaveFilePicker({
       suggestedName: `untitled_video.mp4`,
@@ -98,6 +111,7 @@ async function fileApiExport(composition: core.Composition) {
     }
   } finally {
     loader.style.display = 'none';
+    progressContainer.style.display = 'none';
   }
 }
 

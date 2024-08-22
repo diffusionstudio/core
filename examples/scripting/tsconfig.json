@@ -4,6 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": [ "@types/wicg-file-system-access"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -19,5 +20,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["examples"]
+  "include": ["src"]
 }
