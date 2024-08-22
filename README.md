@@ -49,6 +49,8 @@ npm i @diffusionstudio/core
 Diffusion Studio's render implementation was recently migrated to [Pixi.js](https://pixijs.com/), a **WebGL/WebGPU abstraction library**, to speed up development while providing full support for WebGPU and WebGL. It is listed as a peer dependency and will be installed if the dependency is not already satisfied.
 
 ## Getting Started
+*For more information, please refer to our [documentation](https://docs.diffusion.studio)*
+
 ```typescript
 import * as core from '@diffusionstudio/core';
 
@@ -96,25 +98,18 @@ await track.appendClip(text2);
 
 The composition, the track and the clips are each in a relationship of `1:n`. You can find more examples here:
 
-* [Caption Presets](./examples/scripts/captions.ts)
-* [Custom Caption Presets](./examples/scripts/custom-captions.ts)
-* [Drag and Drop & File API](./examples/scripts/drag-and-drop.ts)
-* [Loading Webfonts](./examples/scripts/font.ts)
-* [Splitting Clips](./examples/scripts/split-video.ts)
-* [Video Trimming](./examples/scripts/video-trimming.ts)
+* [Caption Presets](./examples/scripting/src/captions.ts)
+* [Custom Caption Presets](./examples/scripting/src/custom-captions.ts)
+* [Drag and Drop & File API](./examples/scripting/src/drag-and-drop.ts)
+* [Loading Webfonts](./examples/scripting/src/font.ts)
+* [Splitting Clips](./examples/scripting/src/split-video.ts)
+* [Video Trimming](./examples/scripting/src/video-trimming.ts)
+* [Reddit Stories](./examples/scripting/src/reddit-stories.ts)
 * [SSR with Puppeteer](./examples/puppeteer)
 
 Clone the repository and run `npm install && npm run dev` to conveniently test these examples.
 
 https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
-
-## Documentation (WIP)
-- [Getting Started](/docs/guide/video.md)
-- [Api Reference](/docs/api/index.md)
---- 
-<br> 
-
-> Two very impressive video processing libraries were already available when we started this project, which differ from Diffusion Studio as follows
 
 ## How does Diffusion Studio compare to Remotion and Motion Canvas?
 
