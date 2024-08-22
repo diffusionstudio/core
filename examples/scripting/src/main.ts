@@ -1,4 +1,5 @@
 import * as core from '@diffusionstudio/core';
+import { MainFn, Settings } from './types';
 
 const select = document.querySelector('select') as HTMLSelectElement;
 const container = document.querySelector('[id="player-container"]') as HTMLDivElement;
@@ -14,13 +15,17 @@ const backButton = document.querySelector('[data-lucide="skip-back"]') as HTMLEl
 const forwardButton = document.querySelector('[data-lucide="skip-forward"]') as HTMLElement;
 
 async function loadScript(name: string) {
-  const comp = (await import(`./${name}.ts`)).comp as core.Composition;
+  const module = await import(`./${name}.ts`);
+  const main: MainFn = module.main;
+  const settings: Settings = module.settings;
+  const composition = new core.Composition(settings);
+  await main(composition);
 
-  const handlePlay = () => comp.play();
-  const handlePause = () => comp.pause();
-  const handleBack = () => comp.seek(0);
-  const handleForward = () => comp.seek(comp.duration.frames);
-  const handleExport = () => fileApiExport(comp);
+  const handlePlay = () => composition.play();
+  const handlePause = () => composition.pause();
+  const handleBack = () => composition.seek(0);
+  const handleForward = () => composition.seek(composition.duration.frames);
+  const handleExport = () => fileApiExport(composition);
 
   playButton.addEventListener('click', handlePlay);
   pauseButton.addEventListener('click', handlePause);
@@ -28,36 +33,35 @@ async function loadScript(name: string) {
   forwardButton.addEventListener('click', handleForward);
   exportButton.addEventListener('click', handleExport);
 
-  const playId = comp.on('play', () => {
+  const playId = composition.on('play', () => {
     playButton.style.display = 'none';
     pauseButton.style.display = 'block';
   });
-  const pauseId = comp.on('pause', () => {
+  const pauseId = composition.on('pause', () => {
     pauseButton.style.display = 'none';
     playButton.style.display = 'block';
   });
-  const frameId = comp.on('currentframe', () => {
-    time.textContent = comp.time();
+  const frameId = composition.on('currentframe', () => {
+    time.textContent = composition.time();
   });
 
-  comp.attachPlayer(player);
+  composition.attachPlayer(player);
 
   const observer = new ResizeObserver(() => {
     const scale = Math.min(
-      container.clientWidth / comp.width,
-      container.clientHeight / comp.height
+      container.clientWidth / composition.width,
+      container.clientHeight / composition.height
     );
 
-    player.style.width = `${comp.width}px`;
-    player.style.height = `${comp.height}px`;
+    player.style.width = `${composition.width}px`;
+    player.style.height = `${composition.height}px`;
     player.style.transform = `scale(${scale})`;
     player.style.transformOrigin = 'center';
   });
 
   observer.observe(document.body);
-  time.textContent = comp.time();
-  comp.seek(0);
-
+  time.textContent = composition.time();
+  composition.seek(0);
 
   return () => {
     playButton.removeEventListener('click', handlePlay);
@@ -66,8 +70,8 @@ async function loadScript(name: string) {
     forwardButton.removeEventListener('click', handleForward);
     exportButton.removeEventListener('click', handleExport);
 
-    comp.off(playId, pauseId, frameId);
-    comp.detachPlayer(player);
+    composition.off(playId, pauseId, frameId);
+    composition.detachPlayer(player);
 
     observer.unobserve(document.body);
   }
