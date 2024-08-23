@@ -16,7 +16,7 @@
     "vite-plugin-dynamic-import": "^1.5.0"
   },
   "dependencies": {
-    "@diffusionstudio/core": "^1.0.0-beta.10"
+    "@diffusionstudio/core": "^1.0.0-beta.11"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.9.5"

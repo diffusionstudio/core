@@ -64,6 +64,8 @@ async function loadScript(name: string) {
   composition.seek(0);
 
   return () => {
+    composition.pause();
+    
     playButton.removeEventListener('click', handlePlay);
     pauseButton.removeEventListener('click', handlePause);
     backButton.removeEventListener('click', handleBack);

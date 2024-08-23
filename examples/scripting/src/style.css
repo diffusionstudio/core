@@ -24,7 +24,7 @@
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
 
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Manrope';
   line-height: 1.5;
   font-weight: 400;
 
@@ -111,7 +111,7 @@ button {
   padding: 0 12px;
   height: 34px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
   background-color: hsl(var(--foreground));
   color: hsl(var(--background));
