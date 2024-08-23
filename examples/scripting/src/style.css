@@ -59,7 +59,14 @@ body {
 h1 {
   font-size: 1.8em;
   font-weight: 700;
+  line-height: 1.2;
   text-align: left;
+}
+
+@media (width <= 680px) {
+  h1 {
+    font-size: 1.1em;
+  }
 }
 
 select {
