@@ -11,7 +11,7 @@
 </p>
 <br/>
 
-# Diffusion Studio - A browser based video processing framework 🚀
+# Diffusion Studio - A browser based video editing framework 🚀
 
 Yes that's right, DS does not require a backend! This is made possible by bleeding edge browser APIs such as WebGPU, WebCodecs and WebAssembly resulting in a blazingly fast render performance 🏎️ (fastest in town).
 
