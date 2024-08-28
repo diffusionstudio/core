@@ -1,6 +1,6 @@
 import * as core from '@diffusionstudio/core';
 import { MainFn, Settings } from './types';
-import './borwser-support';
+import { isMobile } from './borwser-support';
 
 const select = document.querySelector('select') as HTMLSelectElement;
 const container = document.querySelector('[id="player-container"]') as HTMLDivElement;
@@ -19,7 +19,10 @@ async function loadScript(name: string) {
   const module = await import(`./${name}.ts`);
   const main: MainFn = module.main;
   const settings: Settings = module.settings;
-  const composition = new core.Composition(settings);
+  const composition = new core.Composition({
+    ...settings, // force webgl on mobile
+    backend: isMobile ? 'webgl' : undefined
+  });
   await main(composition);
 
   const handlePlay = () => composition.play();
@@ -66,7 +69,7 @@ async function loadScript(name: string) {
 
   return () => {
     composition.pause();
-    
+
     playButton.removeEventListener('click', handlePlay);
     pauseButton.removeEventListener('click', handlePause);
     backButton.removeEventListener('click', handleBack);
