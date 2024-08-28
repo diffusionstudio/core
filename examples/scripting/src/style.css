@@ -207,3 +207,11 @@ button:hover {
     transform: rotate(1turn)
   }
 }
+
+#browser-not-supported {
+  color: red;
+  text-align: center;
+  margin-top: 1rem;
+  font-size: medium;
+  display: none;
+}

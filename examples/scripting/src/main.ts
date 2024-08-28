@@ -1,5 +1,6 @@
 import * as core from '@diffusionstudio/core';
 import { MainFn, Settings } from './types';
+import './borwser-support';
 
 const select = document.querySelector('select') as HTMLSelectElement;
 const container = document.querySelector('[id="player-container"]') as HTMLDivElement;
