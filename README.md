@@ -14,7 +14,7 @@
 
 # Getting Started
 
-Diffusion Studio is an open-source, web-based framework for programmatic video editing. It enables developers to automate complex editing workflows, build AI-powered video editors and create videos at scale.
+Diffusion Studio is a browser-based framework for programmatic video editing. It enables developers to automate complex editing workflows, build AI-powered video editors and create videos at scale.
 
 ```sh
 npm i @diffusionstudio/core
