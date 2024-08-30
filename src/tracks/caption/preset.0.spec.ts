@@ -15,6 +15,7 @@ import { SpotlightCaptionPreset } from './preset.spotlight';
 import { CascadeCaptionPreset } from './preset.cascade';
 import { GuineaCaptionPreset } from './preset.guinea';
 import { CaptionPresetDeserializer } from './preset.deserializer';
+import { VerdantCaptionPreset } from './preset.verdant';
 
 import type { frame, hex } from '../../types';
 
@@ -120,6 +121,25 @@ describe('(0) The Caption Presets', () => {
 				expect(clip.segments.length).toBe(1);
 				expect(clip.segments[0].start).not.toBeGreaterThan(clip.segments[0].stop ?? 0);
 			}
+		}
+	});
+
+	it('should generate captions with a highlighted green word', async () => {
+		const strategy = new VerdantCaptionPreset({
+			color: '#333333',
+			generatorOptions: { count: [3] },
+		});
+
+		await strategy.applyTo(track);
+		expect(strategy.type).toBe('VERDANT');
+
+		expect(track.clips.length).toBe(18);
+		expect(track.clips.at(0)?.start.seconds).toBe(10);
+
+		for (const clip of track.clips as ComplexTextClip[]) {
+			expect(clip.text.length).toBeGreaterThan(0);
+			expect(clip.segments.length).toBe(1);
+			expect(clip.segments[0].start).not.toBeGreaterThan(clip.segments[0].stop ?? 0);
 		}
 	});
 

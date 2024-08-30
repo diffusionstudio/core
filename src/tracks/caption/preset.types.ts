@@ -16,6 +16,7 @@ export type CaptionPresetType =
 	| 'GUINEA'
 	| 'SOLAR'
 	| 'WHISPER'
+	| 'VERDANT'
 	| string;
 
 export type DefaultCaptionPresetConfig = {
