@@ -1,0 +1,478 @@
+/**
+ * Copyright (c) 2024 The Diffusion Studio Authors
+ *
+ * This Source Code Form is subject to the terms of the Mozilla 
+ * Public License, v. 2.0 that can be found in the LICENSE file.
+ */
+
+import { autoDetectRenderer } from 'pixi.js';
+import { framesToMillis, Timestamp, FPS_DEFAULT } from '../models';
+import { MediaClip } from '../clips';
+import { Serializer } from '../services';
+import { TrackDeserializer } from '../tracks';
+import { clear } from '../utils/pixi';
+import { isClass } from '../utils';
+import { EventEmitterMixin } from '../mixins';
+import { BaseError } from '../errors';
+
+import type { Clip } from '../clips';
+import type { Renderer } from 'pixi.js';
+import type { float, frame } from '../types';
+import type { Track } from '../tracks';
+import type {
+	CompositionEvents,
+	CompositionSettings,
+	CompositionState,
+	ScreenshotImageFormat,
+} from './composition.types';
+
+
+export class Composition extends EventEmitterMixin<CompositionEvents, typeof Serializer>(Serializer) {
+	private _duration = new Timestamp();
+
+	/**
+	 * Access to the underlying pixijs renderer
+	 */
+	public renderer?: Renderer;
+
+	/**
+	 * Settings of the composition
+	 */
+	public settings: CompositionSettings;
+
+	/**
+	 * Tracks attached to the composition
+	 */
+	public tracks: Track<Clip>[] = [];
+
+	/**
+	 * The current frame that the playback is set to
+	 */
+	public frame: frame = <frame>0;
+
+	/**
+	 * User defined fixed duration, use the duration
+	 * property to change this value
+	 */
+	public durationLimit?: Timestamp;
+
+	/**
+	 * Defines the current state of the composition
+	 */
+	public state: CompositionState = 'IDLE';
+
+	/**
+	 * Defines the fps used for rendering.
+	 */
+	public fps: float = FPS_DEFAULT;
+
+	/**
+	 * Get the canvas element that has been
+	 * added to the dom
+	 */
+	public canvas?: HTMLCanvasElement;
+
+	/**
+	 * Defines the context of the external
+	 * canvas element
+	 */
+	private context?: CanvasRenderingContext2D;
+
+	public constructor({
+		height = 1080,
+		width = 1920,
+		background = '#000000',
+		backend = 'webgpu',
+	}: Partial<CompositionSettings> = {}) {
+		super();
+
+		this.settings = { height, width, background, backend };
+
+		this.on('update', this.computeFrame.bind(this));
+		this.on('attach', this.computeFrame.bind(this));
+		this.on('detach', this.computeFrame.bind(this));
+		this.on('load', this.computeFrame.bind(this));
+		this.on('frame', this.computeFrame.bind(this));
+		this.on('error', this.computeFrame.bind(this));
+
+		autoDetectRenderer({ ...this.settings, clearBeforeRender: false, preference: backend })
+			.then(renderer => {
+				this.renderer = renderer;
+				this.trigger('init', undefined);
+			})
+			.catch(error => {
+				console.error(error);
+				this.trigger('error', new Error(`${error}`));
+			});
+	}
+
+	/**
+	 * The realtime playback has started
+	 */
+	public get playing(): boolean {
+		return this.state == 'PLAY';
+	}
+
+	/**
+	 * Composition is rendering in
+	 * non realtime
+	 */
+	public get rendering(): boolean {
+		return this.state == 'RENDER';
+	}
+
+	/**
+	 * Get the current width of the canvas
+	 */
+	get width(): number {
+		return this.settings.width;
+	}
+
+	/**
+	 * Get the current height of the canvas
+	 */
+	get height(): number {
+		return this.settings.height;
+	}
+
+	/**
+	 * This is where the playback stops playing
+	 */
+	public get duration(): Timestamp {
+		if (this.durationLimit) {
+			return this.durationLimit;
+		}
+		return this._duration;
+	}
+
+	/**
+	 * Limit the total duration of the composition
+	 */
+	public set duration(time: frame | Timestamp | undefined) {
+		if (!time) {
+			this.durationLimit = undefined;
+		} else if (time instanceof Timestamp) {
+			this.durationLimit = time;
+		} else {
+			this.durationLimit = Timestamp.fromFrames(time);
+		}
+
+		this.trigger('frame', this.durationLimit?.frames ?? 0);
+	}
+
+	/**
+	 * Set the player as a child of the given html div element
+	 */
+	public attachPlayer(element: HTMLElement): void {
+		if (!this.canvas) {
+			this.canvas = document.createElement('canvas');
+			this.canvas.height = this.settings.height;
+			this.canvas.width = this.settings.width;
+			this.canvas.style.background = 'black';
+			this.context = this.canvas.getContext('2d')!;
+			this.context.imageSmoothingEnabled = false;
+			this.computeFrame();
+		}
+
+		element.appendChild(this.canvas);
+	}
+
+	/**
+	 * Remove the player from the dom
+	 */
+	public detachPlayer(element: HTMLElement): void {
+		if (this.canvas) {
+			element.removeChild(this.canvas);
+		}
+	}
+
+	/**
+	 * Append a track that contains an array
+	 * of clips in chronological order
+	 */
+	public appendTrack<L extends Track<Clip>>(Track: (new () => L) | L): L {
+		// Check if track has been instantiated
+		const track = typeof Track == 'object' ? Track : new Track();
+
+		track.connect(this);
+
+		this.tracks.unshift(track);
+
+		track.on('*', this.updateDuration.bind(this));
+
+		this.bubble('frame', track);
+		this.bubble('update', track);
+		this.bubble('error', track);
+		this.bubble('attach', track);
+		this.bubble('detach', track);
+		this.bubble('load', track);
+
+		this.trigger('update', undefined);
+
+		return track;
+	}
+
+	/**
+	 * Convenience function for appending a track
+	 * aswell as the clip to the composition
+	 */
+	public async appendClip<L extends Clip>(clip: L): Promise<L> {
+		const track = TrackDeserializer.fromType({ type: clip.type });
+		await this.appendTrack(track).appendClip(clip);
+
+		return clip;
+	}
+
+	/**
+	 * Remove all tracks that are of the specified type
+	 * @param track type to be removed
+	 */
+	public removeTracks(Track: new (composition: Composition) => Track<Clip>): Track<Clip>[] {
+		const removed = this.tracks.filter((track) => track instanceof Track);
+		this.tracks = this.tracks.filter((track) => !(track instanceof Track));
+
+		if (removed.length > 0) {
+			this.updateDuration();
+		}
+
+		return removed;
+	}
+
+	/**
+	 * Find tracks that match the profided parameters
+	 */
+	public findTracks<T extends Track<Clip>>(
+		predicate: ((value: Track<Clip>) => boolean) | (new () => T),
+	): T[] {
+		return this.tracks.filter((track) => {
+			let matches: boolean;
+
+			if (isClass(predicate)) {
+				matches = track instanceof predicate;
+			} else {
+				// @ts-ignore
+				matches = predicate(track);
+			}
+			return matches;
+		}) as T[];
+	}
+
+	/**
+	 * Find clips that match the profided parameters
+	 */
+	public findClips<T extends Clip>(
+		predicate: ((value: Clip) => boolean) | (new () => T),
+	): T[] {
+		const clips: T[] = [];
+
+		for (const track of this.tracks) {
+			for (const clip of track.clips) {
+				let matches: boolean;
+
+				if (isClass(predicate)) {
+					matches = clip instanceof predicate;
+				} else {
+					// @ts-ignore
+					matches = predicate(clip);
+				}
+
+				if (matches) {
+					clips.push(clip as any);
+				}
+			}
+		}
+		return clips;
+	}
+
+	/**
+	 * Compute the currently active frame
+	 */
+	public computeFrame(): void {
+		if (!this.renderer) return;
+
+		clear(this.renderer, this.context);
+
+		for (let i = this.tracks.length - 1; i >= 0; i--) {
+			this.tracks[i].render(this.renderer, framesToMillis(this.frame));
+		}
+
+		this.context?.drawImage(this.renderer.canvas, 0, 0);
+
+		this.trigger('currentframe', this.frame);
+
+		if (this.playing) {
+			this.frame = <frame>(this.frame + 1);
+		}
+	}
+
+	/**
+	 * Take a screenshot of the still frame
+	 */
+	public screenshot(format: ScreenshotImageFormat = 'png', quality = 1): string {
+		this.computeFrame();
+
+		if (!this.renderer) {
+			throw new BaseError({
+				i18n: 'rendererNotDefined',
+				message: 'Please wait until the renderer is defined'
+			})
+		}
+
+		return this.renderer.canvas.toDataURL(`image/${format}`, quality);
+	}
+
+	/**
+	 * Set the playback position to a specific time
+	 * @param frame new playback time
+	 */
+	public async seek(frame: frame) {
+		this.frame = <frame>Math.round(frame > 0 ? frame : 0);
+
+		if (this.playing) {
+			this.pause();
+		}
+
+		for (const track of this.tracks) {
+			await track.seek(this.frame);
+		}
+
+		// prevents video frame from being closed
+		if (!this.rendering) {
+			this.computeFrame();
+		}
+	}
+
+	/**
+	 * Play the composition
+	 */
+	public async play(): Promise<void> {
+		this.state = 'PLAY';
+
+		if (this.frame >= this.duration.frames) {
+			this.frame = <frame>0;
+		}
+
+		for (const track of this.tracks) {
+			await track.seek(this.frame);
+		}
+
+		this.timerCallback();
+		this.trigger('play', this.frame);
+	}
+
+	/**
+	 * Pause the composition
+	 */
+	public async pause(): Promise<void> {
+		this.state = 'IDLE';
+		this.computeFrame();
+		this.trigger('pause', this.frame);
+	}
+
+	public async audio(numberOfChannels = 2, sampleRate = 44100): Promise<AudioBuffer> {
+		const length = this.duration.seconds * sampleRate;
+		const context = new OfflineAudioContext({
+			sampleRate,
+			length,
+			numberOfChannels,
+		});
+
+		const output = context.createBuffer(numberOfChannels, length, sampleRate);
+
+		for (const clip of this.findClips(MediaClip)) {
+			if (clip.disabled || clip.muted || clip.track?.disabled) {
+				continue;
+			}
+
+			const offset = Math.round(clip.offset.seconds * output.sampleRate);
+			const start = Math.round(clip.range[0].seconds * output.sampleRate);
+			const stop = Math.round(clip.range[1].seconds * output.sampleRate);
+
+			try {
+				const buffer = await clip.source.decode(numberOfChannels, sampleRate);
+				const lastChannel = buffer.numberOfChannels - 1;
+
+				for (let i = 0; i < numberOfChannels; i++) {
+					const outputData = output.getChannelData(i);
+					const bufferData = buffer.getChannelData(
+						i > lastChannel ? lastChannel : i, // important for mono audio tracks
+					);
+
+					for (let i = 0; i < outputData.length - 1; i++) {
+						if (i < offset + start || i > offset + stop || i - offset < 0) {
+							continue;
+						}
+
+						outputData[i] += (bufferData[i - offset] ?? 0) * clip.volume;
+						// make sure the value is between -1 and 1;
+						if (outputData[i] > 1) outputData[i] = 1;
+						if (outputData[i] < -1) outputData[i] = -1;
+					}
+
+					output.getChannelData(i).set(outputData);
+				}
+			} catch (e) {
+				console.warn('could not get channel data', e);
+			}
+
+			clip.source.audioBuffer = undefined;
+		}
+
+		return output;
+	}
+
+	/**
+	 * Get the current playback time and composition
+	 * duration formatted as `00:00 / 00:00` by default.
+	 * if **hours** is set the format is `HH:mm:ss` whereas
+	 * **milliseconds** will return `mm:ss.SSS`
+	 */
+	public time(precision?: { hours?: boolean; milliseconds?: boolean }) {
+		const millis = framesToMillis(this.frame);
+
+		const start = precision?.hours ? 11 : 14;
+		const stop = precision?.milliseconds ? 23 : 19;
+
+		return (
+			new Date(millis).toISOString().slice(start, stop) +
+			' / ' +
+			new Date(this.duration.millis).toISOString().slice(start, stop)
+		);
+	}
+
+	private async timerCallback() {
+		const interval = 1000 / FPS_DEFAULT;
+
+		let then = performance.now();
+		let delta = 0;
+		do {
+			const now = await new Promise(requestAnimationFrame);
+			if (now - then < interval - delta) {
+				continue;
+			}
+			delta = Math.min(interval, delta + now - then - interval);
+			then = now;
+			this.computeFrame();
+		} while (this.frame <= this.duration.frames && this.playing);
+
+		// reached end of composition
+		if (this.playing) {
+			this.seek(<frame>0);
+		}
+	}
+
+	private updateDuration(): void {
+		if (this.playing) this.pause();
+
+		const lastFrames = this.tracks
+			.filter((track) => !track.disabled)
+			.map((track) => track.stop?.frames ?? 0);
+
+		const lastFrame = Math.max(...lastFrames, 0);
+
+		if (lastFrame != this._duration.frames) {
+			this._duration.frames = <frame>lastFrame;
+			this.trigger('frame', lastFrame);
+		}
+	}
+}

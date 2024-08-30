@@ -1,0 +1,80 @@
+{
+  "name": "@diffusionstudio/core",
+  "private": false,
+  "version": "1.0.0-beta.13",
+  "type": "module",
+  "description": "Build bleeding edge video processing applications",
+  "files": [
+    "dist/*"
+  ],
+  "types": "./dist/index.d.ts",
+  "module": "./dist/ds.js",
+  "exports": {
+    ".": {
+      "import": "./dist/ds.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "license": "MPL-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "format": "npx @biomejs/biome format --write ./src",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
+    "release": "tsc && vite build && npm publish",
+    "docs": "typedoc src/index.ts --plugin typedoc-plugin-markdown --out ./docs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.8.3",
+    "@types/dom-webcodecs": "^0.1.11",
+    "@types/node": "^22.0.0",
+    "@types/wicg-file-system-access": "^2023.10.5",
+    "@vitest/web-worker": "^2.0.4",
+    "@webgpu/types": "^0.1.44",
+    "jsdom": "^24.1.1",
+    "rollup-plugin-node-externals": "^7.1.2",
+    "typedoc": "^0.26.6",
+    "typedoc-plugin-markdown": "^4.2.5",
+    "typescript": "^5.2.2",
+    "user-agent-data-types": "^0.4.2",
+    "vite": "^5.3.4",
+    "vite-plugin-dts": "^4.0.0-beta.2",
+    "vitest": "^2.0.4",
+    "vitest-canvas-mock": "^0.3.3"
+  },
+  "dependencies": {
+    "mp4-muxer": "^4.3.3"
+  },
+  "peerDependencies": {
+    "pixi-filters": ">=6.0.0",
+    "pixi.js": ">=8.0.0"
+  },
+  "author": "Diffusion Studio GmbH",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:diffusionstudio/core.git"
+  },
+  "keywords": [
+    "edit videos",
+    "programmatic video editing",
+    "video editing",
+    "automate",
+    "web-based",
+    "browser-based",
+    "automation",
+    "ai video editor",
+    "video apps",
+    "video applications",
+    "create videos",
+    "automate workflows",
+    "automated video editing",
+    "free video editor",
+    "editor for youtube",
+    "online video editor"
+  ]
+}
