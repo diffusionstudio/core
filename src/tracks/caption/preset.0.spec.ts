@@ -6,7 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ComplexTextClip, Font, MediaClip, TextClip } from '../../clips';
+import { ComplexTextClip, MediaClip, TextClip } from '../../clips';
 import { Composition } from '../../composition';
 import { CaptionTrack } from './caption';
 import { Transcript, Word, WordGroup } from '../../models';
@@ -18,33 +18,6 @@ import { CaptionPresetDeserializer } from './preset.deserializer';
 import { VerdantCaptionPreset } from './preset.verdant';
 
 import type { frame, hex } from '../../types';
-
-async function styleBaseClip(clip?: TextClip) {
-	await clip?.set({
-		fontSize: 23,
-		fillStyle: '#0000FF',
-		stroke: {
-			miterLimit: 1,
-			join: 'miter',
-			width: 10,
-			color: '#FF0000',
-		},
-		shadow: {
-			color: '#00FF00',
-			alpha: 0.5,
-			angle: Math.PI / 4,
-			blur: 32,
-			distance: 12,
-		},
-		font: new Font({
-			family: 'Komika Axis',
-			source: 'url(komika-axis.ttf)',
-			style: 'normal',
-		}),
-	});
-
-	await clip?.font.load();
-}
 
 describe('(0) The Caption Presets', () => {
 	const mockFn = vi.fn();
@@ -194,34 +167,10 @@ describe('(0) The Caption Presets', () => {
 		});
 
 		await strategy.applyTo(track);
-		expect(strategy.clip).toBeInstanceOf(TextClip);
-
-		await styleBaseClip(strategy.clip);
 
 		const loadedStrategy = CaptionPresetDeserializer.fromJSON(JSON.parse(JSON.stringify(strategy)));
 		expect(loadedStrategy).toBeInstanceOf(ClassicCaptionPreset);
-
-		expect(loadedStrategy.clip).toBeInstanceOf(TextClip);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(false);
 		expect((loadedStrategy as any).generatorOptions.count?.toString()).toBe('3');
-
-		track.clips = [];
-		expect(track.clips.length).toBe(0);
-		await loadedStrategy.applyTo(track);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(true);
-		expect(track.clips.length).toBeGreaterThan(1);
-
-		for (const clip of track.clips) {
-			expect(clip.font?.name).toBe('Komika Axis normal');
-			expect(clip.font?.family).toBe('Komika Axis');
-			expect(clip.fontSize).toBe(23);
-			expect(clip.stroke?.miterLimit).toBe(1);
-			expect(clip.stroke?.join).toBe('miter');
-			expect(clip.stroke?.width).toBe(10);
-			expect(clip.stroke?.color).toBe('#FF0000');
-			expect(clip.shadow?.color).toBe('#00FF00');
-			expect(clip.fillStyle).toBe('#0000FF');
-		}
 	});
 
 	it('should be able to be loaded from json, base strategy, harmozi strategy', async () => {
@@ -230,30 +179,10 @@ describe('(0) The Caption Presets', () => {
 
 		await strategy.applyTo(track);
 
-		await styleBaseClip(strategy.clip);
-
 		const loadedStrategy = CaptionPresetDeserializer.fromJSON(JSON.parse(JSON.stringify(strategy)));
 		expect(loadedStrategy).toBeInstanceOf(GuineaCaptionPreset);
 
-		expect(loadedStrategy.clip).toBeInstanceOf(ComplexTextClip);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(false);
 		expect((loadedStrategy as any).colors.toString()).toBe('#000000,#111111,#222222');
-
-		track.clips = [];
-		await loadedStrategy.applyTo(track);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(true);
-		expect(track.clips.length).toBeGreaterThan(1);
-
-		for (const clip of track.clips) {
-			expect(clip.font?.name).toBe('Komika Axis normal');
-			expect(clip.font?.family).toBe('Komika Axis');
-			expect(clip.fontSize).toBe(23);
-			expect(clip.stroke?.miterLimit).toBe(1);
-			expect(clip.stroke?.join).toBe('miter');
-			expect(clip.stroke?.width).toBe(10);
-			expect(clip.stroke?.color).toBe('#FF0000');
-			expect(clip.shadow?.color).toBe('#00FF00');
-		}
 	});
 
 	it('should be able to be loaded from json, base strategy, highlight strategy', async () => {
@@ -261,31 +190,9 @@ describe('(0) The Caption Presets', () => {
 		const strategy = new SpotlightCaptionPreset({ color });
 		await strategy.applyTo(track);
 
-		await styleBaseClip(strategy.clip);
-
 		const loadedStrategy = CaptionPresetDeserializer.fromJSON(JSON.parse(JSON.stringify(strategy)));
 		expect(loadedStrategy).toBeInstanceOf(SpotlightCaptionPreset);
-
-		expect(loadedStrategy.clip).toBeInstanceOf(ComplexTextClip);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(false);
 		expect((loadedStrategy as any).color).toBe('#ABCDEF');
-
-		track.clips = [];
-		await loadedStrategy.applyTo(track);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(true);
-		expect(track.clips.length).toBeGreaterThan(1);
-
-		for (const clip of track.clips) {
-			expect(clip.font?.name).toBe('Komika Axis normal');
-			expect(clip.font?.family).toBe('Komika Axis');
-			expect(clip.fontSize).toBe(23);
-			expect(clip.stroke?.miterLimit).toBe(1);
-			expect(clip.stroke?.join).toBe('miter');
-			expect(clip.stroke?.width).toBe(10);
-			expect(clip.stroke?.color).toBe('#FF0000');
-			expect(clip.shadow?.color).toBe('#00FF00');
-			expect(clip.fillStyle).toBe('#0000FF');
-		}
 	});
 
 	it('should be able to be loaded from json, hide strategy', async () => {
@@ -295,33 +202,9 @@ describe('(0) The Caption Presets', () => {
 		});
 
 		await strategy.applyTo(track);
-		expect(strategy.clip).toBeInstanceOf(TextClip);
-
-		await styleBaseClip(strategy.clip);
 
 		const loadedStrategy = CaptionPresetDeserializer.fromJSON(JSON.parse(JSON.stringify(strategy)));
 		expect(loadedStrategy).toBeInstanceOf(CascadeCaptionPreset);
-
-		expect(loadedStrategy.clip).toBeInstanceOf(TextClip);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(false);
 		expect((loadedStrategy as any).generatorOptions.count?.toString()).toBe('9');
-
-		track.clips = [];
-		expect(track.clips.length).toBe(0);
-		await loadedStrategy.applyTo(track);
-		expect(loadedStrategy.clip?.font?.loaded).toBe(true);
-		expect(track.clips.length).toBeGreaterThan(1);
-
-		for (const clip of track.clips) {
-			expect(clip.font?.name).toBe('Komika Axis normal');
-			expect(clip.font?.family).toBe('Komika Axis');
-			expect(clip.fontSize).toBe(23);
-			expect(clip.stroke?.miterLimit).toBe(1);
-			expect(clip.stroke?.join).toBe('miter');
-			expect(clip.stroke?.width).toBe(10);
-			expect(clip.stroke?.color).toBe('#FF0000');
-			expect(clip.shadow?.color).toBe('#00FF00');
-			expect(clip.fillStyle).toBe('#0000FF');
-		}
 	});
 });

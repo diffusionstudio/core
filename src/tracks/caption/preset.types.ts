@@ -6,7 +6,6 @@
  */
 
 import type { GeneratorOptions } from '../../models';
-import type { ComplexTextClip, TextClip } from '../../clips';
 import type { hex } from '../../types';
 
 export type CaptionPresetType =
@@ -20,21 +19,13 @@ export type CaptionPresetType =
 	| string;
 
 export type DefaultCaptionPresetConfig = {
-	clip?: TextClip;
 	generatorOptions: GeneratorOptions;
 };
 
 export type SingleColorCaptionPresetConfig = {
 	color: hex;
-	clip?: ComplexTextClip;
 } & DefaultCaptionPresetConfig;
 
 export type MultiColorCaptionPresetConfig = {
 	colors: hex[] | undefined;
-	clip?: ComplexTextClip;
 } & DefaultCaptionPresetConfig;
-
-export type ScreenSize = {
-	width: number;
-	height: number;
-};

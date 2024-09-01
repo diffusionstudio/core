@@ -9,81 +9,63 @@ import { serializable, Serializer } from '../../services';
 import { Keyframe, Timestamp } from '../../models';
 import { Font, TextClip } from '../../clips';
 
-import type { ScreenSize, CaptionPresetType, DefaultCaptionPresetConfig } from './preset.types';
+import type { CaptionPresetType, DefaultCaptionPresetConfig } from './preset.types';
 import type { GeneratorOptions } from '../../models';
 import type { CaptionTrack } from './caption';
 import type { CaptionPresetStrategy } from './preset.interface';
 
 export class ClassicCaptionPreset extends Serializer implements CaptionPresetStrategy {
-	private _initialized = false;
-
 	@serializable()
 	public generatorOptions: GeneratorOptions;
 
 	@serializable()
 	public readonly type: CaptionPresetType = 'CLASSIC';
 
-	@serializable(TextClip)
-	public clip: TextClip | undefined;
 
 	public constructor(config: Partial<DefaultCaptionPresetConfig> = {}) {
 		super();
 
 		this.generatorOptions = config.generatorOptions ?? { duration: [0.2] };
-		this.clip = config.clip;
-	}
-
-	public async init(composition?: ScreenSize) {
-		if (this._initialized || !composition) return;
-
-		if (!this.clip) {
-			this.clip = await new TextClip({
-				textAlign: 'center',
-				textBaseline: 'middle',
-				fontSize: 21,
-				fillStyle: '#FFFFFF',
-				font: Font.fromFamily({ family: 'Figtree', weight: '700' }),
-				stroke: {
-					color: '#000000',
-					width: 4,
-					join: 'round',
-				},
-				maxWidth: composition.width * 0.85,
-				shadow: {
-					color: '#000000',
-					blur: 0,
-					distance: 1.1,
-					angle: Math.PI * 0.40,
-					alpha: 1,
-				},
-				position: 'center',
-			});
-		}
-
-		await this.clip.font.load();
-		this._initialized = true;
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
-		await this.init(track.composition);
-
-		if (!this.clip || !track.clip?.transcript) {
-			throw new Error('Preset needs to be initialized first');
+		if (!track.clip?.transcript || !track.composition?.width) {
+			throw new Error('Captions need to be applied with a defined transcript and composition');
 		}
 
 		const offset = track.clip?.offset ?? new Timestamp();
+		const font = await Font.fromFamily({ family: 'Figtree', weight: '700' }).load();
 
 		// add captions
 		for (const sequence of track.clip.transcript.iter(this.generatorOptions)) {
-			const clip = this.clip.copy().set({
-				text: sequence.words.map((word) => word.text).join(' '),
-				stop: sequence.stop.add(offset),
-				start: sequence.start.add(offset),
-				scale: new Keyframe([0, 8], [0.96, 1], { easing: 'easeOut' }),
-				alpha: new Keyframe([0, 4], [0, 1], { easing: 'easeOut' }),
-			});
-
-			await track.appendClip(clip);
+			await track.appendClip(
+				new TextClip({
+					text: sequence.words.map((word) => word.text).join(' '),
+					textAlign: 'center',
+					textBaseline: 'middle',
+					fontSize: 21,
+					fillStyle: '#FFFFFF',
+					font,
+					stroke: {
+						color: '#000000',
+						width: 4,
+						join: 'round',
+					},
+					maxWidth: track.composition.width * 0.85,
+					shadow: {
+						color: '#000000',
+						blur: 0,
+						distance: 1.1,
+						angle: Math.PI * 0.40,
+						alpha: 1,
+					},
+					position: 'center',
+					stop: sequence.stop.add(offset),
+					start: sequence.start.add(offset),
+					scale: new Keyframe([0, 8], [0.96, 1], { easing: 'easeOut' }),
+					alpha: new Keyframe([0, 4], [0, 1], { easing: 'easeOut' }),
+				})
+			);
 		}
 	}
 }

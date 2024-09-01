@@ -29,7 +29,7 @@ export function EventEmitterMixin<Events  = {}, T extends Constructor = Construc
 			if (!this._handlers[eventType]) {
 				this._handlers[eventType] = { [id]: callback };
 			} else {
-				// @ts-ignore TODO: Figure out why this is an error
+				// @ts-ignore
 				this._handlers[eventType][id] = callback;
 			}
 
@@ -54,7 +54,7 @@ export function EventEmitterMixin<Events  = {}, T extends Constructor = Construc
 			const event = new CustomEvent<BaseEvents<Events>[T]>(eventType as string, {
 				detail,
 			});
-			Object.defineProperty(event, 'target', { writable: false, value: this });
+			Object.defineProperty(event, 'currentTarget', { writable: false, value: this });
 
 			for (const handler in this._handlers[eventType] ?? {}) {
 				this._handlers[eventType]?.[handler](event);

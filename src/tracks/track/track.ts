@@ -118,7 +118,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	 */
 	public render(renderer: Renderer, time: number): void | Promise<void> {
 		// case track doesn't contain tracks to render
-		if (this.disabled || !this.clips.length) return;
+		if (this.disabled || !this.clips.length || !this.clipRef) return;
 
 		// clean up last rendered clip
 		if (time < this.clipRef.start.millis || time > this.clipRef.stop.millis) {
@@ -226,7 +226,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	 * Get the clip that the pointer is
 	 * currently referencing
 	 */
-	private get clipRef() {
+	private get clipRef(): Clp | undefined {
 		return this.clips[this.pointer];
 	}
 }
