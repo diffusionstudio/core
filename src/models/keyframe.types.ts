@@ -28,7 +28,7 @@ export type KeyframeOptions = {
    * - "degrees": Output values are angles in degrees.
    * @default "number"
    */
-  type?: "number" | "color" | "degrees";
+  type?: "number" | "color" | "degrees" | "percentage";
 
   /**
    * An optional easing function to apply to the interpolation.

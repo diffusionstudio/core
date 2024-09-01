@@ -64,8 +64,8 @@ export type MimeType = ImageMimeType | VideoMimeType | AudioMimeType;
  * Defines the relative coordinates
  */
 export type Position = {
-	x: int | Keyframe<int> | Percent;
-	y: int | Keyframe<int> | Percent;
+	x: int | Keyframe<int> | Percent | Keyframe<Percent>;
+	y: int | Keyframe<int> | Percent | Keyframe<Percent>;
 };
 
 /**

@@ -28,6 +28,10 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
    * control the behaviour of the keyframe
    */
   public options: Required<KeyframeOptions>;
+  /**
+   * Defines the type of the output values
+   */
+  private percentageOutput?: number[];
 
   /**
    * Constructs a Keyframe object.
@@ -48,6 +52,17 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
       type: 'number',
       ...options,
     };
+    if (this.options.type === "percentage") {
+      let regExp = new RegExp('-?^[0-9]+(.[0-9]+)?\%');
+      this.percentageOutput = this.output.map(value => {
+        if (typeof value === 'string' && regExp.test(value)) {
+          return parseFloat(value.substring(0, value.length-1));
+        }
+        else {
+          throw new Error(`Value ${value} is not valid for type percentage`);
+        }
+      });
+    }
   }
 
   /**
@@ -94,14 +109,24 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
    * @returns The interpolated output value.
    */
   private interpolate(t: number, segment: number): T {
-    const outputStart = this.output[segment];
-    const outputEnd = this.output[segment + 1];
+    let output: T[] | number[] = this.output;
+    if (this.options.type === "percentage") {
+      if (this.percentageOutput === undefined) throw new Error("percentageOutput is undefined");
+      output = this.percentageOutput;
+    }
+
+    const outputStart = output[segment];
+    const outputEnd = output[segment + 1];
     const easedT = utils.easingFunctions[this.options.easing](t);
 
     if (typeof outputStart === 'number' && typeof outputEnd === 'number') {
+      const total = outputEnd - outputStart;
       if (this.options.type === "degrees") {
-        const totalDegrees = outputEnd - outputStart;
-        return (outputStart + totalDegrees * easedT) % 360 as T;
+        return (outputStart + total * easedT) % 360 as T;
+      }
+      else if (this.options.type === "percentage") {
+        const percentage = (outputStart + total * easedT).toFixed(2);
+        return `${percentage}%` as T;
       }
       return utils.lerp(outputStart, outputEnd, easedT) as T;
     }

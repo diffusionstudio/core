@@ -14,6 +14,16 @@ import type { frame } from '../types';
 const f = (frame: frame) => framesToMillis(frame);
 
 describe('Keyframe', () => {
+  it('should interpolate percentage values correctly', () => {
+    const keyframe0 = new Keyframe([0, 10], ["0%", "10%"], {type: "percentage"});
+
+    expect(keyframe0.value(f(-3))).toBe('0.00%');
+    expect(keyframe0.value(f(0))).toBe('0.00%');
+    expect(keyframe0.value(f(3))).toBe('3.00%');
+    expect(keyframe0.value(f(6))).toBe('6.01%');
+    expect(keyframe0.value(f(9))).toBe('9.01%');
+  });
+
   it('should interpolate number values correctly', () => {
     const keyframe0 = new Keyframe([0, 12], [0, 100]);
     expect(keyframe0.value(f(-3))).toBe(0);

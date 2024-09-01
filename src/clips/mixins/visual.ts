@@ -104,11 +104,11 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * An alias to position.x
 		 * @default 0
 		 */
-		public get x(): int | Keyframe<int> | Percent {
+		public get x(): int | Keyframe<int> | Percent | Keyframe<Percent> {
 			return this._position.x;
 		}
 
-		public set x(value: int | Keyframe<int> | Percent) {
+		public set x(value: int | Keyframe<int> | Percent | Keyframe<Percent>) {
 			this._position.x = value;
 		}
 
@@ -116,11 +116,11 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * The position of the clip on the y axis. An alias to position.y
 		 * @default 0
 		 */
-		public get y(): int | Keyframe<int> | Percent {
+		public get y(): int | Keyframe<int> | Percent | Keyframe<Percent> {
 			return this._position.y;
 		}
 
-		public set y(value: int | Keyframe<int> | Percent) {
+		public set y(value: int | Keyframe<int> | Percent | Keyframe<Percent>) {
 			this._position.y = value;
 		}
 
