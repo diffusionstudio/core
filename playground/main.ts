@@ -75,13 +75,13 @@ await composition.add(
     start: composition.findClips(core.VideoClip).at(0)?.stop.subtract(new core.Timestamp(6000)),
     stop: composition.duration
   })
-)
+);
 
-await composition.add(
+(await composition.add(
   new core.AudioClip(await core.AudioSource.from('/audio.mp3'), {
     transcript: core.Transcript.fromJSON(captions).optimize(),
   })
-);
+)).generateCaptions();
 
 await composition.add(
   new core.TextClip({
@@ -130,7 +130,3 @@ await composition.add(
     }]
   })
 );
-
-await composition.createTrack('caption')
-  .from(composition.findClips(core.AudioClip)[0])
-  .create();

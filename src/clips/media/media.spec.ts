@@ -9,12 +9,14 @@ import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
 import { Keyframe, Timestamp, Transcript } from '../../models';
 import { captions } from '../../test/captions';
 import { Composition } from '../../composition';
-import { MediaTrack } from '../../tracks';
+import { CaptionTrack, MediaTrack } from '../../tracks';
+import { MediaClipProps } from './media.interfaces';
+import { Font, TextClip } from '../text';
+import { ValidationError } from '../../errors';
 import { VisualMixin, VisualMixinProps } from '../mixins';
 import { MediaClip } from './media';
 
 import type { frame, MixinType } from '../../types';
-import { MediaClipProps } from './media.interfaces';
 
 describe('The Media Clip', () => {
 	const mockFn = vi.fn();
@@ -284,6 +286,34 @@ describe('The Media Clip', () => {
 		expect(copy.range[0].frames).toBe(10);
 		expect(copy.range[1]).toBeInstanceOf(Timestamp);
 		expect(copy.range[1].frames).toBe(80);
+	});
+
+	it('should generate a caption track using a transcript', async () => {
+		vi.spyOn(Font.prototype, 'load').mockImplementation(async () => new Font());
+		clip.transcript = Transcript.fromJSON(captions);
+		clip.state = 'READY';
+
+		const composition = new Composition();
+		await composition.add(clip);
+
+		await clip.generateCaptions();
+
+		expect(composition.tracks.length).toBe(2);
+
+		const track = composition.tracks[0];
+
+		expect(track).toBeInstanceOf(CaptionTrack);
+		expect(track.clips.length).toBe(36);
+		expect(track.clips[0]).toBeInstanceOf(TextClip);
+		expect((track.clips[0] as TextClip).text).toBe('Is the');
+	});
+
+	it('should throw an error when trying to generate captions without a composition', async () => {
+		vi.spyOn(Font.prototype, 'load').mockImplementation(async () => new Font());
+		clip.transcript = Transcript.fromJSON(captions);
+		clip.state = 'READY';
+
+		await expect(() => clip.generateCaptions()).rejects.toThrowError(ValidationError)
 	});
 });
 

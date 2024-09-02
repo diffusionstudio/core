@@ -11,9 +11,10 @@ import { AsyncMixin } from '../mixins';
 import { RangeDeserializer } from './media.deserializer';
 import { serializable, } from '../../services';
 import { replaceKeyframes } from '../clip/clip.utils';
+import { ValidationError } from '../../errors';
 import { Clip } from '../clip';
 
-import type { Track } from '../../tracks';
+import type { CaptionPresetStrategy, Track } from '../../tracks';
 import type { float, frame } from '../../types';
 import type { MediaClipProps } from './media.interfaces';
 
@@ -272,6 +273,27 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 		await this.track.add(copy);
 
 		return copy;
+	}
+
+	/**
+	 * Generates a new caption track for the current clip using the specified captioning strategy.
+	 * @param preset An optional CaptionPresetStrategy to define how captions should be generated.
+	 * @returns {Promise<void>} A promise that resolves when the caption track has been successfully created.
+	 */
+	public async generateCaptions(preset?: CaptionPresetStrategy): Promise<this> {
+		if (!this.track?.composition) {
+			throw new ValidationError({
+				i18n: 'compositionNotDefined',
+				message: 'Captions can only be generated after the clip has been added to the composition',
+			});
+		}
+
+		await this.track.composition
+			.createTrack('caption')
+			.from(this)
+			.create(preset);
+
+		return this;
 	}
 
 	public set(props?: Props): this {
