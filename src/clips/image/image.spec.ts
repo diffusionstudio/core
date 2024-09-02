@@ -43,7 +43,7 @@ describe('The Image Clip', () => {
 		clip.element.dispatchEvent(new Event('load'));
 		expect(clip.element).toBeDefined();
 		expect(loadFn).toBeCalledTimes(1);
-		expect(clip.type).toBe('IMAGE');
+		expect(clip.type).toBe('image');
 		expect(clip.state).toBe('READY');
 		expect(clip.source.name).toBe('image.png');
 		expect(clip.source.objectURL).toBe(

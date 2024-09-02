@@ -11,6 +11,6 @@ import { ImageTrack } from './image';
 describe('The Image Track Object', () => {
 	it('should have a certain intitial state', () => {
 		const track = new ImageTrack();
-		expect(track.type).toBe('IMAGE');
+		expect(track.type).toBe('image');
 	});
 });

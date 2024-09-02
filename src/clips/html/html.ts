@@ -15,7 +15,7 @@ import type { Renderer } from 'pixi.js';
 import type { HtmlClipProps } from './html.interfaces';
 
 export class HtmlClip extends VisualMixin(AsyncMixin(Clip<HtmlClipProps>)) {
-	public readonly type = 'HTML';
+	public readonly type = 'html';
 	public declare track?: Track<HtmlClip>;
 	public readonly source = new HtmlSource();
 

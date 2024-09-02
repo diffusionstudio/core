@@ -9,7 +9,7 @@ import { Source } from './source';
 import type { ClipType } from '../clips';
 
 export class ImageSource extends Source {
-	public readonly type: ClipType = 'IMAGE';
+	public readonly type: ClipType = 'base';
 
 	public async thumbnail(): Promise<HTMLImageElement> {
 		await this.loaded();

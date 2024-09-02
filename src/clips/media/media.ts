@@ -269,7 +269,7 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 
 		replaceKeyframes(copy, copy.start.subtract(this.start));
 
-		await this.track.appendClip(copy);
+		await this.track.add(copy);
 
 		return copy;
 	}

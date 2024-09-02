@@ -9,5 +9,5 @@ import type { TextClip } from '../../clips';
 import { Track } from '../track';
 
 export class TextTrack extends Track<TextClip> {
-	public readonly type = 'TEXT';
+	public readonly type = 'text';
 }

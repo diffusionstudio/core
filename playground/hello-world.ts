@@ -20,8 +20,8 @@ const text = new core.TextClip({
 const composition = new core.Composition();
 
 // this is how to compose your clips
-await composition.appendClip(video);
-await composition.appendClip(text);
+await composition.add(video);
+await composition.add(text);
 
 // export video using webcodecs at 25 FPS
 new core.WebcodecsEncoder(composition, { fps: 25 })

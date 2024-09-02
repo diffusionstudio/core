@@ -13,7 +13,7 @@ import { EventEmitterMixin } from '../../mixins';
 import { DefaultInsertStrategy, StackInsertStrategy } from './track.strategies';
 
 import type { Composition } from '../../composition';
-import type { InsertMode, TrackPosition, TrackType } from './track.types';
+import type { InsertMode, TrackLayer, TrackType } from './track.types';
 import type { InsertStrategy } from './track.interfaces';
 import type { frame } from '../../types';
 import type { Renderer } from 'pixi.js';
@@ -42,7 +42,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	/**
 	 * Id that can be used to search by kind
 	 */
-	public readonly type: TrackType = 'BASE';
+	public readonly type: TrackType = 'base';
 
 	/**
 	 * Controls how the clips should be inserted and updated
@@ -74,17 +74,17 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	}
 
 	/**
-	 * Change the position of the track
+	 * Change the layer of the track
 	 */
-	public position(position: TrackPosition): this {
+	public layer(layer: TrackLayer): this {
 		const tracks = this.composition?.tracks ?? [];
 		const fromIndex = tracks.findIndex((n) => n.id == this.id);
 		if (fromIndex == -1) return this;
 
 		let toIndex = 0;
-		if (position == 'bottom') toIndex = tracks.length;
-		else if (position == 'top') toIndex = 0;
-		else toIndex = position;
+		if (layer == 'bottom') toIndex = tracks.length;
+		else if (layer == 'top') toIndex = 0;
+		else toIndex = layer;
 
 		arraymove(tracks, fromIndex, toIndex);
 
@@ -151,9 +151,9 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	}
 
 	/**
-	 * Add a new clip to the track
+	 * Adds a new clip to the track
 	 */
-	public async appendClip(clip: Clp): Promise<this> {
+	public async add(clip: Clp): Promise<this> {
 		// only append clip if composition is initialized
 		if (this.composition && !this.composition.renderer) {
 			await new Promise(this.composition.resolve('init'));

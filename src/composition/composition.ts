@@ -18,7 +18,7 @@ import { BaseError } from '../errors';
 import type { Clip } from '../clips';
 import type { Renderer } from 'pixi.js';
 import type { float, frame } from '../types';
-import type { Track } from '../tracks';
+import type { Track, TrackType } from '../tracks';
 import type {
 	CompositionEvents,
 	CompositionSettings,
@@ -187,10 +187,10 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	}
 
 	/**
-	 * Append a track that contains an array
-	 * of clips in chronological order
+	 * Append a new track, it will be inserted at 
+	 * index 0 and rendered last (top layer)
 	 */
-	public appendTrack<L extends Track<Clip>>(Track: (new () => L) | L): L {
+	public shiftTrack<L extends Track<Clip>>(Track: (new () => L) | L): L {
 		// Check if track has been instantiated
 		const track = typeof Track == 'object' ? Track : new Track();
 
@@ -213,12 +213,24 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	}
 
 	/**
+	 * Create a track with the given type
+	 * @param type the desired type of the track
+	 * @returns A new track
+	 */
+	public createTrack<T extends TrackType>(type: T) {
+		const track = TrackDeserializer.fromType({ type });
+		this.shiftTrack(track);
+
+		return track;
+	}
+
+	/**
 	 * Convenience function for appending a track
 	 * aswell as the clip to the composition
 	 */
-	public async appendClip<L extends Clip>(clip: L): Promise<L> {
+	public async add<L extends Clip>(clip: L): Promise<L> {
 		const track = TrackDeserializer.fromType({ type: clip.type });
-		await this.appendTrack(track).appendClip(clip);
+		await track.add(clip as never);
 
 		return clip;
 	}

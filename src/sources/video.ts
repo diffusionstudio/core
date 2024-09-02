@@ -9,7 +9,7 @@ import { AudioSource } from './';
 import type { ClipType } from '../clips';
 
 export class VideoSource extends AudioSource {
-	public readonly type: ClipType = 'VIDEO';
+	public readonly type: ClipType = 'video';
 
 	public async thumbnail(): Promise<HTMLVideoElement> {
 		await this.loaded();

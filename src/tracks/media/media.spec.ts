@@ -20,8 +20,7 @@ describe('The Media Track Object', () => {
 	beforeEach(() => {
 		// frame and seconds are the same
 		comp = new Composition();
-		track = new MediaTrack<MediaClip>();
-		comp.appendTrack(track);
+		track = comp.shiftTrack(new MediaTrack<MediaClip>());
 		track.on('update', updateMock);
 	});
 
@@ -30,7 +29,7 @@ describe('The Media Track Object', () => {
 		clip.element = new Audio();
 		clip.duration.seconds = 60;
 		clip.state = 'READY';
-		await track.appendClip(clip);
+		await track.add(clip);
 		expect(track.clips.length).toBe(1);
 		const seekSpy = vi.spyOn(clip, 'seek').mockImplementation(async (_) => { });
 		track.seek(<frame>5);
@@ -47,7 +46,7 @@ describe('The Media Track Object', () => {
 		expect(clip.stop.frames).toBe(30);
 
 		clip.state = 'READY';
-		await track.appendClip(clip.offsetBy(<frame>60));
+		await track.add(clip.offsetBy(<frame>60));
 
 		expect(track.clips.at(0)?.start.frames).toBe(60);
 		expect(track.clips.at(0)?.stop.frames).toBe(90);

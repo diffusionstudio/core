@@ -39,7 +39,7 @@ describe('The Html Clip', () => {
 		await sleep(0);
 		expect(clip.element).toBeDefined();
 		expect(loadFn).toBeCalledTimes(1);
-		expect(clip.type).toBe('HTML');
+		expect(clip.type).toBe('html');
 		expect(clip.state).toBe('READY');
 		expect(clip.source.name).toBe('index.html');
 	});

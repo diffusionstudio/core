@@ -24,8 +24,7 @@ describe('The Track Object', () => {
 		updateMock.mockClear();
 		// frame and seconds are the same
 		comp = new Composition();
-		track = new Track<Clip>();
-		comp.appendTrack(track);
+		track = comp.createTrack('base');
 		track.on('update', updateMock);
 	});
 
@@ -41,18 +40,18 @@ describe('The Track Object', () => {
 	});
 
 	it('should have a functional insertClip method', async () => {
-		await track.appendClip(new Clip().set({ stop: <frame>5, start: <frame>0 }));
+		await track.add(new Clip().set({ stop: <frame>5, start: <frame>0 }));
 		expect(track.clips.length).toBe(1);
 		expect(track.start.frames).toBe(0);
 		expect(track.stop.frames).toBe(5);
 
-		await track.appendClip(new Clip().set({ stop: <frame>12, start: <frame>9 }));
+		await track.add(new Clip().set({ stop: <frame>12, start: <frame>9 }));
 		expect(track.clips.length).toBe(2);
 		expect(track.start.frames).toBe(0);
 		expect(track.stop.frames).toBe(12);
 		expect(track.clips.at(0)?.stop.frames).toBe(5);
 
-		await track.appendClip(new Clip().set({ stop: <frame>8, start: <frame>6 }));
+		await track.add(new Clip().set({ stop: <frame>8, start: <frame>6 }));
 		expect(track.clips.length).toBe(3);
 
 		expect(track.start.frames).toBe(0);
@@ -65,8 +64,8 @@ describe('The Track Object', () => {
 	it('should snap the clip when it overlaps with the end of another clip', async () => {
 		const clip0 = new Clip().set({ stop: <frame>20, start: <frame>0 });
 		const clip1 = new Clip().set({ stop: <frame>30, start: <frame>11 });
-		await track.appendClip(clip0);
-		await track.appendClip(clip1);
+		await track.add(clip0);
+		await track.add(clip1);
 
 		expect(track.clips.length).toBe(2);
 
@@ -85,8 +84,8 @@ describe('The Track Object', () => {
 	it('should snap the clip when it overlaps with the start of another clip', async () => {
 		const clip0 = new Clip().set({ stop: <frame>30, start: <frame>10 });
 		const clip1 = new Clip().set({ stop: <frame>19, start: <frame>0 });
-		await track.appendClip(clip0);
-		await track.appendClip(clip1);
+		await track.add(clip0);
+		await track.add(clip1);
 
 		expect(track.clips.length).toBe(2);
 
@@ -107,9 +106,9 @@ describe('The Track Object', () => {
 		const clip1 = new Clip().set({ stop: <frame>13, start: <frame>0 });
 		const clip2 = new Clip().set({ stop: <frame>20, start: <frame>10 });
 
-		await track.appendClip(clip0);
-		await track.appendClip(clip1);
-		await track.appendClip(clip2);
+		await track.add(clip0);
+		await track.add(clip1);
+		await track.add(clip2);
 
 		expect(track.clips.length).toBe(3);
 
@@ -133,8 +132,8 @@ describe('The Track Object', () => {
 
 	it('should stack clips if the option is active', async () => {
 		track.stacked();
-		await track.appendClip(new Clip().set({ stop: <frame>9, start: <frame>0 }));
-		await track.appendClip(new Clip().set({ stop: <frame>45, start: <frame>30 }));
+		await track.add(new Clip().set({ stop: <frame>9, start: <frame>0 }));
+		await track.add(new Clip().set({ stop: <frame>45, start: <frame>30 }));
 
 		expect(track.clips.at(0)?.start.frames).toBe(0);
 		expect(track.clips.at(0)?.stop.frames).toBe(9);
@@ -145,7 +144,7 @@ describe('The Track Object', () => {
 		expect(track.clips.at(1)?.stop.frames).toBe(24);
 		expect(track.clips.at(1)?.stop.millis).toBe(801);
 
-		await track.appendClip(new Clip().set({ stop: <frame>50, start: <frame>40 }));
+		await track.add(new Clip().set({ stop: <frame>50, start: <frame>40 }));
 		expect(track.clips.at(2)?.start.millis).toBe(802);
 		expect(track.clips.at(2)?.start.frames).toBe(24);
 		expect(track.clips.at(2)?.stop.frames).toBe(34);
@@ -161,9 +160,9 @@ describe('The Track Object', () => {
 		const clip2 = new Clip().set({ stop: <frame>26, start: <frame>20 });
 		const renderSpy2 = vi.spyOn(clip2, 'render');
 
-		await track.appendClip(clip0);
-		await track.appendClip(clip1);
-		await track.appendClip(clip2);
+		await track.add(clip0);
+		await track.add(clip1);
+		await track.add(clip2);
 
 		track.render(renderer, framesToMillis(<frame>0));
 
@@ -208,7 +207,7 @@ describe('The Track Object', () => {
 
 	it('should be able to detach clips', () => {
 		const comp1 = new Composition();
-		const track1 = comp1.appendTrack(Track);
+		const track1 = comp1.createTrack('base');
 		const detachFn = vi.fn();
 		track1.on('detach', detachFn);
 		track1.detach();
@@ -222,9 +221,9 @@ describe('The Track Object', () => {
 		const clip0 = new Clip().set({ stop: <frame>9, start: <frame>0 });
 		const clip1 = new Clip().set({ stop: <frame>45, start: <frame>30 });
 
-		await track.appendClip(clip0);
-		await track.appendClip(clip1);
-		await track.appendClip(new Clip().set({ stop: <frame>50, start: <frame>40 }));
+		await track.add(clip0);
+		await track.add(clip1);
+		await track.add(new Clip().set({ stop: <frame>50, start: <frame>40 }));
 
 		expect(track.clips.at(0)?.start.frames).toBe(0);
 		expect(track.clips.at(0)?.stop.frames).toBe(9);
@@ -258,7 +257,7 @@ describe('The Track Object', () => {
 	it('should be be able to add a base clip with offset', async () => {
 		const clip = new Clip().set({ stop: <frame>30 });
 
-		await track.appendClip(clip.offsetBy(<frame>60));
+		await track.add(clip.offsetBy(<frame>60));
 
 		expect(track.clips.at(0)?.start.frames).toBe(60);
 		expect(track.clips.at(0)?.stop.frames).toBe(90);
@@ -267,7 +266,7 @@ describe('The Track Object', () => {
 	it('should be be able to add a base clip with offset', async () => {
 		const clip = new Clip().set({ stop: <frame>30 });
 
-		await track.appendClip(clip.offsetBy(<frame>60));
+		await track.add(clip.offsetBy(<frame>60));
 
 		expect(track.clips.at(0)?.start.frames).toBe(60);
 		expect(track.clips.at(0)?.stop.frames).toBe(90);

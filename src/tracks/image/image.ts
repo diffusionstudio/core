@@ -10,5 +10,5 @@ import { Track } from '../track';
 import type { ImageClip } from '../../clips';
 
 export class ImageTrack extends Track<ImageClip> {
-	public readonly type = 'IMAGE';
+	public readonly type = 'image';
 }

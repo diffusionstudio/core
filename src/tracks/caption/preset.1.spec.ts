@@ -9,7 +9,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { Composition } from '../../composition';
 import { AudioClip } from '../../clips';
 import { MediaTrack } from '../media';
-import { CaptionTrack } from './caption';
 import { Transcript, Word, WordGroup } from '../../models';
 
 const file = new File([], 'file.mp3', { type: 'audio/mp3' });
@@ -30,10 +29,10 @@ describe('(1) The Caption Presets', () => {
 		media2.element.dispatchEvent(new Event('canplay'));
 		media2.duration.seconds = 12;
 
-		const track0 = composition.appendTrack(MediaTrack).stacked();
+		const track0 = composition.shiftTrack(MediaTrack).stacked();
 
-		await track0.appendClip(media1);
-		await track0.appendClip(media2);
+		await track0.add(media1);
+		await track0.add(media2);
 
 		expect(media1.offset.seconds).toBe(0);
 		expect(media1.range[0].seconds).toBe(0);
@@ -49,7 +48,7 @@ describe('(1) The Caption Presets', () => {
 
 		expect(track0.clips.length).toBe(2);
 
-		const track1 = composition.appendTrack(CaptionTrack).from(
+		const track1 = composition.createTrack('caption').from(
 			media1.set({
 				transcript: new Transcript([
 					new WordGroup([
@@ -89,7 +88,7 @@ describe('(1) The Caption Presets', () => {
 				new Word('the', 9e3, 10e3),
 			]),
 		]);
-		const track2 = composition.appendTrack(CaptionTrack).from(media2);
+		const track2 = composition.createTrack('caption').from(media2);
 
 		await track2.create();
 

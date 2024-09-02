@@ -48,8 +48,8 @@ const text = new core.TextClip({
 const composition = new core.Composition(); // 1920x1080
 
 // this is how to compose your clips
-await composition.appendClip(video);  // convenience function for 
-await composition.appendClip(text);   // clip -> track -> composition
+await composition.add(video);  // convenience function for 
+await composition.add(text);   // clip -> track -> composition
 
 // export video using webcodecs at 25 FPS
 new core.WebcodecsEncoder(composition, { fps: 25 })
@@ -62,13 +62,13 @@ This may look familiar to some. That is because the API is heavily inspired by *
 
 Whereas each track contains zero or more clips of a single type in ascending chronological order. Clips within a track cannot overlap with other clips, similar to Adobe Premiere etc.
 
-A track will be created implicitly with `composition.appendClip(clip)` however you can also create them manually like this:
+A track will be created implicitly with `composition.add(clip)` however you can also create them manually like this:
 
 ```typescript
-const track = composition.appendTrack(core.TextTrack);
-await track.appendClip(text0);
-await track.appendClip(text1);
-await track.appendClip(text2);
+const track = composition.createTrack('text');
+await track.add(text0);
+await track.add(text1);
+await track.add(text2);
 ...
 ```
 

@@ -11,6 +11,6 @@ import { AudioTrack } from './audio';
 describe('The Audio Track Object', () => {
 	it('should have a certain intitial state', () => {
 		const track = new AudioTrack();
-		expect(track.type).toBe('AUDIO');
+		expect(track.type).toBe('audio');
 	});
 });

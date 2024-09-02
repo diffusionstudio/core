@@ -19,7 +19,7 @@ import type { TextStyle } from 'pixi.js';
 
 
 export class ComplexTextClip extends TextClip<ComplexTextClipProps> {
-	public readonly type = 'COMPLEX_TEXT';
+	public readonly type = 'complex_text';
 	public declare track?: Track<ComplexTextClip>;
 
 	private _maxWidth?: number;

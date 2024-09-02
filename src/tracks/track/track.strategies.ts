@@ -6,7 +6,6 @@
  */
 
 import { insertModes } from './track.fixtures';
-import { TrackDeserializer } from './track.deserializer';
 import { Timestamp } from '../../models';
 
 import type { frame } from '../../types';
@@ -123,13 +122,13 @@ function validate(clip: Clip, target: Clip) {
 		});
 
 		if (newTrack) {
-			newTrack.appendClip(clip.detach());
+			newTrack.add(clip.detach());
 			return false;
 		}
 
 		target.track?.composition
-			?.appendTrack(TrackDeserializer.fromType(clip))
-			?.appendClip(clip.detach());
+			?.createTrack(clip.type)
+			?.add(clip.detach() as never);
 
 		return false;
 	}

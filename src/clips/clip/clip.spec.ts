@@ -74,8 +74,8 @@ describe('The Clip Object', () => {
 
 		// 30 fps is the default
 		const composition = new Composition();
-		const track = composition.appendTrack(Track);
-		await track.appendClip(clip);
+		const track = composition.createTrack('base');
+		await track.add(clip);
 
 		expect(clip.track?.id).toBe(track.id);
 		expect(clip.state).toBe('ATTACHED');
@@ -92,11 +92,11 @@ describe('The Clip Object', () => {
 		const secondClip = new Clip({ stop: <frame>900, start: <frame>570 });
 
 		const composition = new Composition();
-		const track = composition.appendTrack(Track);
+		const track = composition.createTrack('base');
 		expect(track.clips.length).toBe(0);
-		await track.appendClip(clip);
+		await track.add(clip);
 		expect(track.clips.length).toBe(1);
-		await track.appendClip(secondClip);
+		await track.add(secondClip);
 		expect(track.clips.length).toBe(2);
 		expect(track.clips.findIndex((n) => n.id == clip.id)).toBe(0);
 		expect(clip.state).toBe('ATTACHED');
@@ -110,9 +110,9 @@ describe('The Clip Object', () => {
 
 	it('should be not remove error state on detach', async () => {
 		const composition = new Composition();
-		const track = composition.appendTrack(Track);
+		const track = composition.createTrack('base');
 
-		await track.appendClip(clip);
+		await track.add(clip);
 		expect(track.clips.length).toBe(1);
 		clip.state = 'ERROR';
 		expect(clip.state).toBe('ERROR');
@@ -126,9 +126,9 @@ describe('The Clip Object', () => {
 		clip.set({ stop: <frame>120, start: <frame>100, name: 'foo' });
 
 		const composition = new Composition();
-		const track = composition.appendTrack(Track);
-		await track.appendClip(clip);
-		await track.appendClip(new Clip({ stop: <frame>80, start: <frame>60 }));
+		const track = composition.createTrack('base');
+		await track.add(clip);
+		await track.add(new Clip({ stop: <frame>80, start: <frame>60 }));
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[1].name).toBe('foo');
@@ -180,16 +180,16 @@ describe('Split tests - the Clip object', () => {
 		});
 		const track = new Track();
 
-		await track.appendClip(clip);
+		await track.add(clip);
 
 		// add a second one after
-		await track.appendClip(new Clip({
+		await track.add(new Clip({
 			start: new Timestamp(5001),
 			stop: new Timestamp(6000)
 		}));
 
 		// add a third one befor
-		await track.appendClip(new Clip({
+		await track.add(new Clip({
 			start: new Timestamp(100),
 			stop: new Timestamp(999)
 		}));
@@ -220,8 +220,8 @@ describe('Split tests - the Clip object', () => {
 			stop: new Timestamp(5000),
 		});
 		const comp = new Composition();
-		const track = comp.appendTrack(Track);
-		await track.appendClip(clip);
+		const track = comp.createTrack('base');
+		await track.add(clip);
 
 		comp.frame = new Timestamp(2700).frames;
 
@@ -247,7 +247,7 @@ describe('Split tests - the Clip object', () => {
 			stop: new Timestamp(5000),
 		});
 
-		await new Track().appendClip(clip);
+		await new Track().add(clip);
 
 		await expect(() => clip.split(new Timestamp(1000))).rejects.toThrowError();
 		await expect(() => clip.split(new Timestamp(5000))).rejects.toThrowError();

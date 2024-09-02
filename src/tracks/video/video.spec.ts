@@ -11,6 +11,6 @@ import { VideoTrack } from './video';
 describe('The Video Track Object', () => {
 	it('should have a certain intitial state', () => {
 		const track = new VideoTrack();
-		expect(track.type).toBe('VIDEO');
+		expect(track.type).toBe('video');
 	});
 });

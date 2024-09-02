@@ -9,5 +9,5 @@ import { MediaTrack } from '../media';
 import type { VideoClip } from '../../clips';
 
 export class VideoTrack extends MediaTrack<VideoClip> {
-	public readonly type = 'VIDEO';
+	public readonly type = 'video';
 }

@@ -45,7 +45,7 @@ export class SpotlightCaptionPreset extends Serializer implements CaptionPresetS
 			for (let i = 0; i < sequence.words.length; i++) {
 				const tokens = sequence.words.map((s) => s.text);
 
-				await track.appendClip(
+				await track.add(
 					new ComplexTextClip({
 						text: tokens.join(' '),
 						textAlign: 'center',

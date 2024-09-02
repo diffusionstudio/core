@@ -18,7 +18,7 @@ export class CaptionTrack extends Track<TextClip> {
 	 */
 	public clip?: MediaClip;
 
-	public readonly type = 'CAPTION';
+	public readonly type = 'caption';
 
 	/**
 	 * The currently active captioning strategy

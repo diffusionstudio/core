@@ -10,5 +10,5 @@ import { Track } from '../track';
 import type { HtmlClip } from '../../clips';
 
 export class HtmlTrack extends Track<HtmlClip> {
-	public readonly type = 'HTML';
+	public readonly type = 'html';
 }

@@ -45,7 +45,7 @@ export class CascadeCaptionPreset extends Serializer implements CaptionPresetStr
 					return words.slice(0, i + 1).join(' ');
 				}
 
-				await track.appendClip(
+				await track.add(
 					new TextClip({
 						text: getText(),
 						textAlign: 'left',

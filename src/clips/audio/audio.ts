@@ -13,7 +13,7 @@ import type { Track } from '../../tracks';
 import type { AudioClipProps } from './audio.interfaces';
 
 export class AudioClip extends MediaClip<AudioClipProps> {
-	public readonly type = 'AUDIO';
+	public readonly type = 'audio';
 	public declare track?: Track<AudioClip>;
 	/**
 	 * Access to the HTML5 audio element

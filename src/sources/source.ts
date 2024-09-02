@@ -37,7 +37,7 @@ export class Source extends EventEmitterMixin(Serializer) {
 	 * with clips and tracks
 	 */
 	@serializable()
-	public readonly type: ClipType = 'BASE';
+	public readonly type: ClipType = 'base';
 	/**
 	 * Original name of the file e.g. clip.mp4
 	 */

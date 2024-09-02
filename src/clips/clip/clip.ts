@@ -33,7 +33,7 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	/**
 	 * Defines the type of the clip
 	 */
-	public readonly type: ClipType = 'BASE';
+	public readonly type: ClipType = 'base';
 
 	/**
 	 * Defines the source of the clip with a
@@ -226,7 +226,7 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 
 		replaceKeyframes(copy, copy.start.subtract(this.start));
 
-		await this.track.appendClip(copy);
+		await this.track.add(copy);
 
 		return copy;
 	}

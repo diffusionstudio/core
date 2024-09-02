@@ -21,7 +21,7 @@ describe('The Caption Track Object', () => {
 
 	beforeEach(() => {
 		composition = new Composition();
-		track = composition.appendTrack(CaptionTrack);
+		track = composition.createTrack('caption');
 		media = new MediaClip().set({
 			transcript: new Transcript([
 				new WordGroup([
@@ -54,7 +54,7 @@ describe('The Caption Track Object', () => {
 	});
 
 	it('should have a certain intitial state', () => {
-		expect(track.type).toBe('CAPTION');
+		expect(track.type).toBe('caption');
 	});
 
 	it('should generate captions', async () => {
