@@ -7,8 +7,8 @@
 
 import { describe, expect, it, beforeEach, vi, afterEach, afterAll } from 'vitest';
 import { Composition } from './composition';
-import { Clip } from '../clips';
-import { AudioTrack, ImageTrack, TextTrack, VideoTrack } from '../tracks';
+import { Clip, TextClip } from '../clips';
+import { AudioTrack, CaptionTrack, HtmlTrack, ImageTrack, TextTrack, Track, VideoTrack } from '../tracks';
 import { Timestamp } from '../models';
 
 import type { frame } from '../types';
@@ -265,6 +265,53 @@ describe('The composition', () => {
 
 		expect(composition.time({ hours: true })).toBe('00:40:00 / 02:00:00');
 	});
+
+	it('should should create tracks of a given type', async () => {
+		expect(composition.tracks.length).toBe(0);
+
+		composition.createTrack('base');
+		expect(composition.tracks[0]).toBeInstanceOf(Track);
+
+		composition.createTrack('audio');
+		expect(composition.tracks[0]).toBeInstanceOf(AudioTrack);
+
+		composition.createTrack('caption');
+		expect(composition.tracks[0]).toBeInstanceOf(CaptionTrack);
+
+		composition.createTrack('complex_text');
+		expect(composition.tracks[0]).toBeInstanceOf(TextTrack);
+
+		composition.createTrack('text');
+		expect(composition.tracks[0]).toBeInstanceOf(TextTrack);
+
+		composition.createTrack('html');
+		expect(composition.tracks[0]).toBeInstanceOf(HtmlTrack);
+
+		composition.createTrack('image');
+		expect(composition.tracks[0]).toBeInstanceOf(ImageTrack);
+
+		composition.createTrack('video');
+		expect(composition.tracks[0]).toBeInstanceOf(VideoTrack);
+
+		expect(composition.tracks.length).toBe(8);
+	});
+
+	it('should add a track and clip to the composition using the convenience function', async () => {
+		expect(composition.tracks.length).toBe(0);
+
+		await composition.add(new Clip());
+
+		expect(composition.tracks.length).toBe(1);
+		expect(composition.tracks[0]).toBeInstanceOf(Track);
+		expect(composition.tracks[0].clips[0]).toBeInstanceOf(Clip);
+
+		await composition.add(new TextClip());
+
+		expect(composition.tracks.length).toBe(2);
+		expect(composition.tracks[0]).toBeInstanceOf(TextTrack);
+		expect(composition.tracks[0].clips[0]).toBeInstanceOf(TextClip);
+	});
+
 
 	afterEach(() => {
 		frameMock.mockClear();

@@ -229,7 +229,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 * aswell as the clip to the composition
 	 */
 	public async add<L extends Clip>(clip: L): Promise<L> {
-		const track = TrackDeserializer.fromType({ type: clip.type });
+		const track = this.createTrack(clip.type);
 		await track.add(clip as never);
 
 		return clip;
