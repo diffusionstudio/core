@@ -14,7 +14,7 @@ import { replaceKeyframes } from '../clip/clip.utils';
 import { ValidationError } from '../../errors';
 import { Clip } from '../clip';
 
-import type { CaptionPresetStrategy, Track } from '../../tracks';
+import type { CaptionPresetStrategy, CaptionTrack, Track } from '../../tracks';
 import type { float, frame } from '../../types';
 import type { MediaClipProps } from './media.interfaces';
 
@@ -145,7 +145,7 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 	}
 
 	public async connect(track: Track<MediaClip>): Promise<void> {
-		if (['LOADING', 'IDLE'].includes(this.state)) {
+		if (['LOADING', 'IDLE'].includes(this.state) && this.element) {
 			await new Promise(this.resolve('load'));
 		};
 
@@ -277,10 +277,10 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 
 	/**
 	 * Generates a new caption track for the current clip using the specified captioning strategy.
-	 * @param preset An optional CaptionPresetStrategy to define how captions should be generated.
+	 * @param strategy An optional CaptionPresetStrategy to define how captions should be generated.
 	 * @returns {Promise<void>} A promise that resolves when the caption track has been successfully created.
 	 */
-	public async generateCaptions(preset?: CaptionPresetStrategy): Promise<this> {
+	public async generateCaptions(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<CaptionTrack> {
 		if (!this.track?.composition) {
 			throw new ValidationError({
 				i18n: 'compositionNotDefined',
@@ -288,12 +288,12 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 			});
 		}
 
-		await this.track.composition
+		const track = await this.track.composition
 			.createTrack('caption')
 			.from(this)
-			.create(preset);
+			.generate(strategy);
 
-		return this;
+		return track;
 	}
 
 	public set(props?: Props): this {

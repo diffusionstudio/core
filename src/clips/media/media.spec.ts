@@ -296,12 +296,11 @@ describe('The Media Clip', () => {
 		const composition = new Composition();
 		await composition.add(clip);
 
-		await clip.generateCaptions();
+		const track = await clip.generateCaptions();
 
 		expect(composition.tracks.length).toBe(2);
 
-		const track = composition.tracks[0];
-
+		expect(composition.tracks[0]).toBeInstanceOf(CaptionTrack);
 		expect(track).toBeInstanceOf(CaptionTrack);
 		expect(track.clips.length).toBe(36);
 		expect(track.clips[0]).toBeInstanceOf(TextClip);

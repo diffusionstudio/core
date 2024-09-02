@@ -62,7 +62,7 @@ describe('(1) The Caption Presets', () => {
 			})
 		);
 
-		await track1.create();
+		await track1.generate();
 
 		expect(track1.clips.at(0)?.start.seconds).toBe(0);
 		expect(track1.clips.at(0)?.stop.seconds).toBe(1);
@@ -90,7 +90,7 @@ describe('(1) The Caption Presets', () => {
 		]);
 		const track2 = composition.createTrack('caption').from(media2);
 
-		await track2.create();
+		await track2.generate();
 
 		expect(track2.clips.at(0)?.start.millis).toBe(21_001);
 		expect(track2.clips.at(0)?.stop.millis).toBe(22_001);
