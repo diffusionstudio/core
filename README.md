@@ -78,13 +78,13 @@ https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
 ## How does Diffusion Studio compare to Remotion and Motion Canvas?
 
-**Remotion** acts as a React-based video creation tool, enabling you to render the entire DOM tree as well as the full suite of browser visualization features, such as HTML, CSS, Canvas, etc.. This makes Remotion ideal for beginners looking to create videos with code. However, is limited to react and relies heavily on the CPU, which less efficient compared to GPU backed rendering.
+**Remotion** acts as a React-based video creation tool, enabling you to render the entire DOM tree as well as the full suite of browser visualization features, such as HTML, CSS, Canvas, etc.. This makes Remotion ideal for beginners looking to create videos with code. However, it is limited to react and relies heavily on the CPU, which can be less efficient compared to GPU backed rendering.
 
-In contrast, **Motion Canvas** uses a 2D implementation of Canvas for rendering. It is intended as a standalone editor for creating production-quality animations. In addition, Motion Canvas uses an imperative API. Instead of rendering markup based on timestamps, elements are procedurally added to the timeline. This approach is ideal for creating animations with code (the intended purpose). However, it usually demands static workflows with little variability, making it difficult to build dynamic applications.
+In contrast, **Motion Canvas** uses a Canvas 2D implementation for rendering. It is intended as a standalone editor for creating production-quality animations. In addition, Motion Canvas uses an imperative API. Instead of rendering markup based on timestamps, elements are procedurally added to the timeline. This approach is perfect for creating animations with code (the intended purpose). However, it usually demands static workflows with little variability, making it difficult to build dynamic applications.
 
 **Diffusion Studio** combines the strengths of both Remotion and Motion Canvas by offering a declarative (yet framework-agnostic) API like Remotion, while also being GPU-backed like Motion Canvas. Diffusion Studio is optimized for video processing performance, utilizing the latest and greatest technologies (WebGPU and WebCodecs). Its API is specifically designed for building video editing apps and to automate complex video workflows.
 
-> **Note: Diffusion Studio eliminates the need to pay for rendering server infrastructure, since all processing is performed client-side!**
+**Note: Diffusion Studio eliminates the need to pay for rendering server infrastructure, since all processing is performed client-side!**
 
 ## Current features
 * **Video/Audio** trim and offset
