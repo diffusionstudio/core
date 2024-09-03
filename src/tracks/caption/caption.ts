@@ -18,7 +18,7 @@ export class CaptionTrack extends Track<TextClip> {
 	 */
 	public clip?: MediaClip;
 
-	public readonly type = 'CAPTION';
+	public readonly type = 'caption';
 
 	/**
 	 * The currently active captioning strategy
@@ -40,11 +40,11 @@ export class CaptionTrack extends Track<TextClip> {
 
 	/**
 	 * If a transcript has been added to the resource
-	 * you can create captions with this function
+	 * you can generate captions with this function
 	 * @param strategy The caption strategy to use
-	 * @default new ClassicCaptionPreset()
+	 * @default ClassicCaptionPreset
 	 */
-	public async create(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<this> {
+	public async generate(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<this> {
 		let preset = this.preset;
 
 		if (typeof strategy == 'object') {

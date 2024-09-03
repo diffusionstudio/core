@@ -44,7 +44,7 @@ export class SolarCaptionPreset extends Serializer implements CaptionPresetStrat
 
 		// add captions
 		for (const sequence of track.clip.transcript.iter(this.generatorOptions)) {
-			await track.appendClip(
+			await track.add(
 				new TextClip({
 					text: sequence.words.map((word) => word.text).join(' '),
 					textAlign: 'center',

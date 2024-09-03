@@ -7,7 +7,6 @@
 
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import { Composition } from '../../composition';
-import { TextTrack } from '../../tracks';
 import { TextClip } from './text';
 import { Font } from './font';
 
@@ -35,8 +34,8 @@ describe('The Text Clip', () => {
 		clip.set({ stop: <frame>60, start: <frame>30 });
 
 		const comp = new Composition();
-		const track = comp.appendTrack(TextTrack);
-		await track.appendClip(clip);
+		const track = comp.createTrack('text');
+		await track.add(clip);
 
 		expect(clip.height).not.toBe(0);
 		expect(clip.width).not.toBe(0);

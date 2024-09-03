@@ -28,7 +28,7 @@ describe('(0) The Caption Presets', () => {
 
 	beforeEach(() => {
 		composition = new Composition();
-		track = composition.appendTrack(CaptionTrack).from(
+		track = composition.createTrack('caption').from(
 			new MediaClip().set({
 				offset: <frame>(10 * 30),
 				transcript: new Transcript([

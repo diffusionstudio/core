@@ -86,15 +86,15 @@ describe('The Track Strategy Object (default mode)', () => {
 
 	it('should add overlapping clipd to a new track', async () => {
 		const composition = new Composition();
-		const track = composition.appendTrack(Track);
-		await track.appendClip(new Clip().set({ start: <frame>0, stop: <frame>20 }));
+		const track = composition.createTrack('base');
+		await track.add(new Clip().set({ start: <frame>0, stop: <frame>20 }));
 
 		expect(composition.tracks.length).toBe(1);
 		expect(composition.tracks[0].clips.length).toBe(1);
 		expect(composition.tracks[0].clips[0].start.frames).toBe(0);
 		expect(composition.tracks[0].clips[0].stop.frames).toBe(20);
 
-		await track.appendClip(new Clip().set({ start: <frame>5, stop: <frame>10 }));
+		await track.add(new Clip().set({ start: <frame>5, stop: <frame>10 }));
 		expect(composition.tracks.length).toBe(2);
 
 		expect(composition.tracks[0].clips.length).toBe(1);
@@ -105,7 +105,7 @@ describe('The Track Strategy Object (default mode)', () => {
 		expect(composition.tracks[1].clips[0].start.frames).toBe(0);
 		expect(composition.tracks[1].clips[0].stop.frames).toBe(20);
 
-		await track.appendClip(new Clip().set({ start: <frame>11, stop: <frame>20 }));
+		await track.add(new Clip().set({ start: <frame>11, stop: <frame>20 }));
 		expect(composition.tracks.length).toBe(2);
 
 		expect(composition.tracks[0].clips.length).toBe(2);
@@ -119,7 +119,7 @@ describe('The Track Strategy Object (default mode)', () => {
 		expect(composition.tracks[1].clips[0].start.frames).toBe(0);
 		expect(composition.tracks[1].clips[0].stop.frames).toBe(20);
 
-		await track.appendClip(new Clip().set({ start: <frame>12, stop: <frame>18 }));
+		await track.add(new Clip().set({ start: <frame>12, stop: <frame>18 }));
 		expect(composition.tracks.length).toBe(3);
 
 		expect(composition.tracks[0].clips.length).toBe(1);

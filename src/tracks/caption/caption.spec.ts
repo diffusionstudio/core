@@ -21,7 +21,7 @@ describe('The Caption Track Object', () => {
 
 	beforeEach(() => {
 		composition = new Composition();
-		track = composition.appendTrack(CaptionTrack);
+		track = composition.createTrack('caption');
 		media = new MediaClip().set({
 			transcript: new Transcript([
 				new WordGroup([
@@ -54,17 +54,17 @@ describe('The Caption Track Object', () => {
 	});
 
 	it('should have a certain intitial state', () => {
-		expect(track.type).toBe('CAPTION');
+		expect(track.type).toBe('caption');
 	});
 
 	it('should generate captions', async () => {
 		expect(track.clips.length).toBe(0);
-		await track.create();
+		await track.generate();
 		expect(track.clips.length).not.toBe(0);
 	});
 
 	it('should update the offset when the media keyframes change', async () => {
-		await track.create();
+		await track.generate();
 		expect(track.clips.at(0)?.start.seconds).toBe(0);
 
 		media.offsetBy(<frame>10);

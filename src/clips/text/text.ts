@@ -19,7 +19,7 @@ import type { float, hex, Anchor } from '../../types';
 import type { TextClipProps } from './text.interfaces';
 
 export class TextClip<Props extends TextClipProps = TextClipProps> extends VisualMixin(Clip<TextClipProps>) {
-	public readonly type: 'TEXT' | 'COMPLEX_TEXT' = 'TEXT';
+	public readonly type: 'text' | 'complex_text' = 'text';
 	public declare track?: Track<TextClip>;
 
 	protected _text: string = '';

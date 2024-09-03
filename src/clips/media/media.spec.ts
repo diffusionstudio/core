@@ -9,12 +9,14 @@ import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
 import { Keyframe, Timestamp, Transcript } from '../../models';
 import { captions } from '../../test/captions';
 import { Composition } from '../../composition';
-import { MediaTrack } from '../../tracks';
+import { CaptionTrack, MediaTrack } from '../../tracks';
+import { MediaClipProps } from './media.interfaces';
+import { Font, TextClip } from '../text';
+import { ValidationError } from '../../errors';
 import { VisualMixin, VisualMixinProps } from '../mixins';
 import { MediaClip } from './media';
 
 import type { frame, MixinType } from '../../types';
-import { MediaClipProps } from './media.interfaces';
 
 describe('The Media Clip', () => {
 	const mockFn = vi.fn();
@@ -156,10 +158,10 @@ describe('The Media Clip', () => {
 
 		// 30 fps is the default
 		const composition = new Composition();
-		const track = composition.appendTrack(MediaTrack);
+		const track = composition.shiftTrack(MediaTrack);
 
 		clip.state = 'READY';
-		await track.appendClip(clip);
+		await track.add(clip);
 		expect(clip.state).toBe('ATTACHED');
 		expect(clip.offset.frames).toBe(30);
 		expect(clip.duration.frames).toBe(60);
@@ -237,9 +239,9 @@ describe('The Media Clip', () => {
 		clip2.state = 'READY';
 
 		const composition = new Composition();
-		const track = composition.appendTrack(MediaTrack);
-		await track.appendClip(clip);
-		await track.appendClip(clip2);
+		const track = composition.shiftTrack(MediaTrack);
+		await track.add(clip);
+		await track.add(clip2);
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[1].name).toBe('foo');
@@ -285,6 +287,33 @@ describe('The Media Clip', () => {
 		expect(copy.range[1]).toBeInstanceOf(Timestamp);
 		expect(copy.range[1].frames).toBe(80);
 	});
+
+	it('should generate a caption track using a transcript', async () => {
+		vi.spyOn(Font.prototype, 'load').mockImplementation(async () => new Font());
+		clip.transcript = Transcript.fromJSON(captions);
+		clip.state = 'READY';
+
+		const composition = new Composition();
+		await composition.add(clip);
+
+		const track = await clip.generateCaptions();
+
+		expect(composition.tracks.length).toBe(2);
+
+		expect(composition.tracks[0]).toBeInstanceOf(CaptionTrack);
+		expect(track).toBeInstanceOf(CaptionTrack);
+		expect(track.clips.length).toBe(36);
+		expect(track.clips[0]).toBeInstanceOf(TextClip);
+		expect((track.clips[0] as TextClip).text).toBe('Is the');
+	});
+
+	it('should throw an error when trying to generate captions without a composition', async () => {
+		vi.spyOn(Font.prototype, 'load').mockImplementation(async () => new Font());
+		clip.transcript = Transcript.fromJSON(captions);
+		clip.state = 'READY';
+
+		await expect(() => clip.generateCaptions()).rejects.toThrowError(ValidationError)
+	});
 });
 
 describe('Split tests - the Media Clip object', () => {
@@ -303,7 +332,7 @@ describe('Split tests - the Media Clip object', () => {
 		clip.duration.millis = 4000;
 
 		const track = new MediaTrack();
-		await track.appendClip(clip);
+		await track.add(clip);
 
 		// add a second one after
 		const clip1 = new MediaClip({
@@ -312,7 +341,7 @@ describe('Split tests - the Media Clip object', () => {
 		clip1.state = 'READY';
 		clip1.duration.millis = 999;
 
-		await track.appendClip(clip1);
+		await track.add(clip1);
 
 		// add a third one before
 		const clip2 = new MediaClip({
@@ -321,7 +350,7 @@ describe('Split tests - the Media Clip object', () => {
 		clip2.state = 'READY';
 		clip2.duration.millis = 889;
 
-		await track.appendClip(clip2);
+		await track.add(clip2);
 
 		expect(track.start.millis).toBe(100);
 		expect(track.stop.millis).toBe(6000);
@@ -352,11 +381,11 @@ describe('Split tests - the Media Clip object', () => {
 			name: 'foo',
 		});
 		const comp = new Composition();
-		const track = comp.appendTrack(MediaTrack);
+		const track = comp.shiftTrack(MediaTrack);
 		clip.state = 'READY';
 		clip.duration.millis = 4000;
 
-		await track.appendClip(clip);
+		await track.add(clip);
 
 		comp.frame = new Timestamp(2700).frames;
 
@@ -384,7 +413,7 @@ describe('Split tests - the Media Clip object', () => {
 		clip.state = 'READY';
 		clip.duration.millis = 4000;
 
-		await new MediaTrack().appendClip(clip);
+		await new MediaTrack().add(clip);
 
 		await expect(() => clip.split(new Timestamp(1000))).rejects.toThrowError();
 		await expect(() => clip.split(new Timestamp(5000))).rejects.toThrowError();
@@ -430,7 +459,7 @@ describe('Split tests - the Media Clip object', () => {
 
 		const track = new MediaTrack();
 
-		await track.appendClip(clip);
+		await track.add(clip);
 
 		await clip.split(new Timestamp(3000));
 

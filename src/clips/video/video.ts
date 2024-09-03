@@ -23,7 +23,7 @@ import type { VideoClipProps } from './video.interfaces';
 
 export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	public readonly source = new VideoSource();
-	public readonly type = 'VIDEO';
+	public readonly type = 'video';
 	public declare track?: Track<VideoClip>;
 
 	private worker?: Worker;

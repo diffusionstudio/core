@@ -45,7 +45,7 @@ export class WhisperCaptionPreset extends Serializer implements CaptionPresetStr
 			for (let i = 0; i < sequence.words.length; i++) {
 				const splits = sequence.words.map((s) => s.text);
 
-				await track.appendClip(
+				await track.add(
 					new ComplexTextClip({
 						text: splits.join(' '),
 						textAlign: 'center',

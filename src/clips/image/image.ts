@@ -15,7 +15,7 @@ import type { Track } from '../../tracks';
 import type { ImageClipProps } from './image.interfaces';
 
 export class ImageClip extends VisualMixin(AsyncMixin(Clip<ImageClipProps>)) {
-	public readonly type = 'IMAGE';
+	public readonly type = 'image';
 	public declare track?: Track<ImageClip>;
 	public readonly element = new Image();
 	public readonly source = new ImageSource();

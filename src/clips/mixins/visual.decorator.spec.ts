@@ -12,7 +12,6 @@ import { Clip, toggle } from '../clip';
 import { BlurFilter, Sprite, Texture, WebGPURenderer } from 'pixi.js';
 import { visualize } from './visual.decorator';
 import { Composition } from '../../composition';
-import { Track } from '../../tracks';
 
 import type { VisualMixinProps } from './visual.interfaces';
 import type { ClipProps } from '../clip';
@@ -67,8 +66,8 @@ describe('The visualize decorator', () => {
 		clip.container.addChild(new Sprite());
 		const renderer = new WebGPURenderer();
 		await new Composition({ width: 1000, height: 2000 })
-			.appendTrack(Track)
-			.appendClip(clip);
+			.createTrack('base')
+			.add(clip);
 
 		const posSpy = vi.spyOn(clip.container.position, 'set');
 
@@ -89,8 +88,8 @@ describe('The visualize decorator', () => {
 		const renderer = new WebGPURenderer();
 
 		await new Composition({ width: 1000, height: 2000 })
-			.appendTrack(Track)
-			.appendClip(clip);
+			.createTrack('base')
+			.add(clip);
 
 		const posSpy = vi.spyOn(clip.container.position, 'set');
 
@@ -175,8 +174,8 @@ describe('The visualize decorator', () => {
 		clip.container.addChild(new Sprite(Texture.from(canvas)));
 
 		await new Composition({ width: 1000, height: 2000 })
-			.appendTrack(Track)
-			.appendClip(clip);
+			.createTrack('base')
+			.add(clip);
 
 		const heightSpy = vi.spyOn(clip.container, 'height', 'set');
 		const scaleSpy = vi.spyOn(clip.container.scale, 'set');
@@ -236,8 +235,8 @@ describe('The visualize decorator', () => {
 		clip.container.addChild(new Sprite(Texture.from(canvas)));
 
 		await new Composition({ width: 1000, height: 2000 })
-			.appendTrack(Track)
-			.appendClip(clip);
+			.createTrack('base')
+			.add(clip);
 
 		const widthSpy = vi.spyOn(clip.container, 'width', 'set');
 		const scaleSpy = vi.spyOn(clip.container.scale, 'set');
@@ -377,8 +376,8 @@ describe('The visualize decorator', () => {
 		clip.container.addChild(new Sprite(Texture.from(canvas)))
 
 		await new Composition({ width: 1000, height: 2000 })
-			.appendTrack(Track)
-			.appendClip(clip);
+			.createTrack('base')
+			.add(clip);
 
 		const scaleSpy = vi.spyOn(clip.container.scale, 'set');
 

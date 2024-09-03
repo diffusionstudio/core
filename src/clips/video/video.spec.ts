@@ -10,11 +10,10 @@ import { BlurFilter, WebGPURenderer } from 'pixi.js';
 import { Source, VideoSource } from '../../sources';
 import { VideoClip } from './video';
 import { Composition } from '../../composition';
-import { VideoTrack } from '../../tracks';
+import { Keyframe, Timestamp } from '../../models';
 
 import type { MockInstance } from 'vitest';
 import type { frame } from '../../types';
-import { Keyframe, Timestamp } from '../../models';
 
 
 const file = new File([], 'video.mp4', { type: 'video/mp4' });
@@ -56,7 +55,7 @@ describe('The Video Clip', () => {
 
 	it('should have an initial state', async () => {
 		expect(clip.element).toBeInstanceOf(HTMLVideoElement);
-		expect(clip.type).toBe('VIDEO');
+		expect(clip.type).toBe('video');
 		expect(clip.state).toBe('LOADING');
 		expect(clip.source.name).toBe('video.mp4');
 		expect(clip.element.src).toBe(
@@ -107,12 +106,12 @@ describe('The Video Clip', () => {
 		clip.set({ offset: <frame>900, height: '100%' });
 
 		const composition = new Composition();
-		const track = composition.appendTrack(VideoTrack);
+		const track = composition.createTrack('video');
 
 		attachFn.mockClear();
 
 		const seekSpy = vi.spyOn(clip, 'seek').mockImplementation(async () => { });
-		await track.appendClip(clip);
+		await track.add(clip);
 
 		expect(seekSpy).toHaveBeenCalledTimes(1);
 
@@ -170,7 +169,7 @@ describe('The Video Clip', () => {
 		clip.subclip(<frame>20, <frame>60);
 
 		const composition = new Composition();
-		const promise = composition.appendClip(clip);
+		const promise = composition.add(clip);
 		clip.element.dispatchEvent(new Event('canplay'));
 		await promise;
 

@@ -32,7 +32,7 @@ await composition.attachPlayer(app!);
 composition.canvas!.style.transform = 'scale(0.4) translateY(20px)';
 composition.canvas!.style.transformOrigin = 'top left';
 
-await composition.appendClip(
+await composition.add(
   new core.VideoClip(
     await core.VideoSource
       .from('/sample_aac_h264_yuv420p_1080p_60fps.mp4'),
@@ -49,7 +49,7 @@ await composition.appendClip(
     .offsetBy(30)
 );
 
-await composition.appendClip(
+await composition.add(
   new core.ImageClip(await core.ImageSource.from('/lenna.png'), {
     position: 'center',
     height: 600,
@@ -65,7 +65,7 @@ await composition.appendClip(
   })
 );
 
-await composition.appendClip(
+await composition.add(
   new core.HtmlClip(await core.HtmlSource.from('/test.html'), {
     position: {
       x: '50%',
@@ -75,15 +75,15 @@ await composition.appendClip(
     start: composition.findClips(core.VideoClip).at(0)?.stop.subtract(new core.Timestamp(6000)),
     stop: composition.duration
   })
-)
+);
 
-await composition.appendClip(
+(await composition.add(
   new core.AudioClip(await core.AudioSource.from('/audio.mp3'), {
     transcript: core.Transcript.fromJSON(captions).optimize(),
   })
-);
+)).generateCaptions();
 
-await composition.appendClip(
+await composition.add(
   new core.TextClip({
     text: "Basic text in Diffusion Studio",
     stop: 120,
@@ -99,7 +99,7 @@ await composition.appendClip(
   })
 );
 
-await composition.appendClip(
+await composition.add(
   new core.ComplexTextClip({
     text: "Complex Text",
     stop: composition.duration,
@@ -130,7 +130,3 @@ await composition.appendClip(
     }]
   })
 );
-
-await composition.appendTrack(core.CaptionTrack)
-  .from(composition.findClips(core.AudioClip)[0])
-  .create();

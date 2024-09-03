@@ -14,17 +14,17 @@ import type { Source } from '../../sources';
 export class ClipDeserializer {
 	public static fromType(data: { type: ClipType }): Clip {
 		switch (data.type) {
-			case 'VIDEO':
+			case 'video':
 				return new VideoClip();
-			case 'AUDIO':
+			case 'audio':
 				return new AudioClip();
-			case 'HTML':
+			case 'html':
 				return new HtmlClip();
-			case 'IMAGE':
+			case 'image':
 				return new ImageClip();
-			case 'TEXT':
+			case 'text':
 				return new TextClip();
-			case 'COMPLEX_TEXT':
+			case 'complex_text':
 				return new ComplexTextClip();
 			default:
 				return new Clip();
@@ -32,16 +32,16 @@ export class ClipDeserializer {
 	}
 
 	public static fromSource(data: Source) {
-		if (data.type == 'AUDIO' && data instanceof AudioSource) {
+		if (data.type == 'audio' && data instanceof AudioSource) {
 			return new AudioClip(data);
 		}
-		if (data.type == 'VIDEO' && data instanceof VideoSource) {
+		if (data.type == 'video' && data instanceof VideoSource) {
 			return new VideoClip(data);
 		}
-		if (data.type == 'IMAGE' && data instanceof ImageSource) {
+		if (data.type == 'image' && data instanceof ImageSource) {
 			return new ImageClip(data);
 		}
-		if (data.type == 'HTML' && data instanceof HtmlSource) {
+		if (data.type == 'html' && data instanceof HtmlSource) {
 			return new HtmlClip(data);
 		}
 	}

@@ -43,7 +43,7 @@ describe('The Audio Clip', () => {
 		clip.element.dispatchEvent(new Event('canplay'));
 		expect(clip.element).toBeDefined();
 		expect(loadFn).toBeCalledTimes(1);
-		expect(clip.type).toBe('AUDIO');
+		expect(clip.type).toBe('audio');
 		expect(clip.state).toBe('READY');
 		expect(clip.source.name).toBe('audio.mp3');
 		expect(clip.element.src).toBe(
@@ -120,7 +120,7 @@ describe('The Audio Clip', () => {
 		clip.subclip(<frame>20, <frame>60);
 
 		const composition = new Composition();
-		const promise = composition.appendClip(clip);
+		const promise = composition.add(clip);
 		clip.element.dispatchEvent(new Event('canplay'));
 		await promise;
 

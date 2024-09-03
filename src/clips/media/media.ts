@@ -11,9 +11,10 @@ import { AsyncMixin } from '../mixins';
 import { RangeDeserializer } from './media.deserializer';
 import { serializable, } from '../../services';
 import { replaceKeyframes } from '../clip/clip.utils';
+import { ValidationError } from '../../errors';
 import { Clip } from '../clip';
 
-import type { Track } from '../../tracks';
+import type { CaptionPresetStrategy, CaptionTrack, Track } from '../../tracks';
 import type { float, frame } from '../../types';
 import type { MediaClipProps } from './media.interfaces';
 
@@ -144,7 +145,7 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 	}
 
 	public async connect(track: Track<MediaClip>): Promise<void> {
-		if (['LOADING', 'IDLE'].includes(this.state)) {
+		if (['LOADING', 'IDLE'].includes(this.state) && this.element) {
 			await new Promise(this.resolve('load'));
 		};
 
@@ -269,9 +270,30 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 
 		replaceKeyframes(copy, copy.start.subtract(this.start));
 
-		await this.track.appendClip(copy);
+		await this.track.add(copy);
 
 		return copy;
+	}
+
+	/**
+	 * Generates a new caption track for the current clip using the specified captioning strategy.
+	 * @param strategy An optional CaptionPresetStrategy to define how captions should be generated.
+	 * @returns {Promise<void>} A promise that resolves when the caption track has been successfully created.
+	 */
+	public async generateCaptions(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<CaptionTrack> {
+		if (!this.track?.composition) {
+			throw new ValidationError({
+				i18n: 'compositionNotDefined',
+				message: 'Captions can only be generated after the clip has been added to the composition',
+			});
+		}
+
+		const track = await this.track.composition
+			.createTrack('caption')
+			.from(this)
+			.generate(strategy);
+
+		return track;
 	}
 
 	public set(props?: Props): this {

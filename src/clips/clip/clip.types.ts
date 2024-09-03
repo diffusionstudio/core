@@ -7,7 +7,7 @@
 
 import type { Timestamp } from '../../models';
 
-export type ClipType = 'IMAGE' | 'AUDIO' | 'TEXT' | 'VIDEO' | 'BASE' | 'HTML' | 'COMPLEX_TEXT';
+export type ClipType = 'image' | 'audio' | 'text' | 'video' | 'base' | 'html' | 'complex_text';
 
 export type ClipState = 'IDLE' | 'LOADING' | 'ATTACHED' | 'READY' | 'ERROR';
 

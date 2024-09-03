@@ -47,7 +47,7 @@ export class GuineaCaptionPreset extends Serializer implements CaptionPresetStra
 
 				if (!start || !stop) continue;
 
-				await track.appendClip(
+				await track.add(
 					new ComplexTextClip({
 						text: segments.join('\n '),
 						textAlign: 'center',

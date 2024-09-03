@@ -5,28 +5,27 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import type { Clip } from '../../clips';
-import { Track, VideoTrack, AudioTrack, HtmlTrack, TextTrack, ImageTrack, CaptionTrack } from '..';
-
-import type { TrackType } from '..';
+import { Track, VideoTrack, AudioTrack, HtmlTrack, TextTrack, ImageTrack, CaptionTrack, TrackMap } from '..';
 
 export class TrackDeserializer {
-	public static fromType(data: { type: TrackType }): Track<Clip> {
+	public static fromType<T extends keyof TrackMap>(data: { type: T }): TrackMap[T] {
 		switch (data.type) {
-			case 'VIDEO':
-				return new VideoTrack();
-			case 'AUDIO':
-				return new AudioTrack();
-			case 'HTML':
-				return new HtmlTrack();
-			case 'IMAGE':
-				return new ImageTrack();
-			case 'TEXT':
-				return new TextTrack();
-			case 'CAPTION':
-				return new CaptionTrack();
+			case 'video':
+				return new VideoTrack() as TrackMap[T];
+			case 'audio':
+				return new AudioTrack() as TrackMap[T];
+			case 'html':
+				return new HtmlTrack() as TrackMap[T];
+			case 'image':
+				return new ImageTrack() as TrackMap[T];
+			case 'text':
+				return new TextTrack() as TrackMap[T];
+			case 'complex_text':
+				return new TextTrack() as TrackMap[T];
+			case 'caption':
+				return new CaptionTrack() as TrackMap[T];
 			default:
-				return new Track();
+				return new Track() as TrackMap[T];
 		}
 	}
 }
