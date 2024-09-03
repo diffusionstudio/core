@@ -72,7 +72,7 @@ await track.add(text2);
 ...
 ```
 
-The composition, the track and the clips are each in a relationship of `1:n`. You can find more [examples here.](./examples), or give them a whirl on: https://examples.diffusion.studio
+The composition, the track and the clips are each in a relationship of `1:n`. You can find more [examples here.](https://github.com/diffusionstudio/examples), or give them a whirl on: https://examples.diffusion.studio
 
 https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
