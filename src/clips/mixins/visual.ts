@@ -12,17 +12,17 @@ import { Sprite } from 'pixi.js';
 
 import type { Serializer } from '../../services';
 import type { Container, Filter } from 'pixi.js';
-import type { Constructor, float, int, Anchor, Position, Scale, Translate2D, Percent } from '../../types';
+import type { Constructor, float, int, Anchor, Position, Scale, Translate2D, Percent, NumberCallback } from '../../types';
 
 type BaseClass = { container: Container } & Serializer;
 
 export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 	class Mixin extends Base {
 		@serializable(deserializers.Deserializer1D)
-		public _height?: int | Keyframe<int> | Percent;
+		public _height?: int | Keyframe<int> | Percent | NumberCallback;
 
 		@serializable(deserializers.Deserializer1D)
-		public _width?: int | Keyframe<int> | Percent;
+		public _width?: int | Keyframe<int> | Percent | NumberCallback;
 
 		@serializable(deserializers.Deserializer2D)
 		public _position: Position = {
@@ -45,7 +45,7 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * @example 90
 		 */
 		@serializable(deserializers.Deserializer1D)
-		public rotation: number | Keyframe<number> = this.container.angle;
+		public rotation: number | Keyframe<number> | NumberCallback = this.container.angle;
 
 		/**
 		 * Defines the opacity of the clip as a number
@@ -53,7 +53,7 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * @default 1
 		 */
 		@serializable(deserializers.Deserializer1D)
-		public alpha: number | Keyframe<number> = 1;
+		public alpha: number | Keyframe<number> | NumberCallback = 1;
 
 		/**
 		 * 2D position offset of the clip.
@@ -91,8 +91,8 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 			}
 		}
 
-		public set scale(value: Scale | float | Keyframe<number>) {
-			if (typeof value == 'number' || value instanceof Keyframe) {
+		public set scale(value: Scale | float | Keyframe<number> | NumberCallback) {
+			if (typeof value == 'number' || value instanceof Keyframe || typeof value == 'function') {
 				this._scale = { x: value, y: value }
 			} else {
 				this._scale = value
@@ -104,11 +104,11 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * An alias to position.x
 		 * @default 0
 		 */
-		public get x(): int | Keyframe<int> | Percent {
+		public get x(): int | Keyframe<int> | Percent | NumberCallback {
 			return this._position.x;
 		}
 
-		public set x(value: int | Keyframe<int> | Percent) {
+		public set x(value: int | Keyframe<int> | Percent | NumberCallback) {
 			this._position.x = value;
 		}
 
@@ -116,33 +116,33 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * The position of the clip on the y axis. An alias to position.y
 		 * @default 0
 		 */
-		public get y(): int | Keyframe<int> | Percent {
+		public get y(): int | Keyframe<int> | Percent | NumberCallback {
 			return this._position.y;
 		}
 
-		public set y(value: int | Keyframe<int> | Percent) {
+		public set y(value: int | Keyframe<int> | Percent | NumberCallback) {
 			this._position.y = value;
 		}
 
 		/**
 		 * The height of the clip/container
 		 */
-		public get height(): Keyframe<int> | Percent | int {
+		public get height(): Keyframe<int> | Percent | int | NumberCallback {
 			return this._height ?? this.container.height;
 		}
 
-		public set height(value: Keyframe<int> | Percent | int) {
+		public set height(value: Keyframe<int> | Percent | int | NumberCallback) {
 			this._height = value;
 		}
 
 		/**
 		 * The width of the clip/container
 		 */
-		public get width(): Keyframe<int> | Percent | int {
+		public get width(): Keyframe<int> | Percent | int | NumberCallback {
 			return this._width ?? this.container.width;
 		}
 
-		public set width(value: Keyframe<int> | Percent | int) {
+		public set width(value: Keyframe<int> | Percent | int | NumberCallback) {
 			this._width = value;
 		}
 

@@ -6,7 +6,7 @@
  */
 
 import type { SUPPORTED_MIME_TYPES } from '../fixtures';
-import type { Keyframe } from '../models';
+import type { Keyframe, Timestamp } from '../models';
 
 /**
  * Defines a number without decimal places
@@ -61,11 +61,17 @@ export type AudioMimeType = keyof (typeof SUPPORTED_MIME_TYPES)['AUDIO'];
 export type MimeType = ImageMimeType | VideoMimeType | AudioMimeType;
 
 /**
+ * Function that will be called for each render 
+ * with the relative time
+ */
+export type NumberCallback = (reltime: Timestamp) => number;
+
+/**
  * Defines the relative coordinates
  */
 export type Position = {
-	x: int | Keyframe<int> | Percent;
-	y: int | Keyframe<int> | Percent;
+	x: int | Keyframe<int> | Percent | NumberCallback;
+	y: int | Keyframe<int> | Percent | NumberCallback;
 };
 
 /**
@@ -73,16 +79,16 @@ export type Position = {
  * a 2D offset relative to the postion
  */
 export type Translate2D = {
-	x: int | Keyframe<int>;
-	y: int | Keyframe<int>;
+	x: int | Keyframe<int> | NumberCallback;
+	y: int | Keyframe<int> | NumberCallback;
 }
 
 /**
  * Defines the x and y scaling of an object
  */
 export type Scale = {
-	x: int | Keyframe<int>;
-	y: int | Keyframe<int>;
+	x: int | Keyframe<int> | NumberCallback;
+	y: int | Keyframe<int> | NumberCallback;
 };
 
 /**
