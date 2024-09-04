@@ -7,14 +7,14 @@
 
 import { Track } from '../track';
 
-import type { frame } from '../../types';
 import type { MediaClip } from '../../clips';
+import type { Timestamp } from '../../models';
 
 export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	public clips: Clip[] = [];
-	public async seek(frame: frame): Promise<void> {
+	public async seek(time: Timestamp): Promise<void> {
 		for (const clip of this.clips) {
-			await clip.seek(frame);
+			await clip.seek(time);
 		}
 	}
 }

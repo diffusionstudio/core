@@ -93,11 +93,11 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	}
 
 	/**
-	 * Seek the provided frame if the track contains
+	 * Seek the provided time if the track contains
 	 * audio or video clips
 	 */
-	public seek(frame: frame): void {
-		frame;
+	public seek(time: Timestamp): void {
+		time;
 	}
 
 	/**

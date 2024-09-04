@@ -1,12 +1,43 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DS Playground</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="playground/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DS Playground</title>
+  <link rel="stylesheet" href="/playground/index.css">
+</head>
+
+<body>
+  <div id="app">
+    <div id="player-container">
+      <div id="player"></div>
+      <div id="progress" style="display: none;">
+        <h1>80%</h1>
+      </div>
+    </div>
+    <div id="timeline">
+      <div></div>
+    </div>
+    <div id="controls">
+      <div id="playback">
+        <i data-lucide="skip-back"></i>
+        <i data-lucide="play"></i>
+        <i data-lucide="pause" style="display: none;"></i>
+        <i data-lucide="skip-forward"></i>
+      </div>
+      <span id="time">00:00 / 00:00</span>
+      <button id="export" type="button">
+        <div class="loader" style="display: none;"></div>
+        Export
+      </button>
+    </div>
+  </div>
+  <script type="module" src="playground/main.ts"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+
 </html>

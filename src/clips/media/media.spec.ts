@@ -201,13 +201,13 @@ describe('The Media Clip', () => {
 		clip.duration.seconds = 20;
 		clip.subclip(<frame>150, <frame>450);
 		// in range
-		clip.seek(<frame>300);
+		clip.seek(Timestamp.fromFrames(300));
 		expect(clip.element.currentTime).toBe(10);
 		// below range
-		clip.seek(<frame>0);
+		clip.seek(new Timestamp());
 		expect(clip.element.currentTime).toBe(5);
 		// above range
-		clip.seek(<frame>20);
+		clip.seek(Timestamp.fromFrames(20));
 		expect(clip.element.currentTime).toBe(5);
 	});
 
@@ -219,13 +219,13 @@ describe('The Media Clip', () => {
 		expect(clip.start.seconds).toBe(15);
 		expect(clip.stop.seconds).toBe(25);
 		// in range
-		clip.seek(<frame>(20 * 30));
+		clip.seek(Timestamp.fromFrames(20 * 30));
 		expect(clip.element.currentTime).toBe(10);
 		// 1s below range
-		clip.seek(<frame>(14 * 30));
+		clip.seek(Timestamp.fromFrames(14 * 30));
 		expect(clip.element.currentTime).toBe(5);
 		// 1s above range
-		clip.seek(<frame>26);
+		clip.seek(Timestamp.fromFrames(26));
 		expect(clip.element.currentTime).toBe(5);
 	});
 

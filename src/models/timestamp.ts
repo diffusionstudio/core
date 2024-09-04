@@ -112,7 +112,7 @@ export class Timestamp implements Omit<Serializer, 'id'> {
 	}
 
 	/**
-	 * Create a new timestamp from seconds
+	 * Create a new timestamp from frames
 	 */
 	public static fromFrames(value: frame): Timestamp {
 		const timestamp = new Timestamp();

@@ -12,12 +12,11 @@ import { FrameBuffer } from './buffer';
 import { MediaClip } from '../media';
 import { VisualMixin, visualize } from '../mixins';
 import { textureSwap } from './video.decorator';
-import { FPS_DEFAULT } from '../../models';
+import { FPS_DEFAULT, Timestamp } from '../../models';
 import { toggle } from '../clip';
 
 import type { Renderer } from 'pixi.js';
 import type { Track } from '../../tracks';
-import type { frame } from '../../types';
 import type { InitMessageData } from './worker.types';
 import type { VideoClipProps } from './video.interfaces';
 
@@ -97,7 +96,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 
 		// without seeking the first frame a black frame will be rendered
 		const frame = track.composition?.frame ?? 0;
-		await this.seek(<frame>frame);
+		await this.seek(Timestamp.fromFrames(frame));
 
 		this.track = track;
 		this.state = 'ATTACHED';
@@ -147,7 +146,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		renderer.render({ container: this.container, clear: false });
 	}
 
-	public async seek(frame: frame): Promise<void> {
+	public async seek(time: Timestamp): Promise<void> {
 		if (this.track?.composition?.rendering) {
 			const buffer = this.decodeVideo();
 			return new Promise<void>((resolve) => {
@@ -155,7 +154,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 			});
 		}
 
-		return super.seek(frame);
+		return super.seek(time);
 	}
 
 	private decodeVideo() {

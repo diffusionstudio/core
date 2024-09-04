@@ -171,22 +171,19 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 	}
 
 	/**
-	 * Set the media playback to a given frame
+	 * Set the media playback to a given time
 	 */
-	public seek(frame: frame): Promise<void> {
+	public seek(time: Timestamp): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!this.element) {
 				throw new Error("Can't seek on element becaused it's not defined");
 			}
-			if (frame < this.start.frames || frame > this.stop.frames) {
-				frame = this.start.frames;
+			if (time.millis < this.start.millis || time.millis > this.stop.millis) {
+				time = this.start;
 			}
 			this.element.onerror = (e) => reject(e);
 			this.element.pause();
-			this.element.currentTime = Timestamp
-				.fromFrames(frame)
-				.subtract(this.offset)
-				.seconds;
+			this.element.currentTime = time.subtract(this.offset).seconds;
 			this.element.onseeked = () => resolve();
 		});
 	}
