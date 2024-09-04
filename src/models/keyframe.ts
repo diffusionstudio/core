@@ -11,6 +11,7 @@ import { framesToMillis } from './timestamp.utils';
 import type { Serializer } from '../services';
 import type { frame } from '../types';
 import type { KeyframeOptions } from './keyframe.types';
+import type { Timestamp } from './timestamp';
 
 
 export class Keyframe<T extends number | string> implements Omit<Serializer, 'id'> {
@@ -113,11 +114,11 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
 
   /**
    * Evaluates the interpolated value for a given milliseconds number.
-   * @param time - The current time in milliseconds
+   * @param time - The current time in milliseconds or as a timestamp
    * @returns The interpolated output value.
    */
-  public value(time: number): T {
-    const { t, segment } = this.normalize(time);
+  public value(time: number | Timestamp): T {
+    const { t, segment } = this.normalize(typeof time == 'number' ? time : time.millis);
     return this.interpolate(t, segment);
   }
 

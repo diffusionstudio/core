@@ -5,7 +5,9 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
+import type { Renderer } from "pixi.js";
 import type { Clip } from "./clip";
+import type { Timestamp } from "../../models";
 
 /**
  * Decorator that only renders the frame if
@@ -15,7 +17,7 @@ export function toggle<T extends Clip> // @ts-ignore
   (target: T, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
 
-  descriptor.value = function (this: T, ...args: any[]) {
+  descriptor.value = function (this: T, ...args: [Renderer, Timestamp]) {
     if (this.disabled) {
       this.unrender();
       return;

@@ -93,11 +93,11 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	}
 
 	/**
-	 * Seek the provided frame if the track contains
+	 * Seek the provided time if the track contains
 	 * audio or video clips
 	 */
-	public seek(frame: frame): void {
-		frame;
+	public seek(time: Timestamp): void {
+		time;
 	}
 
 	/**
@@ -116,16 +116,18 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	/**
 	 * Render the clip to the canvas
 	 */
-	public render(renderer: Renderer, time: number): void | Promise<void> {
+	public render(renderer: Renderer, time: Timestamp): void | Promise<void> {
 		// case track doesn't contain tracks to render
 		if (this.disabled || !this.clips.length || !this.clipRef) return;
 
+		const { millis } = time;
+
 		// clean up last rendered clip
-		if (time < this.clipRef.start.millis || time > this.clipRef.stop.millis) {
+		if (millis < this.clipRef.start.millis || millis > this.clipRef.stop.millis) {
 			this.clipRef.unrender();
 		}
 
-		if (time > this.stop.millis || time < this.start.millis) return;
+		if (millis > this.stop.millis || millis < this.start.millis) return;
 
 		// search for next clip to be rendered
 		for (let idx = 0; idx < this.clips.length; idx++) {
@@ -137,13 +139,13 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 			const last = this.clips[pointer - 1];
 
 			// clip should be rendered
-			if (time >= clip.start.millis && time <= clip.stop.millis) {
+			if (millis >= clip.start.millis && millis <= clip.stop.millis) {
 				this.pointer = pointer;
 				return this.clipRef?.render?.(renderer, time);
 			}
 
 			// clip will be rendered next
-			if (time < clip.start.millis && time > (last?.stop.millis ?? 0)) {
+			if (millis < clip.start.millis && millis > (last?.stop.millis ?? 0)) {
 				this.pointer = pointer;
 				return;
 			}

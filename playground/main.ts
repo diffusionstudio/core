@@ -1,36 +1,12 @@
 import * as core from '../src';
 import { captions } from '../src/test/captions';
-
-const app = document.getElementById('app');
-
+import { setupControls } from './controls';
+import { setupTimeline } from './timeline';
 
 const composition = new core.Composition({ background: '#76b7f5' });
 
-const play = document.createElement('button')
-play.innerText = 'Play';
-play.onclick = () => composition.play();
-
-const pause = document.createElement('button');
-pause.innerText = 'Pause';
-pause.onclick = () => composition.pause();
-
-const seek = document.createElement('button');
-seek.innerText = 'Seek 0';
-seek.onclick = () => composition.seek(<core.frame>0);
-
-const render = document.createElement('button');
-render.innerText = 'Export';
-render.onclick = () => new core.WebcodecsEncoder(composition, { debug: true }).export();
-
-app!.appendChild(play);
-app!.appendChild(pause);
-app!.appendChild(seek);
-app!.appendChild(render);
-
-
-await composition.attachPlayer(app!);
-composition.canvas!.style.transform = 'scale(0.4) translateY(20px)';
-composition.canvas!.style.transformOrigin = 'top left';
+setupControls(composition);
+setupTimeline(composition);
 
 await composition.add(
   new core.VideoClip(
@@ -129,4 +105,27 @@ await composition.add(
       index: 0
     }]
   })
+);
+
+await composition.add(
+  new core.ImageClip(
+    await core.ImageSource.from('/dvd_logo.svg'),
+    {
+      stop: composition.duration,
+      x(this: core.TextClip, time: core.Timestamp) {
+        const width = typeof this.width == 'number' ? this.width : 0;
+        const range = composition.width - width;
+        const x = (time.seconds * 500) % (range * 2);
+
+        return x > range ? range * 2 - x : x;
+      },
+      y(this: core.TextClip, time: core.Timestamp) {
+        const height = typeof this.height == 'number' ? this.height : 0;
+        const range = composition.height - height;
+        const y = (time.seconds * 200) % (range * 2);
+
+        return y > range ? range * 2 - y : y;
+      },
+    }
+  )
 );

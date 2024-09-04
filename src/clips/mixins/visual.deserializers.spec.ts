@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { Deserializer2D, Deserializer1D } from './visual.deserializers';
-import { Keyframe } from '../../models';
+import { Keyframe, Timestamp } from '../../models';
 import type { Position } from '../../types';
 
 describe('Deserializer1D', () => {
@@ -32,6 +32,15 @@ describe('Deserializer1D', () => {
 
 		expect(rot.options.extrapolate).toBe('extend');
 		expect(rot.options.type).toBe('degrees');
+	});
+
+	it('should not desialize functions', () => {
+		const animation = (reltime: Timestamp) => reltime.frames;
+
+		const data = JSON.parse(JSON.stringify({ animation }));
+		const val = Deserializer1D.fromJSON(data.animation);
+
+		expect(val).toBeUndefined();
 	});
 });
 
@@ -83,5 +92,18 @@ describe('Deserializer2D', () => {
 
 		expect(pos.y.options.extrapolate).toBe('clamp');
 		expect(pos.y.options.type).toBe('color');
+	});
+
+	it('should not desialize functions', () => {
+		const animations = {
+			x: (reltime: Timestamp) => reltime.frames,
+			y: (reltime: Timestamp) => reltime.frames,
+		};
+
+		const data = JSON.parse(JSON.stringify(animations));
+		const vals = Deserializer1D.fromJSON(data);
+
+		expect(vals.x).toBeUndefined();
+		expect(vals.y).toBeUndefined();
 	});
 });

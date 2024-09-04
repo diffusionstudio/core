@@ -7,11 +7,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { Keyframe } from './keyframe';
-import { framesToMillis } from './timestamp.utils';
+import { Timestamp } from './timestamp';
 
 import type { frame } from '../types';
 
-const f = (frame: frame) => framesToMillis(frame);
+const f = (frame: frame) => Timestamp.fromFrames(frame);
 
 describe('Keyframe', () => {
   it('should interpolate number values correctly', () => {
@@ -32,6 +32,15 @@ describe('Keyframe', () => {
     expect(keyframe1.value(f(15))).toBe(90);
     expect(keyframe1.value(f(18))).toBe(120);
     expect(keyframe1.value(f(21))).toBe(120);
+  });
+
+  it('should interpolate number values correctly using milliseconds', () => {
+    const keyframe0 = new Keyframe([0, 12], [0, 100]);
+    expect(keyframe0.value(-200)).toBe(0);
+    expect(keyframe0.value(0)).toBe(0);
+    expect(keyframe0.value(200)).toBe(50);
+    expect(keyframe0.value(400)).toBe(100);
+    expect(keyframe0.value(600)).toBe(100);
   });
 
   it('should interpolate color values correctly', () => {

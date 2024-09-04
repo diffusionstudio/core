@@ -168,7 +168,7 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	 * Render the current frame
 	 */
 	@toggle
-	public render(renderer: Renderer, time: number): void | Promise<void> {
+	public render(renderer: Renderer, time: Timestamp): void | Promise<void> {
 		renderer.render({ container: this.container, clear: false }); time;
 	}
 

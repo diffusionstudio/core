@@ -7,18 +7,18 @@
 
 import type { Filter } from 'pixi.js';
 import type { Keyframe } from '../../models';
-import type { float, int, Anchor, Position, Scale, Translate2D, Percent } from '../../types';
+import type { float, int, Anchor, Position, Scale, Translate2D, NumberCallback, Percent } from '../../types';
 
 export interface VisualMixinProps {
   filters?: Filter | Filter[];
-  rotation?: number | Keyframe<number>;
-  alpha?: number | Keyframe<number>;
+  rotation?: number | Keyframe<number> | NumberCallback;
+  alpha?: number | Keyframe<number> | NumberCallback;
   translate?: Translate2D;
   position?: Position | 'center';
-  scale?: Scale | float | Keyframe<number>;
-  x?: int | Keyframe<int> | Percent;
-  y?: int | Keyframe<int> | Percent;
-  height?: Keyframe<int> | Percent | int;
-  width?: Keyframe<int> | Percent | int;
+  scale?: Scale | float | Keyframe<number> | NumberCallback;
+  x?: int | Keyframe<int> | Percent | NumberCallback;
+  y?: int | Keyframe<int> | Percent | NumberCallback;
+  height?: Keyframe<int> | Percent | int | NumberCallback;
+  width?: Keyframe<int> | Percent | int | NumberCallback;
   anchor?: Anchor | float;
 }

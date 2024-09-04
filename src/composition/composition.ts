@@ -305,7 +305,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		clear(this.renderer, this.context);
 
 		for (let i = this.tracks.length - 1; i >= 0; i--) {
-			this.tracks[i].render(this.renderer, framesToMillis(this.frame));
+			this.tracks[i].render(this.renderer, Timestamp.fromFrames(this.frame));
 		}
 
 		this.context?.drawImage(this.renderer.canvas, 0, 0);
@@ -335,17 +335,21 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 	/**
 	 * Set the playback position to a specific time
-	 * @param frame new playback time
+	 * @param value new playback time
 	 */
-	public async seek(frame: frame) {
-		this.frame = <frame>Math.round(frame > 0 ? frame : 0);
+	public async seek(value: frame | Timestamp) {
+		if (typeof value == 'number') {
+			this.frame = Math.round(value > 0 ? value : 0);
+		} else {
+			this.frame = value.frames > 0 ? value.frames : 0;
+		}
 
 		if (this.playing) {
 			this.pause();
 		}
 
 		for (const track of this.tracks) {
-			await track.seek(this.frame);
+			await track.seek(Timestamp.fromFrames(this.frame));
 		}
 
 		// prevents video frame from being closed
@@ -365,7 +369,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		}
 
 		for (const track of this.tracks) {
-			await track.seek(this.frame);
+			await track.seek(Timestamp.fromFrames(this.frame));
 		}
 
 		this.timerCallback();

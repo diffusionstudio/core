@@ -8,9 +8,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Composition } from '../../composition';
 import { MediaClip } from '../../clips';
+import { Timestamp } from '../../models';
 import { MediaTrack } from './media';
-
-import type { frame } from '../../types';
 
 describe('The Media Track Object', () => {
 	let comp: Composition;
@@ -32,13 +31,13 @@ describe('The Media Track Object', () => {
 		await track.add(clip);
 		expect(track.clips.length).toBe(1);
 		const seekSpy = vi.spyOn(clip, 'seek').mockImplementation(async (_) => { });
-		track.seek(<frame>5);
+		track.seek(Timestamp.fromFrames(5));
 		expect(seekSpy).toBeCalledTimes(1);
 	});
 
 	it('should be be able to add a media clip with offset', async () => {
 		const clip = new MediaClip();
-		clip.duration.frames = <frame>30;
+		clip.duration.frames = 30;
 
 		expect(clip.duration.frames).toBe(30);
 		expect(clip.start.frames).toBe(0);
@@ -46,7 +45,7 @@ describe('The Media Track Object', () => {
 		expect(clip.stop.frames).toBe(30);
 
 		clip.state = 'READY';
-		await track.add(clip.offsetBy(<frame>60));
+		await track.add(clip.offsetBy(60));
 
 		expect(track.clips.at(0)?.start.frames).toBe(60);
 		expect(track.clips.at(0)?.stop.frames).toBe(90);
