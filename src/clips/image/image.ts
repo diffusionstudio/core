@@ -13,6 +13,7 @@ import { VisualMixin, AsyncMixin, visualize } from '../mixins';
 import type { Renderer } from 'pixi.js';
 import type { Track } from '../../tracks';
 import type { ImageClipProps } from './image.interfaces';
+import type { Timestamp } from '../../models';
 
 export class ImageClip extends VisualMixin(AsyncMixin(Clip<ImageClipProps>)) {
 	public readonly type = 'image';
@@ -58,7 +59,7 @@ export class ImageClip extends VisualMixin(AsyncMixin(Clip<ImageClipProps>)) {
 
 	@toggle
 	@visualize
-	public render(renderer: Renderer, _: number): void | Promise<void> {
+	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
 		renderer.render({ container: this.container, clear: false });
 	}
 

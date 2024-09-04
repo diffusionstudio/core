@@ -1,11 +1,13 @@
 
 import * as core from '../src';
 
+let fps = 30;
+
 export async function exportComposition(composition: core.Composition) {
   if (loader.style.display != 'none') return;
 
   try {
-    const encoder = new core.WebcodecsEncoder(composition, { debug: true });
+    const encoder = new core.WebcodecsEncoder(composition, { debug: true, fps });
 
     encoder.on('render', (event) => {
       const { progress, total } = event.detail;
@@ -41,3 +43,12 @@ export async function exportComposition(composition: core.Composition) {
 const container = document.querySelector('[id="progress"]') as HTMLDivElement;
 const text = document.querySelector('[id="progress"] > h1') as HTMLHeadingElement;
 const loader = document.querySelector('.loader') as HTMLDivElement;
+const fpsButton = document.querySelector('[data-lucide="gauge"]') as HTMLElement;
+
+fpsButton.addEventListener('click', () => {
+  const value = parseFloat(
+    prompt("Please enter the desired frame rate", fps.toString()) ?? fps.toString()
+  );
+
+  if (!Number.isNaN(value)) fps = value
+});

@@ -13,6 +13,7 @@ import { Sprite, Texture } from 'pixi.js';
 import type { Track } from '../../tracks';
 import type { Renderer } from 'pixi.js';
 import type { HtmlClipProps } from './html.interfaces';
+import type { Timestamp } from '../../models';
 
 export class HtmlClip extends VisualMixin(AsyncMixin(Clip<HtmlClipProps>)) {
 	public readonly type = 'html';
@@ -81,7 +82,7 @@ export class HtmlClip extends VisualMixin(AsyncMixin(Clip<HtmlClipProps>)) {
 
 	@toggle
 	@visualize
-	public render(renderer: Renderer, _: number): void | Promise<void> {
+	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
 		renderer.render({ container: this.container, clear: false });
 	}
 

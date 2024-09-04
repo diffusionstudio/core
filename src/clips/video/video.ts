@@ -120,7 +120,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	@toggle
 	@textureSwap
 	@visualize
-	public render(renderer: Renderer, _: number): void | Promise<void> {
+	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
 		if (this.track?.composition?.playing && !this.playing) {
 			this.element.play();
 		} else if (!this.track?.composition?.playing && this.playing) {

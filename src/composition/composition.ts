@@ -305,7 +305,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		clear(this.renderer, this.context);
 
 		for (let i = this.tracks.length - 1; i >= 0; i--) {
-			this.tracks[i].render(this.renderer, framesToMillis(this.frame));
+			this.tracks[i].render(this.renderer, Timestamp.fromFrames(this.frame));
 		}
 
 		this.context?.drawImage(this.renderer.canvas, 0, 0);

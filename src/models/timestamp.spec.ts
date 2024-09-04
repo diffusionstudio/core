@@ -41,6 +41,12 @@ describe('New Timestamp model', () => {
 		expect(ts4.frames).toBe(37);
 		expect(ts4.seconds).toBe(1.235);
 		expect(ts4.millis).toBe(1235);
+
+		const ts5 = Timestamp.fromFrames(60, 10);
+
+		expect(ts5.frames).toBe(180);
+		expect(ts5.seconds).toBe(6);
+		expect(ts5.millis).toBe(6e3);
 	});
 
 	it('should round the value when setting millis', () => {

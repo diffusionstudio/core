@@ -10,8 +10,9 @@ import { WebGPURenderer } from 'pixi.js';
 import { Composition } from '../../composition';
 import { Clip } from '../../clips';
 import { Track } from './track';
+import { Timestamp } from '../../models';
+
 import type { frame } from '../../types';
-import { framesToMillis } from '../../models';
 
 const renderer = new WebGPURenderer();
 
@@ -164,21 +165,21 @@ describe('The Track Object', () => {
 		await track.add(clip1);
 		await track.add(clip2);
 
-		track.render(renderer, framesToMillis(<frame>0));
+		track.render(renderer, new Timestamp());
 
 		expect(track.pointer).toBe(0);
 		expect(renderSpy0).not.toHaveBeenCalled();
 		expect(renderSpy1).not.toHaveBeenCalled();
 		expect(renderSpy2).not.toHaveBeenCalled();
 
-		track.render(renderer, framesToMillis(<frame>3));
+		track.render(renderer, Timestamp.fromFrames(3));
 		expect(track.pointer).toBe(0);
 		expect(renderSpy0).toHaveBeenCalledTimes(1);
 		expect(renderSpy1).not.toHaveBeenCalled();
 		expect(renderSpy2).not.toHaveBeenCalled();
 		renderSpy0.mockClear();
 
-		track.render(renderer, framesToMillis(<frame>10));
+		track.render(renderer, Timestamp.fromFrames(10));
 		expect(track.pointer).toBe(1);
 		expect(renderSpy0).not.toHaveBeenCalled();
 		expect(renderSpy1).toHaveBeenCalledTimes(1);
@@ -186,19 +187,19 @@ describe('The Track Object', () => {
 		renderSpy1.mockClear();
 
 		expect(track.pointer).toBe(1);
-		track.render(renderer, framesToMillis(<frame>18));
+		track.render(renderer, Timestamp.fromFrames(18));
 		expect(track.pointer).toBe(2);
 		expect(renderSpy0).not.toHaveBeenCalled();
 		expect(renderSpy1).not.toHaveBeenCalled();
 		expect(renderSpy2).not.toHaveBeenCalled();
 
-		track.render(renderer, framesToMillis(<frame>18));
+		track.render(renderer, Timestamp.fromFrames(18));
 		expect(track.pointer).toBe(2);
 		expect(renderSpy0).not.toHaveBeenCalled();
 		expect(renderSpy1).not.toHaveBeenCalled();
 		expect(renderSpy2).not.toHaveBeenCalled();
 
-		track.render(renderer, framesToMillis(<frame>28));
+		track.render(renderer, Timestamp.fromFrames(28));
 		expect(track.pointer).toBe(2);
 		expect(renderSpy0).not.toHaveBeenCalled();
 		expect(renderSpy1).not.toHaveBeenCalled();

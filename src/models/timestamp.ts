@@ -114,9 +114,9 @@ export class Timestamp implements Omit<Serializer, 'id'> {
 	/**
 	 * Create a new timestamp from frames
 	 */
-	public static fromFrames(value: frame): Timestamp {
+	public static fromFrames(value: frame, fps?: number): Timestamp {
 		const timestamp = new Timestamp();
-		timestamp.millis = framesToMillis(value);
+		timestamp.millis = framesToMillis(value, fps);
 
 		return timestamp;
 	}

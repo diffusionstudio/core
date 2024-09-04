@@ -145,13 +145,13 @@ describe('The Video Clip', () => {
 		expect(clip.playing).toBe(false);
 		composition.state = 'PLAY';
 
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.playing).toBe(true);
 		expect(playFn).toBeCalledTimes(1);
 
 		composition.state = 'IDLE';
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 		expect(clip.playing).toBe(false);
 		expect(pauseFn).toBeCalledTimes(1);
 
@@ -267,13 +267,13 @@ describe('The render decorator', () => {
 		const renderSpy = vi.spyOn(renderer, 'render').mockImplementation(() => { });
 		const unrenderSpy = vi.spyOn(clip, 'unrender');
 
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(renderSpy).toHaveBeenCalledOnce();
 		expect(unrenderSpy).not.toHaveBeenCalled();
 
 		clip.set({ disabled: true });
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(renderSpy).toHaveBeenCalledOnce();
 		expect(unrenderSpy).toHaveBeenCalledOnce()
@@ -289,14 +289,14 @@ describe('The visualize decorator', () => {
 		const filterSpy = vi.spyOn(clip.container, 'filters', 'set');
 		const renderSpy = vi.spyOn(renderer, 'render');
 
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(filterSpy).not.toHaveBeenCalled();
 		expect(renderSpy).toHaveBeenCalledTimes(1);
 
 		clip.set({ filters: new BlurFilter() });
 
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(filterSpy).toHaveBeenCalledOnce();
 		expect(renderSpy).toHaveBeenCalledTimes(2);
@@ -304,7 +304,7 @@ describe('The visualize decorator', () => {
 		vi.spyOn(clip.container, 'filters', 'get').mockReturnValue([new BlurFilter()]);
 
 		// render again, it should only assign once
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(filterSpy).toHaveBeenCalledOnce();
 		expect(renderSpy).toHaveBeenCalledTimes(3);

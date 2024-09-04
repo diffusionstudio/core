@@ -8,7 +8,7 @@
 import { Muxer } from 'mp4-muxer';
 import { VideoClip } from '../clips';
 import { audioClipFilter, createStreamTarget } from './webcodecs.utils';
-import { FPS_DEFAULT, framesToMillis } from '../models';
+import { FPS_DEFAULT, Timestamp } from '../models';
 import { getRenderEventDetail } from './utils';
 import { EventEmitter } from '../services';
 import { clear } from '../utils/pixi';
@@ -86,7 +86,7 @@ export class WebcodecsEncoder extends EventEmitter<EncoderEvents>() implements R
 			clear(renderer);
 
 			for (let i = tracks.length - 1; i >= 0; i--) {
-				await tracks[i].render(renderer, framesToMillis(frame, this.fps));
+				await tracks[i].render(renderer, Timestamp.fromFrames(frame, this.fps));
 			}
 
 			const videoFrame = new VideoFrame(renderer.canvas, {

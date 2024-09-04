@@ -30,7 +30,7 @@ export function replaceKeyframes(obj: any, time: Timestamp, depth = 0) {
     if (!key) continue;
 
     if (value instanceof Keyframe) {
-      obj[key] = value.value(time.millis);
+      obj[key] = value.value(time);
     }
 
     if (value != null && typeof value == 'object' && Object.keys(value).length) {

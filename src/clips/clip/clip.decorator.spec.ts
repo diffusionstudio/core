@@ -8,6 +8,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Clip } from './clip';
 import { WebGPURenderer } from 'pixi.js';
+import { Timestamp } from '../../models';
 
 describe('The render decorator', () => {
 	it('should not render the compostition if the clip is disabled', () => {
@@ -16,13 +17,13 @@ describe('The render decorator', () => {
 		const renderSpy = vi.spyOn(renderer, 'render').mockImplementation(() => { });
 		const unrenderSpy = vi.spyOn(clip, 'unrender');
 
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(renderSpy).toHaveBeenCalledOnce();
 		expect(unrenderSpy).not.toHaveBeenCalled();
 
 		clip.set({ disabled: true });
-		clip.render(renderer, 0);
+		clip.render(renderer, new Timestamp());
 
 		expect(renderSpy).toHaveBeenCalledOnce();
 		expect(unrenderSpy).toHaveBeenCalledOnce()

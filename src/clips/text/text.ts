@@ -17,6 +17,7 @@ import type { Track } from '../../tracks';
 import type * as types from './text.types';
 import type { float, hex, Anchor } from '../../types';
 import type { TextClipProps } from './text.interfaces';
+import type { Timestamp } from '../../models';
 
 export class TextClip<Props extends TextClipProps = TextClipProps> extends VisualMixin(Clip<TextClipProps>) {
 	public readonly type: 'text' | 'complex_text' = 'text';
@@ -290,7 +291,7 @@ export class TextClip<Props extends TextClipProps = TextClipProps> extends Visua
 
 	@toggle
 	@visualize
-	public render(renderer: Renderer, _: number): void | Promise<void> {
+	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
 		renderer.render({ container: this.container, clear: false });
 	}
 

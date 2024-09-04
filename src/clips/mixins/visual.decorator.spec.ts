@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { Keyframe } from '../../models';
+import { Keyframe, Timestamp } from '../../models';
 import { VisualMixin } from './visual';
 import { Clip, toggle } from '../clip';
 import { BlurFilter, Sprite, Texture, WebGPURenderer } from 'pixi.js';
@@ -22,7 +22,7 @@ describe('The visualize decorator', () => {
 	class TestClip extends VisualMixin(Clip<TestClipProps>) {
 		@toggle
 		@visualize
-		public render(renderer: WebGPURenderer, time?: number): void | Promise<void> {
+		public render(renderer: WebGPURenderer, time: Timestamp): void | Promise<void> {
 			renderer.render({ container: this.container, clear: false }); time;
 		}
 	}
@@ -34,14 +34,14 @@ describe('The visualize decorator', () => {
 		const filterSpy = vi.spyOn(clip.container, 'filters', 'set');
 		const renderSpy = vi.spyOn(renderer, 'render');
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(filterSpy).not.toHaveBeenCalled();
 		expect(renderSpy).toHaveBeenCalledTimes(1);
 
 		clip.set({ filters: new BlurFilter() });
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(filterSpy).toHaveBeenCalledOnce();
 		expect(renderSpy).toHaveBeenCalledTimes(2);
@@ -49,7 +49,7 @@ describe('The visualize decorator', () => {
 		vi.spyOn(clip.container, 'filters', 'get').mockReturnValue([new BlurFilter()]);
 
 		// render again, it should only assign once
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(filterSpy).toHaveBeenCalledOnce();
 		expect(renderSpy).toHaveBeenCalledTimes(3);
@@ -72,7 +72,7 @@ describe('The visualize decorator', () => {
 		const posSpy = vi.spyOn(clip.container.position, 'set');
 
 		clip.position = 'center';
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.container.x).toBe(500);
 		expect(clip.container.y).toBe(1000);
@@ -96,7 +96,7 @@ describe('The visualize decorator', () => {
 		clip.position = { x: 5, y: 7 };
 
 		posSpy.mockClear()
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.container.x).toBe(5);
 		expect(clip.container.y).toBe(7);
@@ -108,7 +108,7 @@ describe('The visualize decorator', () => {
 		};
 
 		posSpy.mockClear()
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 
 		expect(clip.container.x).toBe(150);
 		expect(clip.container.y).toBe(50);
@@ -119,7 +119,7 @@ describe('The visualize decorator', () => {
 		clip.start = 30;
 
 		posSpy.mockClear();
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 
 		expect(clip.container.x).toBe(100);
 		expect(clip.container.y).toBe(0);
@@ -131,7 +131,7 @@ describe('The visualize decorator', () => {
 		}
 
 		posSpy.mockClear();
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 
 		expect(clip.container.x).toBe(200);
 		expect(clip.container.y).toBe(600);
@@ -146,7 +146,7 @@ describe('The visualize decorator', () => {
 
 		clip.position = { x: 5, y: 7 };
 		clip.translate = { x: 3, y: 4 };
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.container.x).toBe(8);
 		expect(clip.container.y).toBe(11);
@@ -158,7 +158,7 @@ describe('The visualize decorator', () => {
 			y: new Keyframe([0, 60], [0, 100])
 		};
 
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 		expect(clip.container.x).toBe(150 + 20);
 		expect(clip.container.y).toBe(50 + 60);
 		expect(posSpy).toHaveBeenCalledTimes(2);
@@ -180,14 +180,14 @@ describe('The visualize decorator', () => {
 		const heightSpy = vi.spyOn(clip.container, 'height', 'set');
 		const scaleSpy = vi.spyOn(clip.container.scale, 'set');
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(heightSpy).not.toHaveBeenCalled();
 		expect(scaleSpy).not.toHaveBeenCalled();
 
 		clip.height = '100%';
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(heightSpy).toHaveBeenCalledOnce();
 		expect(scaleSpy).toHaveBeenCalledOnce();
@@ -200,7 +200,7 @@ describe('The visualize decorator', () => {
 		clip.height = new Keyframe([0, 12], [0, 200]);
 
 		vi.clearAllMocks();
-		clip.render(renderer, 200);
+		clip.render(renderer, new Timestamp(200));
 
 		expect(heightSpy).toHaveBeenCalledOnce();
 		expect(scaleSpy).toHaveBeenCalledOnce();
@@ -214,7 +214,7 @@ describe('The visualize decorator', () => {
 		clip.height = 800;
 
 		vi.clearAllMocks();
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp(200));
 
 		expect(heightSpy).toHaveBeenCalledOnce();
 		expect(scaleSpy).toHaveBeenCalledOnce();
@@ -241,14 +241,14 @@ describe('The visualize decorator', () => {
 		const widthSpy = vi.spyOn(clip.container, 'width', 'set');
 		const scaleSpy = vi.spyOn(clip.container.scale, 'set');
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(widthSpy).not.toHaveBeenCalled();
 		expect(scaleSpy).not.toHaveBeenCalled();
 
 		clip.width = '100%';
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(widthSpy).toHaveBeenCalledOnce();
 		expect(scaleSpy).toHaveBeenCalledOnce();
@@ -261,7 +261,7 @@ describe('The visualize decorator', () => {
 		clip.width = new Keyframe([0, 12], [0, 200]);
 
 		vi.clearAllMocks();
-		clip.render(renderer, 200);
+		clip.render(renderer, new Timestamp(200));
 
 		expect(widthSpy).toHaveBeenCalledOnce();
 		expect(scaleSpy).toHaveBeenCalledOnce();
@@ -274,7 +274,7 @@ describe('The visualize decorator', () => {
 		clip.width = 1500;
 
 		vi.clearAllMocks();
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(widthSpy).toHaveBeenCalledOnce();
 		expect(scaleSpy).toHaveBeenCalledOnce();
@@ -301,7 +301,7 @@ describe('The visualize decorator', () => {
 		clip.width = 700;
 		clip.height = 900;
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(widthSpy).toHaveBeenCalledOnce();
 		expect(heightSpy).toHaveBeenCalledOnce();
@@ -317,7 +317,7 @@ describe('The visualize decorator', () => {
 		const scaleSpy = vi.spyOn(clip.container.scale, 'set');
 
 		clip.scale = 0.4;
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.scale.x).toBe(0.4);
 		expect(clip.scale.y).toBe(0.4);
@@ -333,7 +333,7 @@ describe('The visualize decorator', () => {
 
 		clip.scale = new Keyframe([30, 90], [0, 100]);
 		clip.start = 30;
-		clip.render(renderer, 3000); // 90 frames
+		clip.render(renderer, new Timestamp(3000)); // 90 frames
 
 		expect(clip.scale.x).toBeInstanceOf(Keyframe);
 		expect(clip.scale.y).toBeInstanceOf(Keyframe);
@@ -349,7 +349,7 @@ describe('The visualize decorator', () => {
 		const posSpy = vi.spyOn(clip.container.scale, 'set');
 
 		clip.scale = { x: 0.7, y: 0.4 };
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.container.scale._x).toBe(0.7);
 		expect(clip.container.scale._y).toBe(0.4);
@@ -360,7 +360,7 @@ describe('The visualize decorator', () => {
 			y: new Keyframe([0, 60], [0.2, 0.6])
 		};
 
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 		expect(clip.container.scale._x).toBe(0.1);
 		expect(clip.container.scale._y).toBe(0.4);
 		expect(posSpy).toHaveBeenCalledTimes(2);
@@ -387,7 +387,7 @@ describe('The visualize decorator', () => {
 			y: 1.5
 		}
 
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(scaleSpy).toHaveBeenCalledTimes(2);
 
@@ -404,14 +404,14 @@ describe('The visualize decorator', () => {
 		const angleSpy = vi.spyOn(clip.container, 'angle', 'set');
 
 		clip.rotation = 93;
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.container.angle).toBe(93);
 		expect(angleSpy).toHaveBeenCalledOnce();
 
 		clip.rotation = new Keyframe([0, 60], [0, 180], { type: 'degrees' })
 
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 		expect(clip.container.angle).toBe(90);
 		expect(angleSpy).toHaveBeenCalledTimes(2);
 	});
@@ -423,14 +423,14 @@ describe('The visualize decorator', () => {
 		const alphaSpy = vi.spyOn(clip.container, 'alpha', 'set');
 
 		clip.alpha = 0.72;
-		clip.render(renderer);
+		clip.render(renderer, new Timestamp());
 
 		expect(clip.container.alpha).toBe(0.72);
 		expect(alphaSpy).toHaveBeenCalledOnce();
 
 		clip.alpha = new Keyframe([0, 60], [0, 0.6]);
 
-		clip.render(renderer, 1000);
+		clip.render(renderer, new Timestamp(1000));
 		expect(clip.container.alpha).toBe(0.3);
 		expect(alphaSpy).toHaveBeenCalledTimes(2);
 	});

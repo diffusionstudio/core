@@ -5,6 +5,8 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
+import type { Renderer } from "pixi.js";
+import type { Timestamp } from "../../models";
 import type { MixinType } from "../../types";
 import type { Clip } from "../clip";
 import type { VisualMixin } from "./visual";
@@ -17,8 +19,8 @@ export function visualize<T extends MixinType<typeof VisualMixin> & Clip> // @ts
 
   const originalMethod = descriptor.value;
 
-  descriptor.value = function (this: T, ...args: any[]) {
-    const timestamp = (args[1] ?? 0) - this.start.millis;
+  descriptor.value = function (this: T, ...args: [Renderer, Timestamp]) {
+    const timestamp = args[1].subtract(this.start);
     const screen = {
       width: this.track?.composition?.width ?? 0,
       height: this.track?.composition?.height ?? 0,
