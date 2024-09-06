@@ -57,7 +57,7 @@ await composition.add(
   new core.AudioClip(await core.AudioSource.from('/audio.mp3'), {
     transcript: core.Transcript.fromJSON(captions).optimize(),
   })
-)).generateCaptions();
+)).addCaptions();
 
 await composition.add(
   new core.TextClip({
