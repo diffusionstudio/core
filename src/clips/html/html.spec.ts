@@ -7,68 +7,114 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { HtmlClip } from './html';
-import { sleep } from '../../utils';
-import { BlurFilter, WebGPURenderer } from 'pixi.js';
-import { Keyframe, Timestamp } from '../../models';
+import { BlurFilter } from 'pixi.js';
+import { Keyframe } from '../../models';
 import { HtmlSource } from '../../sources';
+import { Composition } from '../../composition';
 
 const file = new File(['<h1>Hello World</h1>'], 'index.html', {
 	type: 'text/html',
 });
 
 describe('The Html Clip', () => {
-	const updateFn = vi.fn();
-	const errorFn = vi.fn();
-	const loadFn = vi.fn();
-	let clip: HtmlClip;
+	it('should initialize', async () => {
+		const clip = new HtmlClip(file, { x: 100 });
 
-	beforeEach(() => {
-		updateFn.mockClear();
-		errorFn.mockClear();
-
-		clip = new HtmlClip(file);
-		clip.on('update', updateFn);
-		clip.on('error', errorFn);
-		clip.on('load', loadFn);
-		vi.spyOn(clip.source, 'document', 'get').mockReturnValue(undefined);
-	});
-
-	it('should have an initial state', async () => {
-		await sleep(0);
-		clip.element.dispatchEvent(new Event('load'));
-		await sleep(0);
-		expect(clip.element).toBeDefined();
-		expect(loadFn).toBeCalledTimes(1);
 		expect(clip.type).toBe('html');
+		expect(clip.state).toBe('IDLE');
+		expect(clip.source.file).toBeInstanceOf(File);
+		expect(clip.element.src).toBeFalsy();
+		expect(clip.sprite.texture.label).toBe("EMPTY");
+
+		mockIframeValid(clip);
+		mockDocumentValid(clip);
+		const evtSpy = mockImageValid(clip);
+		await clip.init();
+
+		expect(evtSpy).toHaveBeenCalledTimes(1);
+		expect(clip.x).toBe(100);
 		expect(clip.state).toBe('READY');
-		expect(clip.source.name).toBe('index.html');
+		expect(clip.name).toBe('index.html');
+		expect(clip.sprite.texture.label).not.toBe("EMPTY");
+		expect(clip.element.src).toBe(
+			"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E",
+		);
+		expect(clip.canvas.height).toBe(400);
+		expect(clip.canvas.width).toBe(200);
 	});
 
-	it('should add a filter on render and remove it on unrender', () => {
-		const renderer = new WebGPURenderer();
+	it("should throw an error when the image can't be loaded", async () => {
+		const clip = new HtmlClip(file);
 
-		const filterSpy = vi.spyOn(clip.container, 'filters', 'set');
+		mockIframeValid(clip);
+		mockDocumentValid(clip);
+		const evtSpy = mockImageInvalid(clip);
 
-		clip.render(renderer, new Timestamp());
+		await expect(() => clip.init()).rejects.toThrowError();
 
-		expect(filterSpy).not.toHaveBeenCalled();
+		expect(evtSpy).toHaveBeenCalledTimes(1);
+		expect(clip.state).toBe('ERROR');
+	});
 
-		clip.set({ filters: new BlurFilter() });
+	it("should throw an error when the iframe can't be loaded", async () => {
+		const clip = new HtmlClip(file);
 
-		clip.render(renderer, new Timestamp());
+		mockIframeInvalid(clip);
+		mockDocumentValid(clip);
+		mockImageValid(clip);
 
-		expect(filterSpy).toHaveBeenCalledOnce();
+		await expect(() => clip.init()).rejects.toThrowError();
+	});
 
-		vi.spyOn(clip.container, 'filters', 'get').mockReturnValue([new BlurFilter()]);
-		// render again, it should only assign once
-		clip.render(renderer, new Timestamp());
+	it("should throw an error when the html height or width is zero", async () => {
+		const clip = new HtmlClip(file);
 
-		expect(filterSpy).toHaveBeenCalledOnce();
+		mockIframeInvalid(clip);
+		mockDocumentInvalid(clip);
+		mockImageValid(clip);
 
-		clip.unrender();
+		await expect(() => clip.init()).rejects.toThrowError();
+	});
 
-		expect(filterSpy).toHaveBeenCalledTimes(2);
-		expect(filterSpy.mock.calls[1][0]).toBe(null);
+	it("should not render the clip if it's disabled", async () => {
+		const clip = new HtmlClip(file, { x: 100 });
+		mockIframeValid(clip);
+		mockDocumentValid(clip);
+		mockImageValid(clip);
+
+		const composition = new Composition();
+		await composition.add(clip);
+
+		const exitSpy = vi.spyOn(clip, 'exit');
+		const updateSpy = vi.spyOn(clip, 'update');
+
+		composition.state = 'PLAY';
+		composition.computeFrame();
+
+		expect(updateSpy).toHaveBeenCalledTimes(1);
+		expect(exitSpy).not.toHaveBeenCalled();
+
+		clip.set({ disabled: true });
+
+		expect(exitSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it("should utilize the visualize decorator", async () => {
+		const clip = new HtmlClip(file, { x: 300 });
+		mockIframeValid(clip);
+		mockDocumentValid(clip);
+		mockImageValid(clip);
+
+		// still 0 because clip won't be rendered
+		expect(clip.view.x).toBe(0);
+	
+		const updateSpy = vi.spyOn(clip, 'update');
+
+		const composition = new Composition();
+		await composition.add(clip);
+
+		expect(updateSpy).toHaveBeenCalled();
+		expect(clip.view.x).toBe(300);
 	});
 });
 
@@ -76,9 +122,12 @@ describe('The Html Clip', () => {
 describe('Copying the HtmlClip', () => {
 	let clip: HtmlClip;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		clip = new HtmlClip(file);
-		vi.spyOn(clip.source, 'document', 'get').mockReturnValue(undefined);
+		mockIframeValid(clip);
+		mockDocumentValid(clip);
+		mockImageValid(clip);
+		await clip.init();
 	});
 
 	it('should transfer visual properties', () => {
@@ -95,7 +144,6 @@ describe('Copying the HtmlClip', () => {
 		}
 		clip.scale = 2;
 		clip.anchor = { x: 0.3, y: 0.9 }
-		clip.source.objectURL = 'blob:chrome://3dc0f2b7-7773-4cd4-a397-2e43b1bba7cd'
 
 		const copy = clip.copy();
 
@@ -138,60 +186,63 @@ describe('Copying the HtmlClip', () => {
 	});
 });
 
-// copied from src/clips/clip/clip.decorator.spec.ts
-describe('The render decorator', () => {
-	it('should not render the compostition if the clip is disabled', () => {
-		const clip = new HtmlClip();
-		const renderer = new WebGPURenderer();
-		const renderSpy = vi.spyOn(renderer, 'render').mockImplementation(() => { });
-		const unrenderSpy = vi.spyOn(clip, 'unrender');
+function mockIframeValid(clip: HtmlClip) {
+	return vi.spyOn(clip.source.iframe, 'onload', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('load'));
+		});
+}
 
-		clip.render(renderer, new Timestamp());
+function mockIframeInvalid(clip: HtmlClip) {
+	return vi.spyOn(clip.source.iframe, 'onerror', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('error'));
+		});
+}
 
-		expect(renderSpy).toHaveBeenCalledOnce();
-		expect(unrenderSpy).not.toHaveBeenCalled();
+function mockDocumentValid(clip: HtmlClip) {
+	return vi.spyOn(clip.source, 'document', 'get')
+		.mockReturnValue({
+			body: {
+				scrollWidth: 200,
+				scrollHeight: 400,
+			},
+			cloneNode: () => ({
+				getElementsByTagName: () => ({
+					item: () => undefined
+				})
+			})
+		} as any);
+}
 
-		clip.set({ disabled: true });
-		clip.render(renderer, new Timestamp());
+function mockDocumentInvalid(clip: HtmlClip) {
+	return vi.spyOn(clip.source, 'document', 'get')
+		.mockReturnValue({
+			body: {
+				// considered invalid when 0
+				scrollWidth: 0,
+				scrollHeight: 0,
+			},
+			cloneNode: () => ({
+				getElementsByTagName: () => ({
+					item: () => undefined
+				})
+			})
+		} as any);
+}
 
-		expect(renderSpy).toHaveBeenCalledOnce();
-		expect(unrenderSpy).toHaveBeenCalledOnce()
-	});
-});
+function mockImageValid(clip: HtmlClip) {
+	return vi.spyOn(clip.element, 'onload', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			clip.element.dispatchEvent(new Event('load'));
+			fn?.call(this, new Event('load'));
+		});
+}
 
-// copied from src/clips/mixins/visual.deserializers.spec.ts
-describe('The visualize decorator', () => {
-	it('should add a filter on render and remove it on unrender', () => {
-		const renderer = new WebGPURenderer();
-		const clip = new HtmlClip();
-
-		const filterSpy = vi.spyOn(clip.container, 'filters', 'set');
-		const renderSpy = vi.spyOn(renderer, 'render');
-
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).not.toHaveBeenCalled();
-		expect(renderSpy).toHaveBeenCalledTimes(1);
-
-		clip.set({ filters: new BlurFilter() });
-
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).toHaveBeenCalledOnce();
-		expect(renderSpy).toHaveBeenCalledTimes(2);
-
-		vi.spyOn(clip.container, 'filters', 'get').mockReturnValue([new BlurFilter()]);
-
-		// render again, it should only assign once
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).toHaveBeenCalledOnce();
-		expect(renderSpy).toHaveBeenCalledTimes(3);
-
-		clip.unrender();
-
-		expect(filterSpy).toHaveBeenCalledTimes(2);
-		expect(filterSpy.mock.calls[1][0]).toBe(null);
-		expect(renderSpy).toHaveBeenCalledTimes(3);
-	});
-});
+function mockImageInvalid(clip: HtmlClip) {
+	return vi.spyOn(clip.element, 'onerror', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			clip.element.dispatchEvent(new Event('error'));
+			fn?.call(this, new Event('error'));
+		});
+}

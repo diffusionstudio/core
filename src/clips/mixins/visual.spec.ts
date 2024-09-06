@@ -5,22 +5,23 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BlurFilter, Sprite, Texture } from 'pixi.js';
 import { VisualMixin } from './visual';
 import { Keyframe } from '../../models';
 import { Clip } from '../clip';
+import { Composition } from '../../composition';
 
 describe('The Visual Clip Mixin', () => {
-	it('should have a default state and values should be assignable', () => {
-		const VisualClip = VisualMixin(Clip);
+	const VisualClip = VisualMixin(Clip);
 
+	it('should have a default state and values should be assignable', () => {
 		const canvas = document.createElement('canvas');
 		canvas.width = 100;
 		canvas.height = 200;
 
 		const clip = new VisualClip();
-		clip.container.addChild(new Sprite(Texture.from(canvas)));
+		clip.view.addChild(new Sprite(Texture.from(canvas)));
 		expect(clip.height).toBe(200);
 		expect(clip.width).toBe(100);
 		expect(clip.x).toBe(0);
@@ -79,5 +80,40 @@ describe('The Visual Clip Mixin', () => {
 
 		expect(clip.anchor.x).toBe(3);
 		expect(clip.anchor.y).toBe(3);
+	});
+
+	it('should add the filters on enter', async () => {
+		const clip = new VisualClip();
+
+		clip.filters = new BlurFilter();
+
+		expect(clip.view.filters).toBeUndefined();
+
+		const enterSpy = vi.spyOn(clip, 'enter');
+
+		const composition = new Composition();
+		await composition.add(clip);
+		
+		expect((clip.view.filters as any)[0]).toBeInstanceOf(BlurFilter);
+		expect(enterSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it('should remove the filters on exit', async () => {
+		const clip = new VisualClip();
+
+		clip.filters = new BlurFilter();
+
+		const exitSpy = vi.spyOn(clip, 'exit');
+
+		const composition = new Composition();
+		await composition.add(clip);
+		
+		expect((clip.view.filters as any)[0]).toBeInstanceOf(BlurFilter);
+
+		composition.frame = clip.stop.frames + 1;
+		composition.computeFrame();
+
+		expect(exitSpy).toHaveBeenCalledTimes(1);
+		expect(clip.view.filters).toBeNull();
 	});
 });

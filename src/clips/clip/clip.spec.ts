@@ -68,11 +68,9 @@ describe('The Clip Object', () => {
 		expect(frameFn).toBeCalledTimes(3);
 	});
 
-	it('should be adaptable to a track', async () => {
-		// use common multiples of 30 and 15
+	it('should connect to a track', async () => {
 		clip.set({ stop: <frame>60, start: <frame>30 });
 
-		// 30 fps is the default
 		const composition = new Composition();
 		const track = composition.createTrack('base');
 		await track.add(clip);
@@ -88,27 +86,38 @@ describe('The Clip Object', () => {
 		expect(clip.track?.id).toBe(track.id);
 	});
 
-	it('should be removable off the track', async () => {
-		const secondClip = new Clip({ stop: <frame>900, start: <frame>570 });
+	it('should be removable from the track', async () => {
+		const clip1 = new Clip({ stop: 900, start: 570 });
 
 		const composition = new Composition();
 		const track = composition.createTrack('base');
 		expect(track.clips.length).toBe(0);
 		await track.add(clip);
 		expect(track.clips.length).toBe(1);
-		await track.add(secondClip);
+		await track.add(clip1);
 		expect(track.clips.length).toBe(2);
 		expect(track.clips.findIndex((n) => n.id == clip.id)).toBe(0);
 		expect(clip.state).toBe('ATTACHED');
 
+		composition.computeFrame();
+
+		// clip is currently getting rendered
+		expect(track.view.children.length).toBe(1);
+
 		clip.detach();
 		expect(track.clips.findIndex((n) => n.id == clip.id)).toBe(-1);
-		expect(track.clips.findIndex((n) => n.id == secondClip.id)).toBe(0);
+		expect(track.clips.findIndex((n) => n.id == clip1.id)).toBe(0);
+		expect(clip.state).toBe('READY');
+		expect(detachFn).toBeCalledTimes(1);
+		expect(track.view.children.length).toBe(0);
+
+		// try again
+		clip.detach();
 		expect(clip.state).toBe('READY');
 		expect(detachFn).toBeCalledTimes(1);
 	});
 
-	it('should be not remove error state on detach', async () => {
+	it('should not remove error state on detach', async () => {
 		const composition = new Composition();
 		const track = composition.createTrack('base');
 

@@ -8,5 +8,4 @@
 export * from './clip';
 export * from './clip.types';
 export * from './clip.desierializer';
-export * from './clip.decorator';
 export * from './clip.interfaces';

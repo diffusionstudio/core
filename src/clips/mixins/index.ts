@@ -6,6 +6,5 @@
  */
 
 export * from './visual';
-export * from './async';
 export * from './visual.decorator';
 export * from './visual.interfaces';

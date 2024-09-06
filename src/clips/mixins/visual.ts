@@ -14,7 +14,7 @@ import type { Serializer } from '../../services';
 import type { Container, Filter } from 'pixi.js';
 import type { Constructor, float, int, Anchor, Position, Scale, Translate2D, Percent, NumberCallback } from '../../types';
 
-type BaseClass = { container: Container } & Serializer;
+type BaseClass = { view: Container } & Serializer;
 
 export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 	class Mixin extends Base {
@@ -26,8 +26,8 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 
 		@serializable(deserializers.Deserializer2D)
 		public _position: Position = {
-			x: this.container.position.x,
-			y: this.container.position.y,
+			x: this.view.position.x,
+			y: this.view.position.y,
 		}
 
 		@serializable(deserializers.Deserializer2D)
@@ -45,7 +45,7 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * @example 90
 		 */
 		@serializable(deserializers.Deserializer1D)
-		public rotation: number | Keyframe<number> | NumberCallback = this.container.angle;
+		public rotation: number | Keyframe<number> | NumberCallback = this.view.angle;
 
 		/**
 		 * Defines the opacity of the clip as a number
@@ -86,8 +86,8 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 */
 		public get scale(): Scale {
 			return this._scale ?? {
-				x: this.container.scale.x,
-				y: this.container.scale.y,
+				x: this.view.scale.x,
+				y: this.view.scale.y,
 			}
 		}
 
@@ -128,7 +128,7 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * The height of the clip/container
 		 */
 		public get height(): Keyframe<int> | Percent | int | NumberCallback {
-			return this._height ?? this.container.height;
+			return this._height ?? this.view.height;
 		}
 
 		public set height(value: Keyframe<int> | Percent | int | NumberCallback) {
@@ -139,7 +139,7 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * The width of the clip/container
 		 */
 		public get width(): Keyframe<int> | Percent | int | NumberCallback {
-			return this._width ?? this.container.width;
+			return this._width ?? this.view.width;
 		}
 
 		public set width(value: Keyframe<int> | Percent | int | NumberCallback) {
@@ -154,10 +154,10 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		*/
 		@serializable()
 		public get anchor(): Anchor {
-			if (this.container.children[0] instanceof Sprite) {
+			if (this.view.children[0] instanceof Sprite) {
 				return {
-					x: this.container.children[0].anchor.x,
-					y: this.container.children[0].anchor.y,
+					x: this.view.children[0].anchor.x,
+					y: this.view.children[0].anchor.y,
 				};
 			}
 			return { x: 0, y: 0 }
@@ -166,16 +166,24 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		public set anchor(value: Anchor | float) {
 			const anchor = typeof value == 'number' ? { x: value, y: value } : value;
 
-			for (const child of this.container.children) {
+			for (const child of this.view.children) {
 				if (child instanceof Sprite) {
 					child.anchor.set(anchor.x, anchor.y);
 				}
 			}
 		}
 
-		public unrender(): void {
-			if (this.filters && this.container.filters) {	// @ts-ignore
-				this.container.filters = null;
+		public enter(): void {
+			console.log(this.constructor.name, 'enter')
+			if (this.filters && !this.view.filters) {
+				this.view.filters = this.filters;
+			}
+		}
+
+		public exit(): void {
+			console.log(this.constructor.name, 'exit')
+			if (this.filters && this.view.filters) {
+				this.view.filters = null as any;
 			}
 		}
 	}

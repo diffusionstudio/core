@@ -312,7 +312,7 @@ describe('The Media Clip', () => {
 		clip.transcript = Transcript.fromJSON(captions);
 		clip.state = 'READY';
 
-		await expect(() => clip.generateCaptions()).rejects.toThrowError(ValidationError)
+		await expect(() => clip.addCaptions()).rejects.toThrowError(ValidationError)
 	});
 });
 
