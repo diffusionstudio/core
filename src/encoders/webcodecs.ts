@@ -11,7 +11,6 @@ import { audioClipFilter, createStreamTarget } from './webcodecs.utils';
 import { FPS_DEFAULT, Timestamp } from '../models';
 import { getRenderEventDetail } from './utils';
 import { EventEmitter } from '../services';
-import { clear } from '../utils/pixi';
 import * as utils from '../utils';
 
 import type { StreamTarget } from 'mp4-muxer';
@@ -83,11 +82,11 @@ export class WebcodecsEncoder extends EventEmitter<EncoderEvents>() implements R
 				});
 			}
 
-			clear(renderer);
-
-			for (let i = tracks.length - 1; i >= 0; i--) {
-				await tracks[i].render(renderer, Timestamp.fromFrames(frame, this.fps));
+			for (let i = 0; i < tracks.length; i++) {
+				await tracks[i].update(Timestamp.fromFrames(frame, this.fps));
 			}
+
+			renderer.render(this.composition.stage);
 
 			const videoFrame = new VideoFrame(renderer.canvas, {
 				timestamp: Math.floor((frame / this.fps) * 1e6),

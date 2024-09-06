@@ -5,12 +5,11 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { autoDetectRenderer } from 'pixi.js';
+import { autoDetectRenderer, Container } from 'pixi.js';
 import { framesToMillis, Timestamp, FPS_DEFAULT } from '../models';
 import { MediaClip } from '../clips';
 import { Serializer } from '../services';
 import { TrackDeserializer } from '../tracks';
-import { clear } from '../utils/pixi';
 import { isClass } from '../utils';
 import { EventEmitterMixin } from '../mixins';
 import { BaseError } from '../errors';
@@ -34,6 +33,11 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 * Access to the underlying pixijs renderer
 	 */
 	public renderer?: Renderer;
+
+	/**
+	 * The root container of the composition
+	 */
+	public stage = new Container();
 
 	/**
 	 * Settings of the composition
@@ -95,7 +99,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.on('frame', this.computeFrame.bind(this));
 		this.on('error', this.computeFrame.bind(this));
 
-		autoDetectRenderer({ ...this.settings, clearBeforeRender: false, preference: backend })
+		autoDetectRenderer({ ...this.settings, preference: backend })
 			.then(renderer => {
 				this.renderer = renderer;
 				this.trigger('init', undefined);
@@ -196,6 +200,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		track.connect(this);
 
+		this.stage.addChild(track.view);
 		this.tracks.unshift(track);
 
 		track.on('*', this.updateDuration.bind(this));
@@ -301,13 +306,13 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 */
 	public computeFrame(): void {
 		if (!this.renderer) return;
-
-		clear(this.renderer, this.context);
-
-		for (let i = this.tracks.length - 1; i >= 0; i--) {
-			this.tracks[i].render(this.renderer, Timestamp.fromFrames(this.frame));
+		
+		for (let i = 0; i < this.tracks.length; i++) {
+			this.tracks[i].update(Timestamp.fromFrames(this.frame));
 		}
 
+		this.renderer.render(this.stage);
+		this.context?.clearRect(0, 0, this.settings.width, this.settings.height);
 		this.context?.drawImage(this.renderer.canvas, 0, 0);
 
 		this.trigger('currentframe', this.frame);
@@ -372,7 +377,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 			await track.seek(Timestamp.fromFrames(this.frame));
 		}
 
-		this.timerCallback();
+		this.ticker();
 		this.trigger('play', this.frame);
 	}
 
@@ -456,7 +461,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		);
 	}
 
-	private async timerCallback() {
+	private async ticker() {
 		const interval = 1000 / FPS_DEFAULT;
 
 		let then = performance.now();

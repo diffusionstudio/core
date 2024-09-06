@@ -90,24 +90,29 @@ describe('The composition', () => {
 	});
 
 	it('should append new tracks', () => {
+		expect(composition.stage.children.length).toBe(0);
 		const video = composition.createTrack('video');
 
 		expect(video instanceof VideoTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(1);
 		expect(composition.tracks.length).toBe(1);
 
 		const image = composition.createTrack('image').layer('bottom');
 		expect(image instanceof ImageTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(2);
 		expect(composition.tracks.length).toBe(2);
 		expect(composition.tracks.at(-1) instanceof ImageTrack).toBe(true);
 
 		const text = composition.createTrack('text').layer('top');
 		expect(text instanceof TextTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(3);
 		expect(composition.tracks.length).toBe(3);
 		expect(composition.tracks[0] instanceof TextTrack).toBe(true);
 		expect(composition.tracks[1] instanceof VideoTrack).toBe(true);
 
 		const audio = composition.createTrack('audio').layer(1);
 		expect(audio instanceof AudioTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(4);
 		expect(composition.tracks.length).toBe(4);
 		expect(composition.tracks[1] instanceof AudioTrack).toBe(true);
 	});
