@@ -43,13 +43,21 @@ export class HtmlSource extends Source {
 		return this.iframe.contentWindow?.document;
 	}
 
-	public async createObjectURL(obj: Blob): Promise<string> {
-		this.iframe.setAttribute('src', URL.createObjectURL(obj));
-		await new Promise<void>((resolve) => {
+	public async createObjectURL(): Promise<string> {
+		if (this.objectURL) return this.objectURL;
+
+		this.iframe.setAttribute('src',
+			URL.createObjectURL(await this.getFile())
+		);
+
+		await new Promise<void>((resolve, reject) => {
 			this.iframe.onload = () => resolve();
+			this.iframe.onerror = (e) => reject(e);
 		});
 
-		return documentToSvgImageUrl(this.document);
+		this.objectURL = documentToSvgImageUrl(this.document);
+
+		return this.objectURL;
 	}
 
 	/**
@@ -57,13 +65,15 @@ export class HtmlSource extends Source {
 	 * contents of the iframe document
 	 */
 	public update() {
+		// url has not been created yet
+		if (!this.objectURL) return;
+
 		this.objectURL = documentToSvgImageUrl(this.document);
 	}
 
 	public async thumbnail(): Promise<HTMLImageElement> {
-		await this.loaded();
 		const image = new Image();
-		image.src = this.objectURL ?? '';
+		image.src = await this.createObjectURL();
 		image.className = 'object-contain w-full aspect-video h-auto';
 		return image;
 	}
