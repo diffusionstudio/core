@@ -6,31 +6,28 @@
  */
 
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
-import { WebGPURenderer } from 'pixi.js';
 import { Clip } from '../../clips';
 import { Track } from './track';
 import { Timestamp } from '../../models';
 
 import type { frame } from '../../types';
 
-const renderer = new WebGPURenderer();
-
 describe('The Track Object', () => {
 	let track: Track<Clip>;
-	let renderSpy: MockInstance<(renderer: WebGPURenderer, time: Timestamp) => void | Promise<void>>;
+	let updateSpy: MockInstance<(time: Timestamp) => void | Promise<void>>;
 
 	beforeEach(() => {
 		// frame and seconds are the same
 		track = new Track();
-		renderSpy = vi.spyOn(track, 'render');
+		updateSpy = vi.spyOn(track, 'update');
 	});
 
 	it('should render should not have any effects when the track is empty', () => {
 		track.pointer = 4;
 
-		track.render(renderer, new Timestamp());
+		track.update(new Timestamp());
 
-		expect(renderSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(1);
 		expect(track.pointer).toBe(4);
 	});
 
@@ -43,30 +40,30 @@ describe('The Track Object', () => {
 			new Clip().set({ start: <frame>50, stop: <frame>60 }),
 		];
 
-		const spys = track.clips.map((clip) => vi.spyOn(clip, 'render'));
+		const spys = track.clips.map((clip) => vi.spyOn(clip, 'update'));
 
-		track.render(renderer, new Timestamp());
+		track.update(new Timestamp());
 
-		expect(renderSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(1);
 		expect(track.pointer).toBe(0);
 
 		expect(spys[0]).toHaveBeenCalledTimes(1);
 		expect(spys[1]).toHaveBeenCalledTimes(0);
 		expect(spys[2]).toHaveBeenCalledTimes(0);
 
-		track.render(renderer, Timestamp.fromFrames(15));
+		track.update(Timestamp.fromFrames(15));
 
 		// one more due to recursion after clip seek
-		expect(renderSpy).toHaveBeenCalledTimes(2);
+		expect(updateSpy).toHaveBeenCalledTimes(2);
 		expect(track.pointer).toBe(1);
 
 		expect(spys[0]).toHaveBeenCalledTimes(1);
 		expect(spys[1]).toHaveBeenCalledTimes(0);
 		expect(spys[2]).toHaveBeenCalledTimes(0);
 
-		track.render(renderer, Timestamp.fromFrames(25));
+		track.update(Timestamp.fromFrames(25));
 
-		expect(renderSpy).toHaveBeenCalledTimes(3);
+		expect(updateSpy).toHaveBeenCalledTimes(3);
 		expect(track.pointer).toBe(1);
 
 		expect(spys[0]).toHaveBeenCalledTimes(1);
@@ -74,9 +71,9 @@ describe('The Track Object', () => {
 		expect(spys[2]).toHaveBeenCalledTimes(0);
 
 		// jump to 3rd clip
-		track.render(renderer, Timestamp.fromFrames(50));
+		track.update(Timestamp.fromFrames(50));
 
-		expect(renderSpy).toHaveBeenCalledTimes(4);
+		expect(updateSpy).toHaveBeenCalledTimes(4);
 		expect(track.pointer).toBe(2);
 
 		expect(spys[0]).toHaveBeenCalledTimes(1);
@@ -84,9 +81,9 @@ describe('The Track Object', () => {
 		expect(spys[2]).toHaveBeenCalledTimes(1);
 
 		// render after all clips
-		track.render(renderer, Timestamp.fromFrames(70));
+		track.update(Timestamp.fromFrames(70));
 
-		expect(renderSpy).toHaveBeenCalledTimes(5);
+		expect(updateSpy).toHaveBeenCalledTimes(5);
 		expect(track.pointer).toBe(2);
 
 		expect(spys[0]).toHaveBeenCalledTimes(1);
@@ -102,27 +99,27 @@ describe('The Track Object', () => {
 			new Clip().set({ start: <frame>21, stop: <frame>30 }),
 		];
 
-		const spys = track.clips.map((clip) => vi.spyOn(clip, 'render'));
+		const spys = track.clips.map((clip) => vi.spyOn(clip, 'update'));
 
-		track.render(renderer, Timestamp.fromFrames(5));
+		track.update(Timestamp.fromFrames(5));
 
-		expect(renderSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(1);
 		expect(track.pointer).toBe(0);
 
 		expect(spys[0]).toHaveBeenCalledTimes(0);
 		expect(spys[1]).toHaveBeenCalledTimes(0);
 
-		track.render(renderer, Timestamp.fromFrames(21));
+		track.update(Timestamp.fromFrames(21));
 
-		expect(renderSpy).toHaveBeenCalledTimes(2);
+		expect(updateSpy).toHaveBeenCalledTimes(2);
 		expect(track.pointer).toBe(1);
 
 		expect(spys[0]).toHaveBeenCalledTimes(0);
 		expect(spys[1]).toHaveBeenCalledTimes(1);
 
-		track.render(renderer, Timestamp.fromFrames(10));
+		track.update(Timestamp.fromFrames(10));
 
-		expect(renderSpy).toHaveBeenCalledTimes(3);
+		expect(updateSpy).toHaveBeenCalledTimes(3);
 		expect(track.pointer).toBe(0);
 
 		expect(spys[0]).toHaveBeenCalledTimes(1);

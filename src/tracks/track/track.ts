@@ -7,6 +7,7 @@
 
 import { Timestamp } from '../../models';
 import { Clip } from '../../clips';
+import { Container } from 'pixi.js';
 import { arraymove } from '../../utils';
 import { Serializer } from '../../services';
 import { EventEmitterMixin } from '../../mixins';
@@ -16,9 +17,9 @@ import type { Composition } from '../../composition';
 import type { InsertMode, TrackLayer, TrackType } from './track.types';
 import type { InsertStrategy } from './track.interfaces';
 import type { frame } from '../../types';
-import type { Renderer } from 'pixi.js';
 
 export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
+	public view = new Container();
 	/**
 	 * Controls the visability of the track
 	 */
@@ -114,20 +115,21 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	}
 
 	/**
-	 * Render the clip to the canvas
+	 * Triggered when the track is redrawn
 	 */
-	public render(renderer: Renderer, time: Timestamp): void | Promise<void> {
+	public update(time: Timestamp): void | Promise<void> {
 		// case track doesn't contain tracks to render
-		if (this.disabled || !this.clips.length || !this.clipRef) return;
+		if (this.disabled || !this.clips.length) return;
 
 		const { millis } = time;
 
-		// clean up last rendered clip
-		if (millis < this.clipRef.start.millis || millis > this.clipRef.stop.millis) {
-			this.clipRef.unrender();
+		// the clip has left the stage
+		if (inGraph(this.clipRef) && (!inRange(millis, this.clipRef) || this.clipRef?.disabled)) {
+			this.clipRef && this.view.removeChild(this.clipRef.view);
+			this.clipRef?.exit(); // call after remove
 		}
 
-		if (millis > this.stop.millis || millis < this.start.millis) return;
+		if (!inRange(millis, this)) return;
 
 		// search for next clip to be rendered
 		for (let idx = 0; idx < this.clips.length; idx++) {
@@ -139,9 +141,16 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 			const last = this.clips[pointer - 1];
 
 			// clip should be rendered
-			if (millis >= clip.start.millis && millis <= clip.stop.millis) {
+			if (inRange(millis, clip) && !clip.disabled) {
 				this.pointer = pointer;
-				return this.clipRef?.render?.(renderer, time);
+
+				// the clip has entered the stage
+				if (!inGraph(clip)) {
+					clip.enter(); // call before add
+					this.view.addChild(clip.view);
+				}
+
+				return clip.update(time);
 			}
 
 			// clip will be rendered next
@@ -154,6 +163,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 
 	/**
 	 * Adds a new clip to the track
+	 * @throws Error if the clip can't be added
 	 */
 	public async add(clip: Clp): Promise<this> {
 		// only append clip if composition is initialized
@@ -161,28 +171,25 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 			await new Promise(this.composition.resolve('init'));
 		}
 
-		try {
-			await clip.connect(this);
-			this.strategy.add(clip, this);
+		await clip.init();
+		await clip.connect(this);
+		await this.strategy.add(clip, this);
 
-			clip.on('frame', () => {
-				this.strategy.update(clip, this);
-			});
-			clip.on('detach', () => {
-				this.strategy.update(clip, this);
-			});
+		clip.on('frame', () => {
+			this.strategy.update(clip, this);
+		});
+		clip.on('detach', () => {
+			this.strategy.update(clip, this);
+		});
 
-			this.bubble('frame', clip);
-			this.bubble('update', clip);
-			this.bubble('error', clip);
-			this.bubble('attach', clip);
-			this.bubble('detach', clip);
-			this.bubble('load', clip);
+		this.bubble('frame', clip);
+		this.bubble('update', clip);
+		this.bubble('error', clip);
+		this.bubble('attach', clip);
+		this.bubble('detach', clip);
+		this.bubble('load', clip);
 
-			this.trigger('attach', undefined);
-		} catch (error) {
-			console.error(error);
-		}
+		this.trigger('attach', undefined);
 
 		return this;
 	}
@@ -191,14 +198,14 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	 * Get the first visible frame of the clip
 	 */
 	public get stop(): Timestamp {
-		return this.clips.filter((n) => !n.disabled).at(-1)?.stop ?? new Timestamp();
+		return this.clips.at(-1)?.stop ?? new Timestamp();
 	}
 
 	/**
 	 * Get the last visible frame of the clip
 	 */
 	public get start(): Timestamp {
-		return this.clips.filter((n) => !n.disabled).at(0)?.start ?? new Timestamp();
+		return this.clips.at(0)?.start ?? new Timestamp();
 	}
 
 	/**
@@ -214,13 +221,15 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	public detach(): this {
 		const index = this.composition?.tracks.findIndex((n) => n.id == this.id);
 
-		if (index == undefined || index == -1) {
-			// The track is not connected to the composition
-			return this;
+		if (this.view.parent && this.composition) {
+			this.composition.stage.removeChild(this.view);
 		}
 
-		this.composition?.tracks.splice(index, 1);
-		this.trigger('detach', undefined);
+		if (index != undefined && index >= 0) {
+			this.composition?.tracks.splice(index, 1);
+			this.trigger('detach', undefined);
+		}
+
 		return this;
 	}
 
@@ -231,4 +240,27 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	private get clipRef(): Clp | undefined {
 		return this.clips[this.pointer];
 	}
+}
+
+/**
+ * Check if a clip or track should be rendered
+ * @param millis Time in milliseconds
+ * @param node A clip or track
+ * @returns True if the time is between the start and stop of the clip/track
+ */
+function inRange(time: number, node?: Track<Clip> | Clip): boolean {
+	if (!node) return false;
+
+	return time >= node.start.millis && time <= node.stop.millis;
+}
+
+/**
+ * Check if the clip is part of the scene graph to render
+ * @param clip The clip to verify
+ * @returns True if the clip is part of the scene graph
+ */
+function inGraph(clip?: Clip): boolean {
+	if (!clip) return false;
+
+	return !!clip.view.parent;
 }

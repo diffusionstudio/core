@@ -14,20 +14,18 @@ import { Transcript, Word, WordGroup } from '../../models';
 const file = new File([], 'file.mp3', { type: 'audio/mp3' });
 
 describe('(1) The Caption Presets', () => {
-	const mockFn = vi.fn();
-
-	Object.assign(document, { fonts: { add: mockFn } });
+	Object.assign(document, { fonts: { add: vi.fn() } });
 
 	it('should adjust its offset when the media stack changes', async () => {
 		const composition = new Composition();
 
-		const media1 = await new AudioClip().load(file);
-		media1.element.dispatchEvent(new Event('canplay'));
-		media1.duration.seconds = 20;
+		const media1 = new AudioClip(file);
+		mockAudioValid(media1);
+		mockDurationValid(media1, 20);
 
-		const media2 = await new AudioClip().load(file);
-		media2.element.dispatchEvent(new Event('canplay'));
-		media2.duration.seconds = 12;
+		const media2 = new AudioClip(file);
+		mockAudioValid(media2);
+		mockDurationValid(media2, 12);
 
 		const track0 = composition.shiftTrack(MediaTrack).stacked();
 
@@ -127,3 +125,15 @@ describe('(1) The Caption Presets', () => {
 		expect(track2.clips.at(4)?.stop.seconds).toBe(10);
 	});
 });
+
+
+function mockAudioValid(clip: AudioClip) {
+	return vi.spyOn(clip.element, 'oncanplay', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('canplay'));
+		});
+}
+
+function mockDurationValid(clip: AudioClip, duration = 1) {
+	return vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(duration);
+}

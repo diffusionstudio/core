@@ -6,15 +6,10 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { WebGPURenderer } from 'pixi.js';
 import { Composition } from '../../composition';
 import { Clip } from '../../clips';
 import { Track } from './track';
 import { Timestamp } from '../../models';
-
-import type { frame } from '../../types';
-
-const renderer = new WebGPURenderer();
 
 describe('The Track Object', () => {
 	let comp: Composition;
@@ -40,19 +35,19 @@ describe('The Track Object', () => {
 		expect(updateMock).toBeCalledTimes(1);
 	});
 
-	it('should have a functional insertClip method', async () => {
-		await track.add(new Clip().set({ stop: <frame>5, start: <frame>0 }));
+	it('should be able to add clips', async () => {
+		await track.add(new Clip().set({ stop: 5, start: 0 }));
 		expect(track.clips.length).toBe(1);
 		expect(track.start.frames).toBe(0);
 		expect(track.stop.frames).toBe(5);
 
-		await track.add(new Clip().set({ stop: <frame>12, start: <frame>9 }));
+		await track.add(new Clip().set({ stop: 12, start: 9 }));
 		expect(track.clips.length).toBe(2);
 		expect(track.start.frames).toBe(0);
 		expect(track.stop.frames).toBe(12);
 		expect(track.clips.at(0)?.stop.frames).toBe(5);
 
-		await track.add(new Clip().set({ stop: <frame>8, start: <frame>6 }));
+		await track.add(new Clip().set({ stop: 8, start: 6 }));
 		expect(track.clips.length).toBe(3);
 
 		expect(track.start.frames).toBe(0);
@@ -63,8 +58,8 @@ describe('The Track Object', () => {
 	});
 
 	it('should snap the clip when it overlaps with the end of another clip', async () => {
-		const clip0 = new Clip().set({ stop: <frame>20, start: <frame>0 });
-		const clip1 = new Clip().set({ stop: <frame>30, start: <frame>11 });
+		const clip0 = new Clip().set({ stop: 20, start: 0 });
+		const clip1 = new Clip().set({ stop: 30, start: 11 });
 		await track.add(clip0);
 		await track.add(clip1);
 
@@ -83,8 +78,8 @@ describe('The Track Object', () => {
 	});
 
 	it('should snap the clip when it overlaps with the start of another clip', async () => {
-		const clip0 = new Clip().set({ stop: <frame>30, start: <frame>10 });
-		const clip1 = new Clip().set({ stop: <frame>19, start: <frame>0 });
+		const clip0 = new Clip().set({ stop: 30, start: 10 });
+		const clip1 = new Clip().set({ stop: 19, start: 0 });
 		await track.add(clip0);
 		await track.add(clip1);
 
@@ -103,9 +98,9 @@ describe('The Track Object', () => {
 	});
 
 	it('should snap the clip when it overlaps with the start and end another clips', async () => {
-		const clip0 = new Clip().set({ stop: <frame>30, start: <frame>17 });
-		const clip1 = new Clip().set({ stop: <frame>13, start: <frame>0 });
-		const clip2 = new Clip().set({ stop: <frame>20, start: <frame>10 });
+		const clip0 = new Clip().set({ stop: 30, start: 17 });
+		const clip1 = new Clip().set({ stop: 13, start: 0 });
+		const clip2 = new Clip().set({ stop: 20, start: 10 });
 
 		await track.add(clip0);
 		await track.add(clip1);
@@ -133,8 +128,8 @@ describe('The Track Object', () => {
 
 	it('should stack clips if the option is active', async () => {
 		track.stacked();
-		await track.add(new Clip().set({ stop: <frame>9, start: <frame>0 }));
-		await track.add(new Clip().set({ stop: <frame>45, start: <frame>30 }));
+		await track.add(new Clip().set({ stop: 9, start: 0 }));
+		await track.add(new Clip().set({ stop: 45, start: 30 }));
 
 		expect(track.clips.at(0)?.start.frames).toBe(0);
 		expect(track.clips.at(0)?.stop.frames).toBe(9);
@@ -145,86 +140,90 @@ describe('The Track Object', () => {
 		expect(track.clips.at(1)?.stop.frames).toBe(24);
 		expect(track.clips.at(1)?.stop.millis).toBe(801);
 
-		await track.add(new Clip().set({ stop: <frame>50, start: <frame>40 }));
+		await track.add(new Clip().set({ stop: 50, start: 40 }));
 		expect(track.clips.at(2)?.start.millis).toBe(802);
 		expect(track.clips.at(2)?.start.frames).toBe(24);
 		expect(track.clips.at(2)?.stop.frames).toBe(34);
 	});
 
 	it('should render the clips correctly', async () => {
-		const clip0 = new Clip().set({ stop: <frame>9, start: <frame>3 });
-		const renderSpy0 = vi.spyOn(clip0, 'render');
+		const clip0 = new Clip().set({ stop: 9, start: 3 });
+		const updateSpy0 = vi.spyOn(clip0, 'update');
 
-		const clip1 = new Clip().set({ stop: <frame>14, start: <frame>10 });
-		const renderSpy1 = vi.spyOn(clip1, 'render');
+		const clip1 = new Clip().set({ stop: 14, start: 10 });
+		const updateSpy1 = vi.spyOn(clip1, 'update');
 
-		const clip2 = new Clip().set({ stop: <frame>26, start: <frame>20 });
-		const renderSpy2 = vi.spyOn(clip2, 'render');
+		const clip2 = new Clip().set({ stop: 26, start: 20 });
+		const updateSpy2 = vi.spyOn(clip2, 'update');
 
 		await track.add(clip0);
 		await track.add(clip1);
 		await track.add(clip2);
 
-		track.render(renderer, new Timestamp());
+		track.update(new Timestamp());
 
 		expect(track.pointer).toBe(0);
-		expect(renderSpy0).not.toHaveBeenCalled();
-		expect(renderSpy1).not.toHaveBeenCalled();
-		expect(renderSpy2).not.toHaveBeenCalled();
+		expect(updateSpy0).not.toHaveBeenCalled();
+		expect(updateSpy1).not.toHaveBeenCalled();
+		expect(updateSpy2).not.toHaveBeenCalled();
 
-		track.render(renderer, Timestamp.fromFrames(3));
+		track.update(Timestamp.fromFrames(3));
 		expect(track.pointer).toBe(0);
-		expect(renderSpy0).toHaveBeenCalledTimes(1);
-		expect(renderSpy1).not.toHaveBeenCalled();
-		expect(renderSpy2).not.toHaveBeenCalled();
-		renderSpy0.mockClear();
+		expect(updateSpy0).toHaveBeenCalledTimes(1);
+		expect(updateSpy1).not.toHaveBeenCalled();
+		expect(updateSpy2).not.toHaveBeenCalled();
+		updateSpy0.mockClear();
 
-		track.render(renderer, Timestamp.fromFrames(10));
+		track.update(Timestamp.fromFrames(10));
 		expect(track.pointer).toBe(1);
-		expect(renderSpy0).not.toHaveBeenCalled();
-		expect(renderSpy1).toHaveBeenCalledTimes(1);
-		expect(renderSpy2).not.toHaveBeenCalled();
-		renderSpy1.mockClear();
+		expect(updateSpy0).not.toHaveBeenCalled();
+		expect(updateSpy1).toHaveBeenCalledTimes(1);
+		expect(updateSpy2).not.toHaveBeenCalled();
+		updateSpy1.mockClear();
 
 		expect(track.pointer).toBe(1);
-		track.render(renderer, Timestamp.fromFrames(18));
+		track.update(Timestamp.fromFrames(18));
 		expect(track.pointer).toBe(2);
-		expect(renderSpy0).not.toHaveBeenCalled();
-		expect(renderSpy1).not.toHaveBeenCalled();
-		expect(renderSpy2).not.toHaveBeenCalled();
+		expect(updateSpy0).not.toHaveBeenCalled();
+		expect(updateSpy1).not.toHaveBeenCalled();
+		expect(updateSpy2).not.toHaveBeenCalled();
 
-		track.render(renderer, Timestamp.fromFrames(18));
+		track.update(Timestamp.fromFrames(18));
 		expect(track.pointer).toBe(2);
-		expect(renderSpy0).not.toHaveBeenCalled();
-		expect(renderSpy1).not.toHaveBeenCalled();
-		expect(renderSpy2).not.toHaveBeenCalled();
+		expect(updateSpy0).not.toHaveBeenCalled();
+		expect(updateSpy1).not.toHaveBeenCalled();
+		expect(updateSpy2).not.toHaveBeenCalled();
 
-		track.render(renderer, Timestamp.fromFrames(28));
+		track.update(Timestamp.fromFrames(28));
 		expect(track.pointer).toBe(2);
-		expect(renderSpy0).not.toHaveBeenCalled();
-		expect(renderSpy1).not.toHaveBeenCalled();
-		expect(renderSpy2).not.toHaveBeenCalled();
+		expect(updateSpy0).not.toHaveBeenCalled();
+		expect(updateSpy1).not.toHaveBeenCalled();
+		expect(updateSpy2).not.toHaveBeenCalled();
 	});
 
 	it('should be able to detach clips', () => {
 		const comp1 = new Composition();
 		const track1 = comp1.createTrack('base');
+
+		expect(comp1.stage.children.length).toBe(1);
+
 		const detachFn = vi.fn();
 		track1.on('detach', detachFn);
 		track1.detach();
 		expect(comp1.tracks.findIndex((l) => l.id == track1.id)).toBe(-1);
 		expect(detachFn).toBeCalledTimes(1);
+		expect(comp1.stage.children.length).toBe(0);
 	});
 
 	it('should realign the clips when stacked', async () => {
 		track.stacked();
 
-		const clip0 = new Clip().set({ stop: <frame>9, start: <frame>0 });
-		const clip1 = new Clip().set({ stop: <frame>45, start: <frame>30 });
+		const clip0 = new Clip().set({ stop: 9, start: 0 });
+		const clip1 = new Clip().set({ stop: 45, start: 30 });
 
 		await track.add(clip0);
 		await track.add(clip1);
-		await track.add(new Clip().set({ stop: <frame>50, start: <frame>40 }));
+		await track.add(new Clip().set({ stop: 50, start: 40 }));
 
 		expect(track.clips.at(0)?.start.frames).toBe(0);
 		expect(track.clips.at(0)?.stop.frames).toBe(9);
@@ -256,20 +255,119 @@ describe('The Track Object', () => {
 	});
 
 	it('should be be able to add a base clip with offset', async () => {
-		const clip = new Clip().set({ stop: <frame>30 });
+		const clip = new Clip().set({ stop: 30 });
 
-		await track.add(clip.offsetBy(<frame>60));
+		await track.add(clip.offsetBy(60));
 
 		expect(track.clips.at(0)?.start.frames).toBe(60);
 		expect(track.clips.at(0)?.stop.frames).toBe(90);
 	});
 
 	it('should be be able to add a base clip with offset', async () => {
-		const clip = new Clip().set({ stop: <frame>30 });
+		const clip = new Clip().set({ stop: 30 });
 
-		await track.add(clip.offsetBy(<frame>60));
+		await track.add(clip.offsetBy(60));
 
 		expect(track.clips.at(0)?.start.frames).toBe(60);
 		expect(track.clips.at(0)?.stop.frames).toBe(90);
+	});
+
+	it('should intialize and connect clips', async () => {
+		const clip = new Clip();
+
+		const connectFn = vi.spyOn(clip, 'connect');
+		const initFn = vi.spyOn(clip, 'init');
+
+		await track.add(clip);
+
+		expect(connectFn).toHaveBeenCalledTimes(1);
+		expect(connectFn.mock.calls[0][0]).toBeInstanceOf(Track);
+		expect(initFn).toHaveBeenCalledTimes(1);
+	});
+
+	it('should handle the clip lifecycle', async () => {
+		const clip = new Clip({ start: 12, stop: 21 });
+
+		const enterFn = vi.spyOn(clip, 'enter');
+		const updateFn = vi.spyOn(clip, 'update');
+		const exitFn = vi.spyOn(clip, 'exit');
+
+		await track.add(clip);
+
+		track.update(Timestamp.fromFrames(8));
+
+		expect(track.view.children.length).toBe(0);
+		expect(enterFn).toHaveBeenCalledTimes(0);
+		expect(updateFn).toHaveBeenCalledTimes(0);
+		expect(exitFn).toHaveBeenCalledTimes(0);
+
+		track.update(Timestamp.fromFrames(12));
+
+		expect(track.view.children.length).toBe(1);
+		expect(enterFn).toHaveBeenCalledTimes(1);
+		expect(updateFn).toHaveBeenCalledTimes(1);
+		expect(exitFn).toHaveBeenCalledTimes(0);
+
+		track.update(Timestamp.fromFrames(18));
+
+		expect(enterFn).toHaveBeenCalledTimes(1);
+		expect(updateFn).toHaveBeenCalledTimes(2);
+		expect(exitFn).toHaveBeenCalledTimes(0);
+
+		track.update(Timestamp.fromFrames(21));
+
+		expect(enterFn).toHaveBeenCalledTimes(1);
+		expect(updateFn).toHaveBeenCalledTimes(3);
+		expect(exitFn).toHaveBeenCalledTimes(0);
+
+		track.update(Timestamp.fromFrames(22));
+
+		expect(track.view.children.length).toBe(0);
+		expect(enterFn).toHaveBeenCalledTimes(1);
+		expect(updateFn).toHaveBeenCalledTimes(3);
+		expect(exitFn).toHaveBeenCalledTimes(1);
+	});
+
+	it('should not update disabled clips', async () => {
+		const clip = new Clip({ start: 12, stop: 21, disabled: true });
+
+		const enterFn = vi.spyOn(clip, 'enter');
+		const updateFn = vi.spyOn(clip, 'update');
+		const exitFn = vi.spyOn(clip, 'exit');
+
+		await track.add(clip);
+
+		track.update(Timestamp.fromFrames(12));
+
+		expect(track.view.children.length).toBe(0);
+		expect(enterFn).toHaveBeenCalledTimes(0);
+		expect(updateFn).toHaveBeenCalledTimes(0);
+		expect(exitFn).toHaveBeenCalledTimes(0);
+	});
+
+	it('should remove disabled clip from view', async () => {
+		const clip = new Clip({ start: 12, stop: 21 });
+
+		const enterFn = vi.spyOn(clip, 'enter');
+		const updateFn = vi.spyOn(clip, 'update');
+		const exitFn = vi.spyOn(clip, 'exit');
+
+		await track.add(clip);
+
+		track.update(Timestamp.fromFrames(12));
+
+		expect(track.view.children.length).toBe(1);
+		expect(enterFn).toHaveBeenCalledTimes(1);
+		expect(updateFn).toHaveBeenCalledTimes(1);
+		expect(exitFn).toHaveBeenCalledTimes(0);
+
+		clip.set({ disabled: true });
+
+		track.update(Timestamp.fromFrames(13));
+
+		expect(track.view.children.length).toBe(0);
+		expect(enterFn).toHaveBeenCalledTimes(1);
+		expect(updateFn).toHaveBeenCalledTimes(1);
+		expect(exitFn).toHaveBeenCalledTimes(1);
 	});
 });
