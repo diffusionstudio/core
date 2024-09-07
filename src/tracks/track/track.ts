@@ -178,9 +178,6 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 		clip.on('frame', () => {
 			this.strategy.update(clip, this);
 		});
-		clip.on('detach', () => {
-			this.strategy.update(clip, this);
-		});
 
 		this.bubble('frame', clip);
 		this.bubble('update', clip);
@@ -192,6 +189,30 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 		this.trigger('attach', undefined);
 
 		return this;
+	}
+
+	/**
+	 * Remove a given clip from the track
+	 * @returns `Track` when it has been successfully removed `undefined` otherwise
+	 */
+	public remove<L extends Clp>(clip: L): L | undefined {
+		const index = this.clips.findIndex((c) => c.id == clip.id);
+
+		if (clip.state == 'ATTACHED') {
+			clip.state = 'READY';
+		}
+
+		if (clip.view.parent) {
+			this.view.removeChild(clip.view);
+		}
+
+		if (index != undefined && index >= 0) {
+			this.clips.splice(index, 1);
+			this.strategy.update(clip, this);
+			this.trigger('detach', undefined);
+
+			return clip;
+		}
 	}
 
 	/**
@@ -219,16 +240,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	 * Remove the track from the composition
 	 */
 	public detach(): this {
-		const index = this.composition?.tracks.findIndex((n) => n.id == this.id);
-
-		if (this.view.parent && this.composition) {
-			this.composition.stage.removeChild(this.view);
-		}
-
-		if (index != undefined && index >= 0) {
-			this.composition?.tracks.splice(index, 1);
-			this.trigger('detach', undefined);
-		}
+		this.composition?.removeTrack(this);
 
 		return this;
 	}

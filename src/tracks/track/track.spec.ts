@@ -201,18 +201,54 @@ describe('The Track Object', () => {
 		expect(updateSpy2).not.toHaveBeenCalled();
 	});
 
-	it('should be able to detach clips', () => {
+	it('should be able to detach itself from the composition', () => {
 		const comp1 = new Composition();
 		const track1 = comp1.createTrack('base');
 
 		expect(comp1.stage.children.length).toBe(1);
 
-		const detachFn = vi.fn();
-		track1.on('detach', detachFn);
 		track1.detach();
 		expect(comp1.tracks.findIndex((l) => l.id == track1.id)).toBe(-1);
-		expect(detachFn).toBeCalledTimes(1);
 		expect(comp1.stage.children.length).toBe(0);
+	});
+
+	it('should be remove clips from the track', async () => {
+		const clip0 = new Clip({ stop: 300 });
+		const clip1 = new Clip({ stop: 600, start: 300 });
+
+		const composition = new Composition();
+		const track = composition.createTrack('base');
+
+		await track.add(clip0);
+		await track.add(clip1);
+		
+		expect(track.clips.length).toBe(2);
+
+		composition.computeFrame();
+
+		// clip is currently getting rendered
+		expect(track.view.children.length).toBe(1);
+
+		const detachFn = vi.fn();
+		track.on('detach', detachFn);
+
+		track.remove(clip0);
+
+		expect(track.clips.length).toBe(1);
+		expect(track.clips.findIndex((n) => n.id == clip0.id)).toBe(-1);
+		expect(track.clips.findIndex((n) => n.id == clip1.id)).toBe(0);
+
+		expect(clip0.state).toBe('READY');
+		expect(clip1.state).toBe('ATTACHED');
+
+		expect(detachFn).toBeCalledTimes(1);
+		expect(track.view.children.length).toBe(0);
+
+		// try again
+		track.remove(clip0);
+		expect(clip0.state).toBe('READY');
+		expect(detachFn).toBeCalledTimes(1);
+		expect(track.clips.length).toBe(1);
 	});
 
 	it('should realign the clips when stacked', async () => {

@@ -196,20 +196,7 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	 * Remove the clip from the track
 	 */
 	public detach(): this {
-		const index = this.track?.clips.findIndex((n) => n.id == this.id);
-
-		if (this.state == 'ATTACHED') {
-			this.state = 'READY';
-		}
-
-		if (this.view.parent && this.track) {
-			this.track.view.removeChild(this.view);
-		}
-
-		if (index != undefined && index >= 0) {
-			this.track?.clips.splice(index, 1);
-			this.trigger('detach', undefined);
-		}
+		this.track?.remove(this);
 
 		return this;
 	}

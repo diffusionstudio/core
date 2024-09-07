@@ -317,6 +317,71 @@ describe('The composition', () => {
 		expect(composition.tracks[0].clips[0]).toBeInstanceOf(TextClip);
 	});
 
+	it('should be able to remove tracks', () => {
+		const track0 = composition.createTrack('video');
+		const track1 = composition.createTrack('text');
+		const track2 = composition.createTrack('image');
+
+		expect(composition.tracks.length).toBe(3)
+		expect(composition.stage.children.length).toBe(3);
+
+		const detachFn = vi.fn();
+		composition.on('detach', detachFn);
+
+		let res = composition.removeTrack(track1);
+
+		expect(detachFn).toBeCalledTimes(1);
+		expect(res).toBeInstanceOf(TextTrack);
+
+		expect(composition.tracks.length).toBe(2);
+		expect(composition.stage.children.length).toBe(2);
+		expect(composition.tracks[0]).toBeInstanceOf(ImageTrack);
+		expect(composition.tracks[1]).toBeInstanceOf(VideoTrack);
+		expect(composition.tracks.findIndex((l) => l.id == track1.id)).toBe(-1);
+		expect(composition.stage.children.findIndex(c => c.uid == track0.view.uid)).toBe(0);
+		expect(composition.stage.children.findIndex(c => c.uid == track2.view.uid)).toBe(1);
+
+		// try again
+		res = composition.removeTrack(track1);
+
+		expect(res).toBeUndefined();
+		expect(composition.tracks.length).toBe(2);
+		expect(composition.stage.children.length).toBe(2);
+	});
+
+	it('should be able to remove clips', async () => {
+		const track0 = composition.createTrack('base');
+		const track1 = composition.createTrack('base');
+
+		const clip = new Clip({ stop: 10 });
+
+		await track0.add(clip);
+		await track0.add(new Clip({ stop: 20, start: 10 }));
+		await track1.add(new Clip({ stop: 9 }));
+		await track1.add(new Clip({ stop: 12, start: 9 }));
+
+		expect(track0.clips.length).toBe(2);
+		expect(track1.clips.length).toBe(2);
+
+		// clip that does not exist
+		let res = composition.remove(new Clip());
+
+		expect(res).toBe(undefined);
+		expect(track0.clips.length).toBe(2);
+		expect(track1.clips.length).toBe(2);
+
+		res = composition.remove(clip);
+
+		expect(res?.id).toBe(clip.id);
+		expect(track0.clips.length).toBe(1);
+		expect(track1.clips.length).toBe(2);
+
+		res = composition.remove(clip);
+
+		expect(res).toBe(undefined);
+		expect(track0.clips.length).toBe(1);
+		expect(track1.clips.length).toBe(2);
+	});
 
 	afterEach(() => {
 		frameMock.mockClear();

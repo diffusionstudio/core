@@ -108,13 +108,7 @@ describe('The Clip Object', () => {
 		expect(track.clips.findIndex((n) => n.id == clip.id)).toBe(-1);
 		expect(track.clips.findIndex((n) => n.id == clip1.id)).toBe(0);
 		expect(clip.state).toBe('READY');
-		expect(detachFn).toBeCalledTimes(1);
 		expect(track.view.children.length).toBe(0);
-
-		// try again
-		clip.detach();
-		expect(clip.state).toBe('READY');
-		expect(detachFn).toBeCalledTimes(1);
 	});
 
 	it('should not remove error state on detach', async () => {

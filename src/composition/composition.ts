@@ -241,6 +241,18 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	}
 
 	/**
+	 * Remove a given clip from the composition
+	 * @returns `Clip` when it has been successfully removed `undefined` otherwise
+	 */
+	public remove<L extends Clip>(clip: L): L | undefined {
+		for (const track of this.tracks) {
+			if (track.clips.find(c => c.id == clip.id)) {
+				return track.remove(clip);
+			}
+		}
+	}
+
+	/**
 	 * Remove all tracks that are of the specified type
 	 * @param track type to be removed
 	 */
@@ -306,7 +318,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 */
 	public computeFrame(): void {
 		if (!this.renderer) return;
-		
+
 		for (let i = 0; i < this.tracks.length; i++) {
 			this.tracks[i].update(Timestamp.fromFrames(this.frame));
 		}
@@ -459,6 +471,24 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 			' / ' +
 			new Date(this.duration.millis).toISOString().slice(start, stop)
 		);
+	}
+
+	/**
+	 * Remove a given track from the composition
+	 * @returns `Track` when it has been successfully removed `undefined` otherwise
+	 */
+	public removeTrack<T extends Track<Clip>>(track: T): T | undefined {
+		const index = this.tracks.findIndex((t) => t.id == track.id);
+
+		if (track.view.parent) {
+			this.stage.removeChild(track.view);
+		}
+
+		if (index != undefined && index >= 0) {
+			this.tracks.splice(index, 1);
+			this.trigger('detach', undefined);
+			return track;
+		}
 	}
 
 	private async ticker() {
