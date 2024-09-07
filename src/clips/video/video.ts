@@ -73,7 +73,6 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	}
 
 	public async init(): Promise<void> {
-		console.log(this.constructor.name, 'init')
 		const objectURL = await this.source.createObjectURL();
 		this.element.setAttribute('src', objectURL);
 
@@ -117,7 +116,6 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	}
 
 	public exit(): void {
-		console.log(this.constructor.name, 'exit')
 		if (this.playing) {
 			this.element.pause();
 		};

@@ -63,7 +63,6 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 				reject(this.element.error ?? error);
 			}
 		});
-		console.log(this.constructor.name, 'init')
 	}
 
 	public update(): void | Promise<void> {
@@ -77,7 +76,6 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 	}
 
 	public exit(): void {
-		console.log(this.constructor.name, 'exit')
 		if (this.playing) {
 			this.element.pause();
 		};

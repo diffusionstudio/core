@@ -42,7 +42,6 @@ export class ImageClip extends VisualMixin(Clip<ImageClipProps>) {
 	}
 
 	public async init(): Promise<void> {
-		console.log(this.constructor.name, 'init')
 		this.element.setAttribute('src', await this.source.createObjectURL());
 
 		await new Promise<void>((resolve, reject) => {

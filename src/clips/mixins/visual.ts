@@ -174,14 +174,12 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		}
 
 		public enter(): void {
-			console.log(this.constructor.name, 'enter')
 			if (this.filters && !this.view.filters) {
 				this.view.filters = this.filters;
 			}
 		}
 
 		public exit(): void {
-			console.log(this.constructor.name, 'exit')
 			if (this.filters && this.view.filters) {
 				this.view.filters = null as any;
 			}

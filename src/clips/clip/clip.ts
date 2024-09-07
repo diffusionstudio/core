@@ -166,16 +166,12 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	 * Triggered when the clip is
 	 * added to the composition
 	 */
-	public async init(): Promise<void> {
-		console.log(this.constructor.name, 'init')
-	}
+	public async init(): Promise<void> { }
 
 	/**
 	 * Triggered when the clip enters the scene
 	 */
-	public enter(): void {
-		console.log(this.constructor.name, 'enter')
-	}
+	public enter(): void { }
 
 	/**
 	 * Triggered for each redraw of the scene.
@@ -188,9 +184,7 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	/**
 	 * Triggered when the clip exits the scene
 	 */
-	public exit(): void {
-		console.log(this.constructor.name, 'exit')
-	}
+	public exit(): void { }
 
 	/**
 	 * Remove the clip from the track
