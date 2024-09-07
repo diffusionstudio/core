@@ -80,14 +80,18 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 	public layer(layer: TrackLayer): this {
 		const tracks = this.composition?.tracks ?? [];
 		const fromIndex = tracks.findIndex((n) => n.id == this.id);
+		const lastIndex = tracks.length - 1;
 		if (fromIndex == -1) return this;
 
 		let toIndex = 0;
-		if (layer == 'bottom') toIndex = tracks.length;
+		if (layer == 'bottom') toIndex = lastIndex;
 		else if (layer == 'top') toIndex = 0;
+		else if (layer < 0) toIndex = 0;
+		else if (layer > lastIndex) toIndex = lastIndex;
 		else toIndex = layer;
 
 		arraymove(tracks, fromIndex, toIndex);
+		this.composition?.stage.setChildIndex(this.view, lastIndex - toIndex);
 
 		this.trigger('update', undefined);
 		return this;
