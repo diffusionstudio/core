@@ -9,23 +9,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { HtmlSource } from './html';
 
 describe('The Html Source Object', () => {
-	it('should initialize from a file using the static method', async () => {
+	it('should create an object url when the iframe loads', async () => {
 		const file = new File([], 'test.html', { type: 'text/html' });
-		const source = await HtmlSource.from(file);
+		const source = new HtmlSource();
+
+		const evtMock = mockIframeValid(source);
+		mockDocumentValid(source);
+
+		await source.from(file);
 
 		expect(source.name).toBe('test.html');
 		expect(source.mimeType).toBe('text/html');
 		expect(source.external).toBe(false);
 		expect(source.file).toBeInstanceOf(File);
 		expect(source).toBeInstanceOf(HtmlSource);
-	});
-
-	it('should create an object url when the iframe loads', async () => {
-		const file = new File([], 'test.html', { type: 'text/html' });
-		const source = await HtmlSource.from(file);
-
-		const evtMock = mockIframeValid(source);
-		mockDocumentValid(source);
 
 		const url = await source.createObjectURL();
 		expect(url).toBe("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E");
@@ -36,14 +33,14 @@ describe('The Html Source Object', () => {
 		expect(evtMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('should not create an object url when the iframe throws an error', async () => {
+	it('should not be able to load an invalid source', async () => {
 		const file = new File([], 'test.html', { type: 'text/html' });
-		const source = await HtmlSource.from(file);
+		const source = new HtmlSource();
 
 		const evtMock = mockIframeInvalid(source);
 		mockDocumentValid(source);
 
-		await expect(() => source.createObjectURL()).rejects.toThrowError();
+		await expect(() => source.from(file)).rejects.toThrowError();
 		expect(evtMock).toHaveBeenCalledTimes(1);
 	});
 });

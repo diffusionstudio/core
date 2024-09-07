@@ -5,7 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, MockInstance, afterEach } from 'vitest';
 import { HtmlClip } from './html';
 import { BlurFilter } from 'pixi.js';
 import { Keyframe } from '../../models';
@@ -17,6 +17,15 @@ const file = new File(['<h1>Hello World</h1>'], 'index.html', {
 });
 
 describe('The Html Clip', () => {
+	let iframeSpy: MockInstance<(arg: ((this: GlobalEventHandlers, ev: Event) => any) | null) => void>
+
+	beforeEach(() => {
+		iframeSpy = vi.spyOn(HTMLIFrameElement.prototype, 'onload', 'set')
+			.mockImplementation(function (this: HTMLMediaElement, fn) {
+				fn?.call(this, new Event('load'));
+			});
+	});
+
 	it('should initialize', async () => {
 		const clip = new HtmlClip(file, { x: 100 });
 
@@ -26,7 +35,6 @@ describe('The Html Clip', () => {
 		expect(clip.element.src).toBeFalsy();
 		expect(clip.sprite.texture.label).toBe("EMPTY");
 
-		mockIframeValid(clip);
 		mockDocumentValid(clip);
 		const evtSpy = mockImageValid(clip);
 		await clip.init();
@@ -46,7 +54,6 @@ describe('The Html Clip', () => {
 	it("should throw an error when the image can't be loaded", async () => {
 		const clip = new HtmlClip(file);
 
-		mockIframeValid(clip);
 		mockDocumentValid(clip);
 		const evtSpy = mockImageInvalid(clip);
 
@@ -56,20 +63,9 @@ describe('The Html Clip', () => {
 		expect(clip.state).toBe('ERROR');
 	});
 
-	it("should throw an error when the iframe can't be loaded", async () => {
-		const clip = new HtmlClip(file);
-
-		mockIframeInvalid(clip);
-		mockDocumentValid(clip);
-		mockImageValid(clip);
-
-		await expect(() => clip.init()).rejects.toThrowError();
-	});
-
 	it("should throw an error when the html height or width is zero", async () => {
 		const clip = new HtmlClip(file);
 
-		mockIframeInvalid(clip);
 		mockDocumentInvalid(clip);
 		mockImageValid(clip);
 
@@ -78,7 +74,7 @@ describe('The Html Clip', () => {
 
 	it("should not render the clip if it's disabled", async () => {
 		const clip = new HtmlClip(file, { x: 100 });
-		mockIframeValid(clip);
+
 		mockDocumentValid(clip);
 		mockImageValid(clip);
 
@@ -101,13 +97,13 @@ describe('The Html Clip', () => {
 
 	it("should utilize the visualize decorator", async () => {
 		const clip = new HtmlClip(file, { x: 300 });
-		mockIframeValid(clip);
+
 		mockDocumentValid(clip);
 		mockImageValid(clip);
 
 		// still 0 because clip won't be rendered
 		expect(clip.view.x).toBe(0);
-	
+
 		const updateSpy = vi.spyOn(clip, 'update');
 
 		const composition = new Composition();
@@ -116,15 +112,25 @@ describe('The Html Clip', () => {
 		expect(updateSpy).toHaveBeenCalled();
 		expect(clip.view.x).toBe(300);
 	});
+
+	afterEach(() => {
+		iframeSpy.mockClear();
+	});
 });
 
 // Blend of different test files
 describe('Copying the HtmlClip', () => {
+	let iframeSpy: MockInstance<(arg: ((this: GlobalEventHandlers, ev: Event) => any) | null) => void>
 	let clip: HtmlClip;
 
 	beforeEach(async () => {
 		clip = new HtmlClip(file);
-		mockIframeValid(clip);
+
+		iframeSpy = vi.spyOn(HTMLIFrameElement.prototype, 'onload', 'set')
+			.mockImplementation(function (this: HTMLMediaElement, fn) {
+				fn?.call(this, new Event('load'));
+			});
+
 		mockDocumentValid(clip);
 		mockImageValid(clip);
 		await clip.init();
@@ -184,21 +190,11 @@ describe('Copying the HtmlClip', () => {
 		expect(copy.id).not.toBe(clip.id);
 		expect(copy.track).not.toBeDefined();
 	});
+
+	afterEach(() => {
+		iframeSpy.mockClear();
+	})
 });
-
-function mockIframeValid(clip: HtmlClip) {
-	return vi.spyOn(clip.source.iframe, 'onload', 'set')
-		.mockImplementation(function (this: HTMLMediaElement, fn) {
-			fn?.call(this, new Event('load'));
-		});
-}
-
-function mockIframeInvalid(clip: HtmlClip) {
-	return vi.spyOn(clip.source.iframe, 'onerror', 'set')
-		.mockImplementation(function (this: HTMLMediaElement, fn) {
-			fn?.call(this, new Event('error'));
-		});
-}
 
 function mockDocumentValid(clip: HtmlClip) {
 	return vi.spyOn(clip.source, 'document', 'get')

@@ -21,7 +21,7 @@ export class Source extends EventEmitterMixin(Serializer) {
 	/**
 	 * Indicates if the track is loading
 	 */
-	private loading: boolean = false;
+	public state: 'READY' | 'LOADING' | 'ERROR' | 'IDLE' = 'IDLE';
 
 	/**
 	 * Locally accessible blob address to the data
@@ -92,14 +92,14 @@ export class Source extends EventEmitterMixin(Serializer) {
 	 * @returns The loaded file
 	 */
 	public async getFile(): Promise<File> {
-		if (!this.file && this.loading) {
+		if (!this.file && this.state == 'LOADING') {
 			await new Promise(this.resolve('load'));
 		}
 
 		if (!this.file) {
 			throw new ValidationError({
 				i18n: 'fileNotAccessible',
-				message: 'No source was specified for retrieving the file',
+				message: "The desired file cannot be accessed",
 			});
 		}
 
@@ -107,40 +107,38 @@ export class Source extends EventEmitterMixin(Serializer) {
 	}
 
 	public async from(input: File | Url, init?: RequestInit | undefined): Promise<this> {
-		if (input instanceof File) {
-			this.name = input.name;
-			this.mimeType = parseMimeType(input.type);
-			this.external = false;
-			this.file = input;
-			this.trigger('load', undefined);
-
-			return this;
-		}
-
-
-		let res: Response;
 		try {
-			this.loading = true;
-			// case input is a request url
-			res = await fetch(input, init);
-		} finally {
-			this.loading = false;
-		}
+			this.state = 'LOADING';
 
-		if (!res?.ok) {
-			throw new IOError({
-				i18n: 'unexpectedIOError',
-				message: 'An unexpected error occurred while fetching the file',
-			});
-		}
+			if (input instanceof File) {
+				this.name = input.name;
+				this.mimeType = parseMimeType(input.type);
+				this.external = false;
+				this.file = input;
+			} else {
+				// case input is a request url
+				const res = await fetch(input, init);
 
-		const blob = await res.blob();
-		this.name = input.toString().split('/').at(-1) ?? '';
-		this.external = true;
-		this.file = new File([blob], this.name, { type: blob.type });
-		this.externalURL = input;
-		this.mimeType = parseMimeType(blob.type);
-		this.trigger('load', undefined);
+				if (!res?.ok) throw new IOError({
+					i18n: 'unexpectedIOError',
+					message: 'An unexpected error occurred while fetching the file',
+				});
+
+				const blob = await res.blob();
+				this.name = input.toString().split('/').at(-1) ?? '';
+				this.external = true;
+				this.file = new File([blob], this.name, { type: blob.type });
+				this.externalURL = input;
+				this.mimeType = parseMimeType(blob.type);
+			}
+
+			this.state = 'READY';
+			this.trigger('load', undefined);
+		} catch (e) {
+			this.state == 'ERROR';
+			this.trigger('error', new Error(String(e)));
+			throw e;
+		}
 
 		return this;
 	}
@@ -158,6 +156,8 @@ export class Source extends EventEmitterMixin(Serializer) {
 	 * Clean up the data associated with this object
 	 */
 	public async remove(): Promise<void> {
+		this.state = 'IDLE';
+
 		if (this.objectURL) {
 			URL.revokeObjectURL(this.objectURL);
 			this.objectURL = undefined;
