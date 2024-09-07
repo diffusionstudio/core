@@ -7,12 +7,13 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TextClip } from './text';
-import { BlurFilter, WebGPURenderer } from 'pixi.js';
-import { Keyframe, Timestamp } from '../../models';
+import { BlurFilter } from 'pixi.js';
+import { Keyframe } from '../../models';
 import { Font } from './font';
+import { Composition } from '../../composition';
 
 describe('The Text Clip', () => {
-	it('should have a certain initial state', () => {
+	it('should have an initial state', () => {
 		const clip = new TextClip('Hello World');
 
 		expect(clip.text).toBe('Hello World');
@@ -31,63 +32,121 @@ describe('The Text Clip', () => {
 		expect(clip.anchor.x).toBe(0.2);
 		expect(clip.anchor.y).toBe(0.3);
 	});
-});
 
-// copied from src/clips/clip/clip.decorator.spec.ts
-describe('The render decorator', () => {
-	it('should not render the compostition if the clip is disabled', () => {
-		const clip = new TextClip();
-		const renderer = new WebGPURenderer();
-		const renderSpy = vi.spyOn(renderer, 'render').mockImplementation(() => { });
-		const unrenderSpy = vi.spyOn(clip, 'unrender');
+	it('should be adaptible to a track', async () => {
+		const updateFn = vi.fn();
+		const attachFn = vi.fn();
+		const clip = new TextClip({ text: 'Hello World' });
+		clip.on('update', updateFn);
+		clip.on('attach', attachFn);
 
-		clip.render(renderer, new Timestamp());
+		clip.set({ x: 3, y: 4 });
+		expect(updateFn).toBeCalledTimes(1);
 
-		expect(renderSpy).toHaveBeenCalledOnce();
-		expect(unrenderSpy).not.toHaveBeenCalled();
+		clip.set({ stop: 60, start: 30 });
 
-		clip.set({ disabled: true });
-		clip.render(renderer, new Timestamp());
+		const comp = new Composition();
+		const track = comp.createTrack('text');
+		await track.add(clip);
 
-		expect(renderSpy).toHaveBeenCalledOnce();
-		expect(unrenderSpy).toHaveBeenCalledOnce()
+		expect(clip.height).not.toBe(0);
+		expect(clip.width).not.toBe(0);
+		expect(updateFn).toBeCalledTimes(2);
+		expect(attachFn).toBeCalledTimes(1);
+
+		// copied from clip.spec.ts ? Refactor?
+		expect(clip.track?.id).toBe(track.id);
+		expect(clip.state).toBe('ATTACHED');
+		expect(clip.start.frames).toBe(30);
+		expect(clip.stop.frames).toBe(60);
+		expect(clip.start.millis).toBe(1000);
+		expect(clip.stop.millis).toBe(2000);
+		expect(track.clips.findIndex((n) => n.id == clip.id)).toBe(0);
+	});
+
+	// test is very similar to the copy test in text.0.spec.ts
+	// can be removed?
+	it('should be json serializable', async () => {
+		const fontAddFn = vi.spyOn(document.fonts, 'add')
+			.mockImplementation(vi.fn())
+
+		const font = await new Font({
+			family: 'Komika Axis',
+			source: 'url(komika-axis.ttf)',
+			style: 'normal',
+		}).load();
+
+		expect(fontAddFn).toBeCalledTimes(1);
+
+		const clip = new TextClip({
+			text: 'Hello World',
+			font: font,
+			fontSize: 12,
+			stop: 20,
+			start: 10,
+			textBaseline: 'middle',
+			textAlign: 'center',
+			stroke: {
+				color: '#323232',
+				width: 4,
+				join: 'round',
+			},
+			position: {
+				x: 300,
+				y: 400,
+			},
+			maxWidth: 1080,
+			shadow: {
+				color: '#000000',
+				blur: 10,
+				distance: 6,
+				alpha: 0.2,
+				angle: 45,
+			},
+		});
+
+		const loadedClip = TextClip.fromJSON(JSON.parse(JSON.stringify(clip)));
+		await loadedClip.font.load();
+
+		// serialized properties
+		expect(loadedClip.textAlign).toBe('center');
+		expect(loadedClip.textBaseline).toBe('middle');
+		expect(loadedClip.x).toBe(300);
+		expect(loadedClip.y).toBe(400);
+		expect(loadedClip.maxWidth).toBe(1080);
+		expect(loadedClip.font).toBeInstanceOf(Font);
+		expect(loadedClip.font.name).toBe('Komika Axis normal');
+		expect(loadedClip.font.family).toBe('Komika Axis');
+		expect(loadedClip.font.loaded).toBe(true);
+		expect(loadedClip.fontSize).toBe(12);
+		expect(loadedClip.stroke?.color).toBe('#323232');
+		expect(loadedClip.stroke?.width).toBe(4);
+		expect(loadedClip.stroke?.join).toBe('round');
+		expect(loadedClip.shadow?.color).toBe('#000000');
+		expect(loadedClip.shadow?.blur).toBe(10);
+		expect(loadedClip.shadow?.angle).toBe(45);
+		expect(loadedClip.shadow?.distance).toBe(6);
+		expect(loadedClip.shadow?.alpha).toBe(0.2);
 	});
 });
 
 // copied from src/clips/mixins/visual.deserializers.spec.ts
 describe('The visualize decorator', () => {
-	it('should add a filter on render and remove it on unrender', () => {
-		const renderer = new WebGPURenderer();
+	it("should be set", async () => {
 		const clip = new TextClip('Hello World');
 
-		const filterSpy = vi.spyOn(clip.container, 'filters', 'set');
-		const renderSpy = vi.spyOn(renderer, 'render');
+		clip.set({ x: 300 });
 
-		clip.render(renderer, new Timestamp());
+		// still 0 because clip won't be rendered
+		expect(clip.view.x).toBe(0);
 
-		expect(filterSpy).not.toHaveBeenCalled();
-		expect(renderSpy).toHaveBeenCalledTimes(1);
+		const updateSpy = vi.spyOn(clip, 'update');
 
-		clip.set({ filters: new BlurFilter() });
+		const composition = new Composition();
+		await composition.add(clip);
 
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).toHaveBeenCalledOnce();
-		expect(renderSpy).toHaveBeenCalledTimes(2);
-
-		vi.spyOn(clip.container, 'filters', 'get').mockReturnValue([new BlurFilter()]);
-
-		// render again, it should only assign once
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).toHaveBeenCalledOnce();
-		expect(renderSpy).toHaveBeenCalledTimes(3);
-
-		clip.unrender();
-
-		expect(filterSpy).toHaveBeenCalledTimes(2);
-		expect(filterSpy.mock.calls[1][0]).toBe(null);
-		expect(renderSpy).toHaveBeenCalledTimes(3);
+		expect(updateSpy).toHaveBeenCalled();
+		expect(clip.view.x).toBe(300);
 	});
 });
 

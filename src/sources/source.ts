@@ -5,33 +5,41 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { IOError } from '../errors';
+import { IOError, ValidationError } from '../errors';
 import { EventEmitterMixin } from '../mixins';
 import { Serializer, serializable } from '../services';
 import { downloadObject } from '../utils/browser';
 import { parseMimeType } from '../clips';
 import { Timestamp } from '../models';
 
-import type { MimeType, uuid } from '../types';
+import type { MimeType } from '../types';
 import type { ClipType } from '../clips';
 
 type Url = string | URL | Request;
 
 export class Source extends EventEmitterMixin(Serializer) {
 	/**
-	 * Unique identifier of the source
+	 * Indicates if the track is loading
+	 */
+	public state: 'READY' | 'LOADING' | 'ERROR' | 'IDLE' = 'IDLE';
+
+	/**
+	 * Locally accessible blob address to the data
 	 */
 	@serializable()
-	public readonly id: uuid = crypto.randomUUID();
+	public objectURL: string | undefined;
+
 	/**
 	 * Defines the default duration
 	 */
 	@serializable()
 	public duration = Timestamp.fromSeconds(16);
+
 	/**
 	 * Indicates whether the source is used inside the composition
 	 */
 	public added: boolean = false;
+
 	/**
 	 * Type of the source which is compatible
 	 * with clips and tracks
@@ -49,12 +57,6 @@ export class Source extends EventEmitterMixin(Serializer) {
 	 */
 	@serializable()
 	public mimeType: MimeType | undefined;
-
-	/**
-	 * Locally accessible blob address to the data
-	 */
-	@serializable()
-	public objectURL: string | undefined;
 
 	/**
 	 * External url if the file has been fetched remotely
@@ -77,20 +79,108 @@ export class Source extends EventEmitterMixin(Serializer) {
 	/**
 	 * By default this is a URL.createObjectURL proxy
 	 */
-	public async createObjectURL(obj: Blob): Promise<string> {
-		return URL.createObjectURL(obj);
+	public async createObjectURL(): Promise<string> {
+		if (this.objectURL) return this.objectURL;
+		this.objectURL = URL.createObjectURL(await this.getFile());
+
+		return this.objectURL
 	}
 
-	public async loaded(): Promise<void> {
-		if ((this.objectURL?.length ?? 0) == 0) {
-			await new Promise(this.resolve('update'));
+	/**
+	 * Method for retrieving the file when 
+	 * it has been loaded
+	 * @returns The loaded file
+	 */
+	public async getFile(): Promise<File> {
+		if (!this.file && this.state == 'LOADING') {
+			await new Promise(this.resolve('load'));
 		}
 
-		return;
+		if (!this.file) {
+			throw new ValidationError({
+				i18n: 'fileNotAccessible',
+				message: "The desired file cannot be accessed",
+			});
+		}
+
+		return this.file;
 	}
 
-	public from(input: File | Url, init?: RequestInit | undefined): Promise<this> {
-		return Source.from(input, init, this) as Promise<this>;
+	public async from(input: File | Url, init?: RequestInit | undefined): Promise<this> {
+		try {
+			this.state = 'LOADING';
+
+			if (input instanceof File) {
+				this.name = input.name;
+				this.mimeType = parseMimeType(input.type);
+				this.external = false;
+				this.file = input;
+			} else {
+				// case input is a request url
+				const res = await fetch(input, init);
+
+				if (!res?.ok) throw new IOError({
+					i18n: 'unexpectedIOError',
+					message: 'An unexpected error occurred while fetching the file',
+				});
+
+				const blob = await res.blob();
+				this.name = input.toString().split('/').at(-1) ?? '';
+				this.external = true;
+				this.file = new File([blob], this.name, { type: blob.type });
+				this.externalURL = input;
+				this.mimeType = parseMimeType(blob.type);
+			}
+
+			this.state = 'READY';
+			this.trigger('load', undefined);
+		} catch (e) {
+			this.state == 'ERROR';
+			this.trigger('error', new Error(String(e)));
+			throw e;
+		}
+
+		return this;
+	}
+
+	/**
+	 * Get the source as an array buffer
+	 */
+	public async arrayBuffer(): Promise<ArrayBuffer> {
+		const file = await this.getFile();
+
+		return await file.arrayBuffer();
+	}
+
+	/**
+	 * Clean up the data associated with this object
+	 */
+	public async remove(): Promise<void> {
+		this.state = 'IDLE';
+
+		if (this.objectURL) {
+			URL.revokeObjectURL(this.objectURL);
+			this.objectURL = undefined;
+		}
+
+		delete this.file;
+	}
+
+	/**
+	 * Downloads the file
+	 */
+	public async export(): Promise<void> {
+		const file = await this.getFile();
+
+		downloadObject(file, this.name);
+	}
+
+	/**
+	 * Get a visulization of the source
+	 * as an html element
+	 */
+	public async thumbnail(): Promise<HTMLElement> {
+		return new HTMLElement();
 	}
 
 	/**
@@ -102,67 +192,6 @@ export class Source extends EventEmitterMixin(Serializer) {
 		init?: RequestInit | undefined,
 		source = new this(),
 	): Promise<T> {
-		if (input instanceof File) {
-			source.name = input.name;
-			source.mimeType = parseMimeType(input.type);
-			source.objectURL = await source.createObjectURL(input);
-			source.external = false;
-			source.file = input;
-			source.trigger('update', undefined);
-
-			return source;
-		}
-
-		// case input is a request url
-		const res = await fetch(input, init);
-		if (!res.ok)
-			throw new IOError({
-				i18n: 'unexpectedIOError',
-				message: 'An unexpected error occurred while fetching the file',
-			});
-
-		const blob = await res.blob();
-		source.name = input.toString().split('/').at(-1) ?? '';
-		source.external = true;
-		source.file = new File([blob], source.name, { type: blob.type });
-		source.externalURL = input;
-		source.mimeType = parseMimeType(blob.type);
-		source.objectURL = await source.createObjectURL(blob);
-		source.trigger('update', undefined);
-
-		return source;
-	}
-
-	/**
-	 * Get the source as an array buffer
-	 */
-	public async arrayBuffer(): Promise<ArrayBuffer> {
-		await this.loaded();
-		const res = await fetch(this.objectURL ?? '');
-
-		return await res.arrayBuffer();
-	}
-
-	/**
-	 * Clean up the data associated with this object
-	 */
-	public async remove(): Promise<void> {
-		if (this.objectURL) URL.revokeObjectURL(this.objectURL);
-	}
-
-	/**
-	 * Downloads the file
-	 */
-	public async export(): Promise<void> {
-		await this.loaded();
-		downloadObject(this.objectURL!, this.name);
-	}
-
-	/**
-	 * Get a visulization of the source
-	 * as an html element
-	 */
-	public async thumbnail(): Promise<HTMLElement> {
-		return new HTMLElement();
+		return source.from(input, init);
 	}
 }

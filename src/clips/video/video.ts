@@ -10,18 +10,16 @@ import { Sprite, Texture } from 'pixi.js';
 import { VideoSource } from '../../sources';
 import { FrameBuffer } from './buffer';
 import { MediaClip } from '../media';
-import { VisualMixin, visualize } from '../mixins';
 import { textureSwap } from './video.decorator';
+import { VisualMixin, visualize } from '../mixins';
 import { FPS_DEFAULT, Timestamp } from '../../models';
-import { toggle } from '../clip';
 
-import type { Renderer } from 'pixi.js';
 import type { Track } from '../../tracks';
 import type { InitMessageData } from './worker.types';
 import type { VideoClipProps } from './video.interfaces';
 
 export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
-	public readonly source = new VideoSource();
+	public source = new VideoSource();
 	public readonly type = 'video';
 	public declare track?: Track<VideoClip>;
 
@@ -53,29 +51,15 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		(this.textrues.html5.source as any).autoPlay = false;
 		(this.textrues.html5.source as any).loop = false;
 		this.sprite.texture = this.textrues.html5;
-		this.container.addChild(this.sprite);
+		this.view.addChild(this.sprite);
 
-		this.element.addEventListener('canplay', () => {
-			if (['READY', 'ATTACHED'].includes(this.state)) return;
+		if (source instanceof VideoSource) {
+			this.source = source;
+		}
 
-			this.duration.seconds = this.element.duration;
-			this.state = 'READY';
-
-			this.trigger('load', undefined);
-		});
-
-		this.element.addEventListener('emptied', () => {
-			this.playing = false;
-			this.state = 'IDLE';
-			if (this.track) this.detach();
-		});
-
-		this.element.addEventListener('error', () => {
-			console.log(this.element.error);
-			this.state = 'ERROR';
-			if (this.track) this.detach();
-			this.trigger('error', new Error('An error occurred while processing the input medium.'));
-		});
+		if (source instanceof File) {
+			this.source.from(source);
+		}
 
 		this.element.addEventListener('play', () => {
 			this.playing = true;
@@ -85,65 +69,67 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 			this.playing = false;
 		});
 
-		this.load(source);
 		Object.assign(this, props);
 	}
 
-	public async connect(track: Track<VideoClip>): Promise<void> {
-		if (['LOADING', 'IDLE'].includes(this.state)) {
-			await new Promise(this.resolve('load'));
-		};
+	public async init(): Promise<void> {
+		const objectURL = await this.source.createObjectURL();
+		this.element.setAttribute('src', objectURL);
 
+		await new Promise<void>((resolve, reject) => {
+			this.element.oncanplay = () => {
+				this.duration.seconds = this.element.duration;
+
+				this.state = 'READY';
+				resolve();
+			}
+
+			this.element.onerror = () => {
+				this.state = 'ERROR';
+
+				const error = new Error('An error occurred while processing the input medium.');
+				this.trigger('error', error);
+
+				reject(this.element.error ?? error);
+			}
+		});
+	}
+
+	public async connect(track: Track<VideoClip>): Promise<void> {
 		// without seeking the first frame a black frame will be rendered
 		const frame = track.composition?.frame ?? 0;
 		await this.seek(Timestamp.fromFrames(frame));
 
-		this.track = track;
-		this.state = 'ATTACHED';
-
-		this.trigger('attach', undefined);
+		super.connect(track);
 	}
 
-	public unrender(): void {
-		if (this.playing) {
-			this.element.pause();
-		};
-		if (this.filters && this.container.filters) {
-			// @ts-ignore
-			this.container.filters = null;
-		}
-		if (this.sprite.texture.source.uid != this.textrues.html5.source.uid) {
-			this.sprite.texture = this.textrues.html5;
-		}
-	}
-
-	@toggle
-	@textureSwap
 	@visualize
-	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
+	@textureSwap
+	public update(_: Timestamp): void | Promise<void> {
 		if (this.track?.composition?.playing && !this.playing) {
 			this.element.play();
 		} else if (!this.track?.composition?.playing && this.playing) {
 			this.element.pause();
 		} else if (this.track?.composition?.rendering) {
-			return this.renderPromise(renderer);
+			return this.nextFrame();
 		}
+	}
 
-		renderer.render({ container: this.container, clear: false });
+	public exit(): void {
+		if (this.playing) {
+			this.element.pause();
+		};
+		if (this.filters && this.view.filters) {
+			this.view.filters = null as any;
+		}
 	}
 
 	public copy(): VideoClip {
 		const clip = VideoClip.fromJSON(JSON.parse(JSON.stringify(this)));
 		clip.filters = this.filters;
-		clip.load(this.source);
+		clip.source = this.source;
 
 		return clip;
-	}
-
-	private async renderPromise(renderer: Renderer) {
-		await this.nextFrame();
-
-		renderer.render({ container: this.container, clear: false });
 	}
 
 	public async seek(time: Timestamp): Promise<void> {

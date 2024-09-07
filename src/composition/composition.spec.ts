@@ -11,8 +11,6 @@ import { Clip, TextClip } from '../clips';
 import { AudioTrack, CaptionTrack, HtmlTrack, ImageTrack, TextTrack, Track, VideoTrack } from '../tracks';
 import { Timestamp } from '../models';
 
-import type { frame } from '../types';
-
 describe('The composition', () => {
 	let composition: Composition;
 	const frameMock = vi.fn();
@@ -54,13 +52,13 @@ describe('The composition', () => {
 	});
 
 	it('should get the correct duration', async () => {
-		const clip0 = new Clip().set({ stop: <frame>(12 * 30) });
+		const clip0 = new Clip({ stop: 12 * 30 });
 		const track0 = composition.createTrack('base');
 		await track0.add(clip0);
 		expect(composition.duration.seconds).toBe(12);
 		expect(composition.duration.frames).toBe(12 * 30);
 
-		const clip1 = new Clip().set({ stop: <frame>(18 * 30) });
+		const clip1 = new Clip({ stop: 18 * 30 });
 		const track1 = composition.createTrack('base');
 		await track1.add(clip1);
 		expect(composition.duration.seconds).toBe(18);
@@ -68,7 +66,7 @@ describe('The composition', () => {
 	});
 
 	it('should set the duration appropriately', async () => {
-		const clip0 = new Clip().set({ stop: <frame>(12 * 30) });
+		const clip0 = new Clip({ stop: 12 * 30 });
 		const track0 = composition.createTrack('base');
 		await track0.add(clip0);
 		expect(composition.duration.seconds).toBe(12);
@@ -77,7 +75,7 @@ describe('The composition', () => {
 		composition.duration = 4;
 		expect(composition.duration.frames).toBe(4);
 
-		composition.duration = Timestamp.fromFrames(<frame>(8 * 30));
+		composition.duration = Timestamp.fromFrames(8 * 30);
 		expect(composition.duration.seconds).toBe(8);
 		expect(composition.duration.frames).toBe(8 * 30);
 	});
@@ -90,24 +88,29 @@ describe('The composition', () => {
 	});
 
 	it('should append new tracks', () => {
+		expect(composition.stage.children.length).toBe(0);
 		const video = composition.createTrack('video');
 
 		expect(video instanceof VideoTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(1);
 		expect(composition.tracks.length).toBe(1);
 
 		const image = composition.createTrack('image').layer('bottom');
 		expect(image instanceof ImageTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(2);
 		expect(composition.tracks.length).toBe(2);
 		expect(composition.tracks.at(-1) instanceof ImageTrack).toBe(true);
 
 		const text = composition.createTrack('text').layer('top');
 		expect(text instanceof TextTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(3);
 		expect(composition.tracks.length).toBe(3);
 		expect(composition.tracks[0] instanceof TextTrack).toBe(true);
 		expect(composition.tracks[1] instanceof VideoTrack).toBe(true);
 
 		const audio = composition.createTrack('audio').layer(1);
 		expect(audio instanceof AudioTrack).toBe(true);
+		expect(composition.stage.children.length).toBe(4);
 		expect(composition.tracks.length).toBe(4);
 		expect(composition.tracks[1] instanceof AudioTrack).toBe(true);
 	});
@@ -162,7 +165,7 @@ describe('The composition', () => {
 	});
 
 	it('should render clips when user called play', async () => {
-		const clip = new Clip().set({ stop: <frame>15 });
+		const clip = new Clip({ stop: 15 });
 
 		const track = composition.createTrack('base');
 		await track.add(clip);
@@ -191,7 +194,7 @@ describe('The composition', () => {
 	});
 
 	it('should stop rendering when pause gets called', async () => {
-		const clip = new Clip().set({ stop: <frame>(6 * 30) });
+		const clip = new Clip({ stop: 6 * 30 });
 		const track = composition.createTrack('base');
 		await track.add(clip);
 
@@ -214,7 +217,7 @@ describe('The composition', () => {
 	});
 
 	it('should stop rendering at the end of the duration', async () => {
-		const clip = new Clip().set({ stop: <frame>(6 * 30) });
+		const clip = new Clip({ stop: 6 * 30 });
 		const track = composition.createTrack('base');
 		await track.add(clip);
 		composition.duration = 15;
@@ -233,35 +236,35 @@ describe('The composition', () => {
 	});
 
 	it('should be able to screenshot a frame', async () => {
-		const clip = new Clip().set({ stop: <frame>(6 * 30) });
+		const clip = new Clip({ stop: 6 * 30 });
 		const track = composition.createTrack('base');
 		await track.add(clip);
 
-		composition.frame = <frame>10;
+		composition.frame = 10;
 		expect(composition.screenshot()).toBe('data:image/png;base64,00');
 		expect(composition.screenshot('webp')).toBe('data:image/webp;base64,00');
 		expect(composition.screenshot('jpeg')).toBe('data:image/jpeg;base64,00');
 	});
 
 	it('should be able to calculate the correct time', async () => {
-		composition.duration = Timestamp.fromFrames(<frame>(20 * 30));
-		composition.frame = <frame>(10 * 30);
+		composition.duration = Timestamp.fromFrames(20 * 30);
+		composition.frame = 10 * 30;
 		expect(composition.time()).toBe('00:10 / 00:20');
 
-		composition.duration = Timestamp.fromFrames(<frame>(90 * 30));
-		composition.frame = <frame>(80 * 30);
+		composition.duration = Timestamp.fromFrames(90 * 30);
+		composition.frame = 80 * 30;
 
 		expect(composition.time()).toBe('01:20 / 01:30');
 
 		// test milliseconds
-		composition.duration = Timestamp.fromFrames(<frame>10);
-		composition.frame = <frame>1;
+		composition.duration = Timestamp.fromFrames(10);
+		composition.frame = 1;
 
 		expect(composition.time({ milliseconds: true })).toBe('00:00.033 / 00:00.333');
 
 		// test hours
-		composition.duration = Timestamp.fromFrames(<frame>(2 * 60 * 60 * 30));
-		composition.frame = <frame>(40 * 60 * 30);
+		composition.duration = Timestamp.fromFrames(2 * 60 * 60 * 30);
+		composition.frame = 40 * 60 * 30;
 
 		expect(composition.time({ hours: true })).toBe('00:40:00 / 02:00:00');
 	});
@@ -312,6 +315,71 @@ describe('The composition', () => {
 		expect(composition.tracks[0].clips[0]).toBeInstanceOf(TextClip);
 	});
 
+	it('should be able to remove tracks', () => {
+		const track0 = composition.createTrack('video');
+		const track1 = composition.createTrack('text');
+		const track2 = composition.createTrack('image');
+
+		expect(composition.tracks.length).toBe(3)
+		expect(composition.stage.children.length).toBe(3);
+
+		const detachFn = vi.fn();
+		composition.on('detach', detachFn);
+
+		let res = composition.removeTrack(track1);
+
+		expect(detachFn).toBeCalledTimes(1);
+		expect(res).toBeInstanceOf(TextTrack);
+
+		expect(composition.tracks.length).toBe(2);
+		expect(composition.stage.children.length).toBe(2);
+		expect(composition.tracks[0]).toBeInstanceOf(ImageTrack);
+		expect(composition.tracks[1]).toBeInstanceOf(VideoTrack);
+		expect(composition.tracks.findIndex((l) => l.id == track1.id)).toBe(-1);
+		expect(composition.stage.children.findIndex(c => c.uid == track0.view.uid)).toBe(0);
+		expect(composition.stage.children.findIndex(c => c.uid == track2.view.uid)).toBe(1);
+
+		// try again
+		res = composition.removeTrack(track1);
+
+		expect(res).toBeUndefined();
+		expect(composition.tracks.length).toBe(2);
+		expect(composition.stage.children.length).toBe(2);
+	});
+
+	it('should be able to remove clips', async () => {
+		const track0 = composition.createTrack('base');
+		const track1 = composition.createTrack('base');
+
+		const clip = new Clip({ stop: 10 });
+
+		await track0.add(clip);
+		await track0.add(new Clip({ stop: 20, start: 10 }));
+		await track1.add(new Clip({ stop: 9 }));
+		await track1.add(new Clip({ stop: 12, start: 9 }));
+
+		expect(track0.clips.length).toBe(2);
+		expect(track1.clips.length).toBe(2);
+
+		// clip that does not exist
+		let res = composition.remove(new Clip());
+
+		expect(res).toBe(undefined);
+		expect(track0.clips.length).toBe(2);
+		expect(track1.clips.length).toBe(2);
+
+		res = composition.remove(clip);
+
+		expect(res?.id).toBe(clip.id);
+		expect(track0.clips.length).toBe(1);
+		expect(track1.clips.length).toBe(2);
+
+		res = composition.remove(clip);
+
+		expect(res).toBe(undefined);
+		expect(track0.clips.length).toBe(1);
+		expect(track1.clips.length).toBe(2);
+	});
 
 	afterEach(() => {
 		frameMock.mockClear();

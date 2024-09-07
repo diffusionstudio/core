@@ -9,10 +9,8 @@ import { Timestamp } from '../../models';
 import { Serializer, serializable } from '../../services';
 import { EventEmitterMixin } from '../../mixins';
 import { Container } from 'pixi.js';
-import { toggle } from './clip.decorator';
 import { replaceKeyframes } from './clip.utils';
 
-import type { Renderer } from 'pixi.js';
 import type { ClipEvents, ClipState, ClipType } from './clip.types';
 import type { frame } from '../../types';
 import type { Track } from '../../tracks';
@@ -42,9 +40,9 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	public source?: Source;
 
 	/**
-	 * The container that contains the render related information
+	 * The view that contains the render related information
 	 */
-	public readonly container = new Container();
+	public readonly view = new Container();
 
 	/**
 	 * Timestamp when the clip has been created
@@ -99,7 +97,7 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	}
 
 	/**
-	 * Call this function to connect the clip to the track
+	 * Method for connecting the track with the clip
 	 */
 	public async connect(track: Track<Clip>): Promise<void> {
 		this.state = 'ATTACHED';
@@ -165,36 +163,35 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 	}
 
 	/**
-	 * Render the current frame
+	 * Triggered when the clip is
+	 * added to the composition
 	 */
-	@toggle
-	public render(renderer: Renderer, time: Timestamp): void | Promise<void> {
-		renderer.render({ container: this.container, clear: false }); time;
-	}
+	public async init(): Promise<void> { }
 
 	/**
-	 * Will be called after the last visible
-	 * frame has been rendered
+	 * Triggered when the clip enters the scene
 	 */
-	public unrender(): void { }
+	public enter(): void { }
+
+	/**
+	 * Triggered for each redraw of the scene.
+	 * Can return a promise which will be awaited 
+	 * during export.
+	 * @param time the current time to render
+	 */
+	public update(time: Timestamp): void | Promise<void> { time }
+
+	/**
+	 * Triggered when the clip exits the scene
+	 */
+	public exit(): void { }
 
 	/**
 	 * Remove the clip from the track
 	 */
 	public detach(): this {
-		const index = this.track?.clips.findIndex((n) => n.id == this.id);
+		this.track?.remove(this);
 
-		if (this.state == 'ATTACHED') {
-			this.state = 'READY';
-		}
-
-		if (index == undefined || index == -1) {
-			console.info('The clip is not connected to any track');
-			return this;
-		}
-
-		this.track?.clips.splice(index, 1);
-		this.trigger('detach', undefined);
 		return this;
 	}
 

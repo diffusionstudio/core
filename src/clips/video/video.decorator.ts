@@ -5,7 +5,6 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import type { Renderer } from "pixi.js";
 import type { VideoClip } from "./video";
 import type { Timestamp } from "../../models";
 
@@ -17,7 +16,7 @@ export function textureSwap<T extends VideoClip> // @ts-ignore
   (target: T, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
 
-  descriptor.value = function (this: T, ...args: [Renderer, Timestamp]) {
+  descriptor.value = function (this: T, ...args: [Timestamp]) {
     if (this.track?.composition?.rendering
       && this.sprite.texture.source.uid != this.textrues.canvas.source.uid) {
       this.sprite.texture = this.textrues.canvas;

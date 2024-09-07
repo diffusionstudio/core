@@ -10,7 +10,6 @@ import { Composition } from '../../composition';
 import { Font, MediaClip } from '../../clips';
 import { CaptionTrack } from './caption';
 import { Transcript, Word, WordGroup } from '../../models';
-import type { frame } from '../../types';
 
 describe('The Caption Track Object', () => {
 	vi.spyOn(Font.prototype, 'load').mockImplementation(async () => new Font());
@@ -67,10 +66,10 @@ describe('The Caption Track Object', () => {
 		await track.generate();
 		expect(track.clips.at(0)?.start.seconds).toBe(0);
 
-		media.offsetBy(<frame>10);
+		media.offsetBy(10);
 		expect(track.clips.at(0)?.start.frames).toBe(10);
 
-		media.offsetBy(<frame>-5);
+		media.offsetBy(-5);
 		expect(track.clips.at(0)?.start.frames).toBe(5);
 	});
 });

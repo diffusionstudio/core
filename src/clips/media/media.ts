@@ -7,19 +7,18 @@
 
 import { Timestamp, Transcript } from '../../models';
 import { AudioSource } from '../../sources';
-import { AsyncMixin } from '../mixins';
 import { RangeDeserializer } from './media.deserializer';
 import { serializable, } from '../../services';
 import { replaceKeyframes } from '../clip/clip.utils';
 import { ValidationError } from '../../errors';
 import { Clip } from '../clip';
 
-import type { CaptionPresetStrategy, CaptionTrack, Track } from '../../tracks';
+import type { CaptionPresetStrategy, CaptionTrack } from '../../tracks';
 import type { float, frame } from '../../types';
 import type { MediaClipProps } from './media.interfaces';
 
 
-export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends AsyncMixin(Clip<MediaClipProps>) {
+export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Clip<MediaClipProps> {
 	public readonly source = new AudioSource();
 	public declare element?: HTMLAudioElement | HTMLVideoElement;
 
@@ -144,17 +143,6 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 		return this;
 	}
 
-	public async connect(track: Track<MediaClip>): Promise<void> {
-		if (['LOADING', 'IDLE'].includes(this.state) && this.element) {
-			await new Promise(this.resolve('load'));
-		};
-
-		this.track = track;
-		this.state = 'ATTACHED';
-
-		this.trigger('attach', undefined);
-	}
-
 	/**
 	 * Defines if the clip is currently muted
 	 * @default false
@@ -176,12 +164,12 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 	public seek(time: Timestamp): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!this.element) {
-				throw new Error("Can't seek on element becaused it's not defined");
+				return reject(new Error("Can't seek on element becaused it's not defined"));
 			}
 			if (time.millis < this.start.millis || time.millis > this.stop.millis) {
 				time = this.start;
 			}
-			this.element.onerror = (e) => reject(e);
+			this.element.onerror = () => reject(this.element?.error);
 			this.element.pause();
 			this.element.currentTime = time.subtract(this.offset).seconds;
 			this.element.onseeked = () => resolve();
@@ -275,9 +263,8 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 	/**
 	 * Generates a new caption track for the current clip using the specified captioning strategy.
 	 * @param strategy An optional CaptionPresetStrategy to define how captions should be generated.
-	 * @returns {Promise<void>} A promise that resolves when the caption track has been successfully created.
 	 */
-	public async generateCaptions(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<CaptionTrack> {
+	public async addCaptions(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<CaptionTrack> {
 		if (!this.track?.composition) {
 			throw new ValidationError({
 				i18n: 'compositionNotDefined',
@@ -295,5 +282,12 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends As
 
 	public set(props?: Props): this {
 		return super.set(props);
+	}
+
+	/**
+	 * @deprecated use `addCaptions` instead
+	 */
+	public async generateCaptions(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)) {
+		return this.addCaptions(strategy);
 	}
 }

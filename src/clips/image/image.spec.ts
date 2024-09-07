@@ -7,15 +7,14 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ImageClip } from './image';
-import { sleep } from '../../utils';
-import { BlurFilter, WebGPURenderer } from 'pixi.js';
-import { Keyframe, Timestamp } from '../../models';
+import { BlurFilter } from 'pixi.js';
+import { Keyframe } from '../../models';
 import { ImageSource } from '../../sources';
+import { Composition } from '../../composition';
 
 const file = new File([], 'image.png', { type: 'image/png' });
 
 describe('The Image Clip', () => {
-	const loadSpy = vi.spyOn(ImageClip.prototype, 'load');
 	const updateFn = vi.fn();
 	const errorFn = vi.fn();
 	const attachFn = vi.fn();
@@ -23,51 +22,87 @@ describe('The Image Clip', () => {
 
 	let clip: ImageClip;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		updateFn.mockClear();
 		errorFn.mockClear();
 		attachFn.mockClear();
 		loadFn.mockClear();
-		loadSpy.mockClear();
 
 		clip = new ImageClip(file);
 		clip.on('update', updateFn);
 		clip.on('error', errorFn);
 		clip.on('attach', attachFn);
 		clip.on('load', loadFn);
+
+		mockImageValid(clip);
+		await clip.init();
 	});
 
-	it('should have an initial state', async () => {
-		// run all other async methods first
-		await sleep(0);
-		clip.element.dispatchEvent(new Event('load'));
-		expect(clip.element).toBeDefined();
-		expect(loadFn).toBeCalledTimes(1);
+	it('should initialize', async () => {
+		const clip = new ImageClip(file, { x: 100 });
+
 		expect(clip.type).toBe('image');
+		expect(clip.state).toBe('IDLE');
+		expect(clip.source.file).toBeInstanceOf(File);
+		expect(clip.element.src).toBeFalsy();
+		expect(clip.sprite.texture.label).toBe("EMPTY");
+
+		const evtSpy = mockImageValid(clip);
+		await clip.init();
+
+		expect(evtSpy).toHaveBeenCalledTimes(1);
+		expect(clip.x).toBe(100);
 		expect(clip.state).toBe('READY');
+		expect(clip.name).toBe('image.png');
+		expect(clip.sprite.texture.label).not.toBe("EMPTY");
 		expect(clip.source.name).toBe('image.png');
 		expect(clip.source.objectURL).toBe(
 			'blob:chrome://new-tab-page/3dc0f2b7-7773-4cd4-a397-2e43b1bba7cd',
 		);
-		expect(loadSpy).toHaveBeenCalled();
 	});
 
-	it('should change its state when emptied', () => {
-		expect(clip.width).toBe(1);
-		expect(clip.height).toBe(1);
-		expect(clip.state).not.toBe('IDLE');
+	it("should throw an error if the media can't be loaded", async () => {
+		const clip = new ImageClip(file);
 
-		clip.element.dispatchEvent(new Event('emptied'));
+		const evtSpy = mockImageInvalid(clip);
 
-		expect(clip.state).toBe('IDLE');
-	});
+		await expect(() => clip.init()).rejects.toThrowError();
 
-	it('should change its state when an error occured', () => {
-		clip.element.dispatchEvent(new Event('canplay'));
-		clip.element.dispatchEvent(new Event('error'));
+		expect(evtSpy).toHaveBeenCalledTimes(1);
 		expect(clip.state).toBe('ERROR');
-		expect(clip.track).toBeUndefined();
-		expect(errorFn).toHaveBeenCalled();
+	});
+
+	it("should not render the clip if it's disabled", async () => {
+		const composition = new Composition();
+		await composition.add(clip);
+
+		const exitSpy = vi.spyOn(clip, 'exit');
+		const updateSpy = vi.spyOn(clip, 'update');
+
+		composition.state = 'PLAY';
+		composition.computeFrame();
+
+		expect(updateSpy).toHaveBeenCalledTimes(1);
+		expect(exitSpy).not.toHaveBeenCalled();
+
+		clip.set({ disabled: true });
+
+		expect(exitSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it("should use the visualize decorator", async () => {
+		clip.set({ x: 300 });
+
+		// still 0 because clip won't be rendered
+		expect(clip.view.x).toBe(0);
+
+		const updateSpy = vi.spyOn(clip, 'update');
+
+		const composition = new Composition();
+		await composition.add(clip);
+
+		expect(updateSpy).toHaveBeenCalled();
+		expect(clip.view.x).toBe(300);
 	});
 });
 
@@ -75,8 +110,10 @@ describe('The Image Clip', () => {
 describe('Copying the ImageClip', () => {
 	let clip: ImageClip;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		clip = new ImageClip(file);
+		mockImageValid(clip);
+		await clip.init();
 	});
 
 	it('should transfer visual properties', async () => {
@@ -135,60 +172,16 @@ describe('Copying the ImageClip', () => {
 	});
 });
 
-// copied from src/clips/clip/clip.decorator.spec.ts
-describe('The render decorator', () => {
-	it('should not render the compostition if the clip is disabled', () => {
-		const clip = new ImageClip();
-		const renderer = new WebGPURenderer();
-		const renderSpy = vi.spyOn(renderer, 'render').mockImplementation(() => { });
-		const unrenderSpy = vi.spyOn(clip, 'unrender');
+function mockImageValid(clip: ImageClip) {
+	return vi.spyOn(clip.element, 'onload', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('load'));
+		});
+}
 
-		clip.render(renderer, new Timestamp());
-
-		expect(renderSpy).toHaveBeenCalledOnce();
-		expect(unrenderSpy).not.toHaveBeenCalled();
-
-		clip.set({ disabled: true });
-		clip.render(renderer, new Timestamp());
-
-		expect(renderSpy).toHaveBeenCalledOnce();
-		expect(unrenderSpy).toHaveBeenCalledOnce()
-	});
-});
-
-// copied from src/clips/mixins/visual.deserializers.spec.ts
-describe('The visualize decorator', () => {
-	it('should add a filter on render and remove it on unrender', () => {
-		const renderer = new WebGPURenderer();
-		const clip = new ImageClip();
-
-		const filterSpy = vi.spyOn(clip.container, 'filters', 'set');
-		const renderSpy = vi.spyOn(renderer, 'render');
-
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).not.toHaveBeenCalled();
-		expect(renderSpy).toHaveBeenCalledTimes(1);
-
-		clip.set({ filters: new BlurFilter() });
-
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).toHaveBeenCalledOnce();
-		expect(renderSpy).toHaveBeenCalledTimes(2);
-
-		vi.spyOn(clip.container, 'filters', 'get').mockReturnValue([new BlurFilter()]);
-
-		// render again, it should only assign once
-		clip.render(renderer, new Timestamp());
-
-		expect(filterSpy).toHaveBeenCalledOnce();
-		expect(renderSpy).toHaveBeenCalledTimes(3);
-
-		clip.unrender();
-
-		expect(filterSpy).toHaveBeenCalledTimes(2);
-		expect(filterSpy.mock.calls[1][0]).toBe(null);
-		expect(renderSpy).toHaveBeenCalledTimes(3);
-	});
-});
+function mockImageInvalid(clip: ImageClip) {
+	return vi.spyOn(clip.element, 'onerror', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('error'));
+		});
+}

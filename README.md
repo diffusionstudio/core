@@ -24,6 +24,12 @@ npm i @diffusionstudio/core
 
 Visit https://docs.diffusion.studio to view the full documentation.
 
+## Why Use Diffusion Studio
+💻 Fully client-side<br/>
+📦 Fully extensible with Pixi.js<br/>
+🩸 WebGPU/WebGL API support<br/>
+🏎️ WebCodecs API support<br/>
+
 ## Basic Usage
 Let's take a look at an example:
 
@@ -72,7 +78,8 @@ await track.add(text2);
 ...
 ```
 
-The composition, the track and the clips are each in a relationship of `1:n`. You can find more [examples here.](https://github.com/diffusionstudio/examples), or give them a whirl on: https://examples.diffusion.studio
+## Examples
+You can find more [examples here.](https://github.com/diffusionstudio/examples), or give them a whirl on: https://examples.diffusion.studio
 
 https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 

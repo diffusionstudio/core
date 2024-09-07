@@ -5,7 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-const emptySvg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+const emptySvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E";
 
 // Function to escape special characters
 export function utf8ToBase64(str: string) {

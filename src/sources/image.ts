@@ -12,9 +12,8 @@ export class ImageSource extends Source {
 	public readonly type: ClipType = 'base';
 
 	public async thumbnail(): Promise<HTMLImageElement> {
-		await this.loaded();
 		const image = new Image();
-		image.src = this.objectURL ?? '';
+		image.src = await this.createObjectURL();
 		image.className = 'object-cover w-full aspect-video h-auto';
 		return image;
 	}

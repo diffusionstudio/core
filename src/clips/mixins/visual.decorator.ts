@@ -5,7 +5,6 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import type { Renderer } from "pixi.js";
 import type { Timestamp } from "../../models";
 import type { MixinType } from "../../types";
 import type { Clip } from "../clip";
@@ -19,15 +18,11 @@ export function visualize<T extends MixinType<typeof VisualMixin> & Clip> // @ts
 
   const originalMethod = descriptor.value;
 
-  descriptor.value = function (this: T, ...args: [Renderer, Timestamp]) {
-    const timestamp = args[1].subtract(this.start);
+  descriptor.value = function (this: T, ...args: [Timestamp]) {
+    const timestamp = args[0].subtract(this.start);
     const screen = {
       width: this.track?.composition?.width ?? 1920,
       height: this.track?.composition?.height ?? 1080,
-    }
-
-    if (this.filters && !this.container.filters) {
-      this.container.filters = this.filters;
     }
 
     /**
@@ -76,40 +71,40 @@ export function visualize<T extends MixinType<typeof VisualMixin> & Clip> // @ts
       posY = this._position.y.value(timestamp);
     }
 
-    this.container.position.set(posX + transX, posY + transY);
+    this.view.position.set(posX + transX, posY + transY);
 
 
     /**
      * Handle the dimensions of the object
      */
     if (typeof this._height == 'string') {
-      this.container.height = Math.round(Number.parseFloat(this._height) * screen.height / 100);
+      this.view.height = Math.round(Number.parseFloat(this._height) * screen.height / 100);
     } else if (typeof this._height == 'object') {
-      this.container.height = this._height.value(timestamp);
+      this.view.height = this._height.value(timestamp);
     } else if (typeof this._height == 'function') {
-      this.container.height = this._height.bind(this)(timestamp);
+      this.view.height = this._height.bind(this)(timestamp);
     } else if (this._height) {
-      this.container.height = this._height;
+      this.view.height = this._height;
     }
 
     // Keep aspect ratio
     if (this._height && !this._width) {
-      this.container.scale.set(this.container.scale.y);
+      this.view.scale.set(this.view.scale.y);
     }
 
     if (typeof this._width == 'string') {
-      this.container.width = Math.round(Number.parseFloat(this._width) * screen.width / 100);
+      this.view.width = Math.round(Number.parseFloat(this._width) * screen.width / 100);
     } else if (typeof this._width == 'object') {
-      this.container.width = this._width.value(timestamp);
+      this.view.width = this._width.value(timestamp);
     } else if (typeof this._width == 'function') {
-      this.container.width = this._width.bind(this)(timestamp);
+      this.view.width = this._width.bind(this)(timestamp);
     } else if (this._width) {
-      this.container.width = this._width;
+      this.view.width = this._width;
     }
 
     // Keep aspect ratio
     if (this._width && !this._height) {
-      this.container.scale.set(this.container.scale.x);
+      this.view.scale.set(this.view.scale.x);
     }
 
     if (this._scale) {
@@ -135,33 +130,33 @@ export function visualize<T extends MixinType<typeof VisualMixin> & Clip> // @ts
 
       // Make scale relative in case width is defined
       if (this._width || this._height) {
-        scaleX *= this.container.scale._x;
-        scaleY *= this.container.scale._y;
+        scaleX *= this.view.scale._x;
+        scaleY *= this.view.scale._y;
       }
 
-      this.container.scale.set(scaleX, scaleY);
+      this.view.scale.set(scaleX, scaleY);
     }
 
     /**
      * Handle the rotation of the object
      */
     if (typeof this.rotation == 'number') {
-      this.container.angle = this.rotation;
+      this.view.angle = this.rotation;
     } else if (typeof this.rotation == 'function') {
-      this.container.angle = this.rotation.bind(this)(timestamp);
+      this.view.angle = this.rotation.bind(this)(timestamp);
     } else {
-      this.container.angle = this.rotation.value(timestamp);
+      this.view.angle = this.rotation.value(timestamp);
     }
 
     /**
      * Handle the opacity of the object
      */
     if (typeof this.alpha == 'number') {
-      this.container.alpha = this.alpha;
+      this.view.alpha = this.alpha;
     } else if (typeof this.alpha == 'function') {
-      this.container.alpha = this.alpha.bind(this)(timestamp);
+      this.view.alpha = this.alpha.bind(this)(timestamp);
     } else {
-      this.container.alpha = this.alpha.value(timestamp);
+      this.view.alpha = this.alpha.value(timestamp);
     }
 
     return originalMethod.apply(this, args);

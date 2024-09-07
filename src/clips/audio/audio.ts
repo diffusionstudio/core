@@ -6,7 +6,6 @@
  */
 
 import { MediaClip } from '../media';
-import { toggle } from '../clip';
 import { AudioSource } from '../../sources';
 
 import type { Track } from '../../tracks';
@@ -15,36 +14,23 @@ import type { AudioClipProps } from './audio.interfaces';
 export class AudioClip extends MediaClip<AudioClipProps> {
 	public readonly type = 'audio';
 	public declare track?: Track<AudioClip>;
+	public source = new AudioSource();
+
 	/**
 	 * Access to the HTML5 audio element
 	 */
 	public readonly element = new Audio();
-	public readonly source = new AudioSource();
 
 	public constructor(source?: File | AudioSource, props: AudioClipProps = {}) {
 		super();
 
-		this.element.addEventListener('canplay', () => {
-			if (['READY', 'ATTACHED'].includes(this.state)) return;
+		if (source instanceof AudioSource) {
+			this.source = source;
+		}
 
-			this.duration.seconds = this.element.duration;
-
-			this.state = 'READY';
-			this.trigger('load', undefined);
-		});
-
-		this.element.addEventListener('emptied', () => {
-			this.playing = false;
-			this.state = 'IDLE';
-			if (this.track) this.detach();
-		});
-
-		this.element.addEventListener('error', () => {
-			console.log(this.element.error);
-			this.state = 'ERROR';
-			if (this.track) this.detach();
-			this.trigger('error', new Error('An error occurred while processing the input medium.'));
-		});
+		if (source instanceof File) {
+			this.source.from(source);
+		}
 
 		this.element.addEventListener('play', () => {
 			this.playing = true;
@@ -54,20 +40,34 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 			this.playing = false;
 		});
 
-		this.load(source);
 		Object.assign(this, props);
 	}
 
-	public unrender(): void {
-		if (this.playing) {
-			this.element.pause();
-		};
+	public async init(): Promise<void> {
+		const objectURL = await this.source.createObjectURL();
+		this.element.setAttribute('src', objectURL);
+
+		await new Promise<void>((resolve, reject) => {
+			this.element.oncanplay = () => {
+				this.duration.seconds = this.element.duration;
+				this.state = 'READY';
+				resolve();
+			}
+
+			this.element.onerror = () => {
+				this.state = 'ERROR';
+
+				const error = new Error('An error occurred while processing the input medium.');
+				this.trigger('error', error);
+
+				reject(this.element.error ?? error);
+			}
+		});
 	}
 
-	@toggle
-	public render(): void | Promise<void> {
+	public update(): void | Promise<void> {
 		if (this.track?.composition?.rendering) {
-			return this.unrender();
+			return this.exit();
 		} else if (this.track?.composition?.playing && !this.playing) {
 			this.element.play();
 		} else if (!this.track?.composition?.playing && this.playing) {
@@ -75,9 +75,15 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 		}
 	}
 
+	public exit(): void {
+		if (this.playing) {
+			this.element.pause();
+		};
+	}
+
 	public copy(): AudioClip {
 		const clip = AudioClip.fromJSON(JSON.parse(JSON.stringify(this)));
-		clip.load(this.source);
+		clip.source = this.source;
 
 		return clip;
 	}

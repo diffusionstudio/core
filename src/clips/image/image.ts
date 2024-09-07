@@ -7,19 +7,18 @@
 
 import { Sprite, Texture } from 'pixi.js';
 import { ImageSource } from '../../sources';
-import { Clip, toggle } from '../clip';
-import { VisualMixin, AsyncMixin, visualize } from '../mixins';
+import { Clip } from '../clip';
+import { VisualMixin, visualize } from '../mixins';
 
-import type { Renderer } from 'pixi.js';
 import type { Track } from '../../tracks';
 import type { ImageClipProps } from './image.interfaces';
 import type { Timestamp } from '../../models';
 
-export class ImageClip extends VisualMixin(AsyncMixin(Clip<ImageClipProps>)) {
+export class ImageClip extends VisualMixin(Clip<ImageClipProps>) {
 	public readonly type = 'image';
 	public declare track?: Track<ImageClip>;
 	public readonly element = new Image();
-	public readonly source = new ImageSource();
+	public source = new ImageSource();
 
 	/**
 	 * Access to the sprite containing the image texture
@@ -29,55 +28,43 @@ export class ImageClip extends VisualMixin(AsyncMixin(Clip<ImageClipProps>)) {
 	public constructor(source?: File | ImageSource, props: ImageClipProps = {}) {
 		super();
 
-		this.container.addChild(this.sprite);
+		this.view.addChild(this.sprite);
 
-		this.element.addEventListener('load', () => {
-			if (['READY', 'ATTACHED'].includes(this.state)) return;
+		if (source instanceof ImageSource) {
+			this.source = source;
+		}
 
-			this.sprite.texture = Texture.from(this.element);
+		if (source instanceof File) {
+			this.source.from(source);
+		}
 
-			this.state = 'READY';
-
-			this.trigger('load', undefined);
-		});
-
-		this.element.addEventListener('emptied', () => {
-			this.state = 'IDLE';
-			if (this.track) this.detach();
-		});
-
-		this.element.addEventListener('error', (e) => {
-			console.error(e);
-			this.state = 'ERROR';
-			if (this.track) this.detach();
-			this.trigger('error', new Error('An error occurred while processing the input medium.'));
-		});
-
-		this.load(source);
 		Object.assign(this, props);
 	}
 
-	@toggle
+	public async init(): Promise<void> {
+		this.element.setAttribute('src', await this.source.createObjectURL());
+
+		await new Promise<void>((resolve, reject) => {
+			this.element.onload = () => {
+				this.sprite.texture = Texture.from(this.element);
+				this.state = 'READY';
+				resolve();
+			}
+			this.element.onerror = (e) => {
+				console.error(e);
+				this.state = 'ERROR';
+				reject(new Error('An error occurred while processing the input medium.'));
+			}
+		});
+	}
+
 	@visualize
-	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
-		renderer.render({ container: this.container, clear: false });
-	}
-
-	public async connect(track: Track<ImageClip>): Promise<void> {
-		if (['LOADING', 'IDLE'].includes(this.state)) {
-			await new Promise(this.resolve('load'));
-		};
-
-		this.track = track;
-		this.state = 'ATTACHED';
-
-		this.trigger('attach', undefined);
-	}
+	public update(_: Timestamp): void | Promise<void> { }
 
 	public copy(): ImageClip {
 		const clip = ImageClip.fromJSON(JSON.parse(JSON.stringify(this)));
 		clip.filters = this.filters;
-		clip.load(this.source);
+		clip.source = this.source;
 
 		return clip;
 	}

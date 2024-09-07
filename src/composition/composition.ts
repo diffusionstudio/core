@@ -5,12 +5,11 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { autoDetectRenderer } from 'pixi.js';
+import { autoDetectRenderer, Container } from 'pixi.js';
 import { framesToMillis, Timestamp, FPS_DEFAULT } from '../models';
 import { MediaClip } from '../clips';
 import { Serializer } from '../services';
 import { TrackDeserializer } from '../tracks';
-import { clear } from '../utils/pixi';
 import { isClass } from '../utils';
 import { EventEmitterMixin } from '../mixins';
 import { BaseError } from '../errors';
@@ -36,6 +35,11 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	public renderer?: Renderer;
 
 	/**
+	 * The root container of the composition
+	 */
+	public stage = new Container();
+
+	/**
 	 * Settings of the composition
 	 */
 	public settings: CompositionSettings;
@@ -48,7 +52,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	/**
 	 * The current frame that the playback is set to
 	 */
-	public frame: frame = <frame>0;
+	public frame: frame = 0;
 
 	/**
 	 * User defined fixed duration, use the duration
@@ -95,7 +99,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.on('frame', this.computeFrame.bind(this));
 		this.on('error', this.computeFrame.bind(this));
 
-		autoDetectRenderer({ ...this.settings, clearBeforeRender: false, preference: backend })
+		autoDetectRenderer({ ...this.settings, preference: backend })
 			.then(renderer => {
 				this.renderer = renderer;
 				this.trigger('init', undefined);
@@ -196,6 +200,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		track.connect(this);
 
+		this.stage.addChild(track.view);
 		this.tracks.unshift(track);
 
 		track.on('*', this.updateDuration.bind(this));
@@ -233,6 +238,18 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		await track.add(clip as never);
 
 		return clip;
+	}
+
+	/**
+	 * Remove a given clip from the composition
+	 * @returns `Clip` when it has been successfully removed `undefined` otherwise
+	 */
+	public remove<L extends Clip>(clip: L): L | undefined {
+		for (const track of this.tracks) {
+			if (track.clips.find(c => c.id == clip.id)) {
+				return track.remove(clip);
+			}
+		}
 	}
 
 	/**
@@ -302,18 +319,18 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	public computeFrame(): void {
 		if (!this.renderer) return;
 
-		clear(this.renderer, this.context);
-
-		for (let i = this.tracks.length - 1; i >= 0; i--) {
-			this.tracks[i].render(this.renderer, Timestamp.fromFrames(this.frame));
+		for (let i = 0; i < this.tracks.length; i++) {
+			this.tracks[i].update(Timestamp.fromFrames(this.frame));
 		}
 
+		this.renderer.render(this.stage);
+		this.context?.clearRect(0, 0, this.settings.width, this.settings.height);
 		this.context?.drawImage(this.renderer.canvas, 0, 0);
 
 		this.trigger('currentframe', this.frame);
 
 		if (this.playing) {
-			this.frame = <frame>(this.frame + 1);
+			this.frame++;
 		}
 	}
 
@@ -365,14 +382,14 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.state = 'PLAY';
 
 		if (this.frame >= this.duration.frames) {
-			this.frame = <frame>0;
+			this.frame = 0;
 		}
 
 		for (const track of this.tracks) {
 			await track.seek(Timestamp.fromFrames(this.frame));
 		}
 
-		this.timerCallback();
+		this.ticker();
 		this.trigger('play', this.frame);
 	}
 
@@ -456,7 +473,25 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		);
 	}
 
-	private async timerCallback() {
+	/**
+	 * Remove a given track from the composition
+	 * @returns `Track` when it has been successfully removed `undefined` otherwise
+	 */
+	public removeTrack<T extends Track<Clip>>(track: T): T | undefined {
+		const index = this.tracks.findIndex((t) => t.id == track.id);
+
+		if (track.view.parent) {
+			this.stage.removeChild(track.view);
+		}
+
+		if (index != undefined && index >= 0) {
+			this.tracks.splice(index, 1);
+			this.trigger('detach', undefined);
+			return track;
+		}
+	}
+
+	private async ticker() {
 		const interval = 1000 / FPS_DEFAULT;
 
 		let then = performance.now();
@@ -473,7 +508,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		// reached end of composition
 		if (this.playing) {
-			this.seek(<frame>0);
+			this.seek(0);
 		}
 	}
 
@@ -487,7 +522,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		const lastFrame = Math.max(...lastFrames, 0);
 
 		if (lastFrame != this._duration.frames) {
-			this._duration.frames = <frame>lastFrame;
+			this._duration.frames = lastFrame;
 			this.trigger('frame', lastFrame);
 		}
 	}

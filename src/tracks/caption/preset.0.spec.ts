@@ -17,7 +17,7 @@ import { GuineaCaptionPreset } from './preset.guinea';
 import { CaptionPresetDeserializer } from './preset.deserializer';
 import { VerdantCaptionPreset } from './preset.verdant';
 
-import type { frame, hex } from '../../types';
+import type { hex } from '../../types';
 
 describe('(0) The Caption Presets', () => {
 	const mockFn = vi.fn();
@@ -30,7 +30,7 @@ describe('(0) The Caption Presets', () => {
 		composition = new Composition();
 		track = composition.createTrack('caption').from(
 			new MediaClip().set({
-				offset: <frame>(10 * 30),
+				offset: 10 * 30,
 				transcript: new Transcript([
 					new WordGroup([
 						new Word('Lorem', 0, 1e3),

@@ -6,19 +6,18 @@
  */
 
 import { HtmlSource } from '../../sources';
-import { Clip, toggle } from '../clip';
-import { VisualMixin, AsyncMixin, visualize } from '../mixins';
+import { Clip } from '../clip';
+import { VisualMixin, visualize } from '../mixins';
 import { Sprite, Texture } from 'pixi.js';
 
 import type { Track } from '../../tracks';
-import type { Renderer } from 'pixi.js';
 import type { HtmlClipProps } from './html.interfaces';
 import type { Timestamp } from '../../models';
 
-export class HtmlClip extends VisualMixin(AsyncMixin(Clip<HtmlClipProps>)) {
+export class HtmlClip extends VisualMixin(Clip<HtmlClipProps>) {
 	public readonly type = 'html';
 	public declare track?: Track<HtmlClip>;
-	public readonly source = new HtmlSource();
+	public source = new HtmlSource();
 
 	/**
 	 * Access to the html document that
@@ -35,21 +34,31 @@ export class HtmlClip extends VisualMixin(AsyncMixin(Clip<HtmlClipProps>)) {
 
 	public constructor(source?: File | HtmlSource, props: HtmlClipProps = {}) {
 		super();
-		this.context.imageSmoothingEnabled = false;
+		this.view.addChild(this.sprite);
 
-		this.container.addChild(this.sprite);
+		Object.assign(this, props);
+
+		if (source instanceof HtmlSource) {
+			this.source = source;
+		}
+
+		if (source instanceof File) {
+			this.source.from(source);
+		}
 
 		this.element.addEventListener('load', () => {
-			this.canvas.width = this.source.document?.body?.scrollWidth ?? 0;
-			this.canvas.height = this.source.document?.body?.scrollHeight ?? 0;
+			const width = this.source.document?.body?.scrollWidth;
+			const height = this.source.document?.body?.scrollHeight;
+			if (!width || !height) return;
 
+			this.canvas.width = width;
+			this.canvas.height = height;
+
+			this.context.imageSmoothingEnabled = false;
+			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			this.context.drawImage(this.element, 0, 0);
-
+			
 			this.sprite.texture = Texture.from(this.canvas, true);
-
-			if (this.state != 'ATTACHED') {
-				this.state = 'READY';
-			}
 
 			this.trigger('load', undefined);
 		});
@@ -61,46 +70,41 @@ export class HtmlClip extends VisualMixin(AsyncMixin(Clip<HtmlClipProps>)) {
 			this.trigger('error', new Error('An error occurred while processing the input medium.'));
 		});
 
-		this.source.iframe.addEventListener('error', (e) => {
-			console.error(e);
-			this.state = 'ERROR';
-			if (this.track) this.detach();
-			this.trigger('error', new Error('An error occurred while processing the input medium.'));
-		});
-
-		this.on('update', () => {
+		this.on('update', async () => {
 			this.source.update();
-			this.element.setAttribute('src', this.source.objectURL ?? '');
+			this.element.setAttribute('src', await this.source.createObjectURL());
 		});
-
-		// make sure the source will be loaded with
-		// the most recent state
-		if(source instanceof HtmlSource) source.update();
-		this.load(source);
-		Object.assign(this, props);
 	}
 
-	@toggle
+	public async init(): Promise<void> {
+		this.element.setAttribute('src', await this.source.createObjectURL());
+
+		await new Promise<void>((resolve, reject) => {
+			this.element.onload = () => {
+				const width = this.source.document?.body?.scrollWidth;
+				const height = this.source.document?.body?.scrollHeight;
+
+				if (!width || !height) {
+					return reject(new Error('This html document cannot be displayed!'))
+				}
+
+				this.state = 'READY';
+				resolve();
+			}
+			this.element.onerror = (e) => {
+				console.error(e);
+				reject(new Error('An error occurred while processing the input medium.'));
+			}
+		});
+	}
+
 	@visualize
-	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
-		renderer.render({ container: this.container, clear: false });
-	}
-
-	public async connect(track: Track<HtmlClip>): Promise<void> {
-		if (['LOADING', 'IDLE'].includes(this.state)) {
-			await new Promise(this.resolve('load'));
-		};
-
-		this.track = track;
-		this.state = 'ATTACHED';
-
-		this.trigger('attach', undefined);
-	}
+	public update(_: Timestamp): void | Promise<void> { }
 
 	public copy(): HtmlClip {
 		const clip = HtmlClip.fromJSON(JSON.parse(JSON.stringify(this)));
 		clip.filters = this.filters;
-		clip.load(this.source);
+		clip.source = this.source;
 
 		return clip;
 	}

@@ -5,14 +5,13 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { Clip, toggle } from '../clip';
+import { Clip } from '../clip';
 import { serializable } from '../../services';
 import { VisualMixin, visualize } from '../mixins';
 import { Font } from './font';
 import { Color, Text, TextStyle } from 'pixi.js';
 import { SCALE_OFFSET, alignToAnchor, baselineToAnchor } from './text.fixtures';
 
-import type { Renderer } from 'pixi.js';
 import type { Track } from '../../tracks';
 import type * as types from './text.types';
 import type { float, hex, Anchor } from '../../types';
@@ -60,18 +59,18 @@ export class TextClip<Props extends TextClipProps = TextClipProps> extends Visua
 	public set text(value: string) {
 		this._text = value;
 
-		if (!this.container.children.length) {
+		if (!this.view.children.length) {
 			const container = new Text({
 				text: this.transformedText,
 				style: this.style,
 				resolution: SCALE_OFFSET,
 				scale: SCALE_OFFSET,
 			});
-			this.container.addChild(container);
+			this.view.addChild(container);
 		}
 
-		if (this.container.children[0] instanceof Text && this.transformedText) {
-			this.container.children[0].text = this.transformedText;
+		if (this.view.children[0] instanceof Text && this.transformedText) {
+			this.view.children[0].text = this.transformedText;
 		}
 	}
 
@@ -225,8 +224,8 @@ export class TextClip<Props extends TextClipProps = TextClipProps> extends Visua
 	public set textCase(value: types.TextCase | undefined) {
 		this._textCase = value;
 
-		if (this.container.children[0] instanceof Text && this.transformedText) {
-			this.container.children[0].text = this.transformedText;
+		if (this.view.children[0] instanceof Text && this.transformedText) {
+			this.view.children[0].text = this.transformedText;
 		}
 	}
 
@@ -289,11 +288,8 @@ export class TextClip<Props extends TextClipProps = TextClipProps> extends Visua
 		this.style.leading = value;
 	}
 
-	@toggle
 	@visualize
-	public render(renderer: Renderer, _: Timestamp): void | Promise<void> {
-		renderer.render({ container: this.container, clear: false });
-	}
+	public update(_: Timestamp): void | Promise<void> { }
 
 	public copy(): TextClip {
 		const clip = TextClip.fromJSON(JSON.parse(JSON.stringify(this)));
@@ -316,11 +312,11 @@ export class TextClip<Props extends TextClipProps = TextClipProps> extends Visua
 	}
 
 	protected reflectUpdate() {
-		const width = this.container.children[0]?.width ?? 0;
-		const height = this.container.children[0]?.height ?? 0;
+		const width = this.view.children[0]?.width ?? 0;
+		const height = this.view.children[0]?.height ?? 0;
 		const offset = (this.style.dropShadow?.distance ?? 0) * SCALE_OFFSET;
 
-		this.container.pivot = {
+		this.view.pivot = {
 			x: (width - offset) * this._anchor.x,
 			y: (height - offset) * this._anchor.y,
 		};

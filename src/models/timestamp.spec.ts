@@ -8,8 +8,6 @@
 import { describe, expect, it } from 'vitest';
 import { Timestamp } from '../models';
 
-import type { frame } from '../types';
-
 describe('New Timestamp model', () => {
 	it('result in valid states after construction', () => {
 		const ts0 = new Timestamp();
@@ -18,7 +16,7 @@ describe('New Timestamp model', () => {
 		expect(ts0.seconds).toBe(0);
 		expect(ts0.millis).toBe(0);
 
-		const ts1 = Timestamp.fromFrames(<frame>60);
+		const ts1 = Timestamp.fromFrames(60);
 
 		expect(ts1.frames).toBe(60);
 		expect(ts1.seconds).toBe(2);
@@ -64,11 +62,11 @@ describe('New Timestamp model', () => {
 	it('should round the value when setting frames', () => {
 		const ts = new Timestamp();
 
-		ts.frames = <frame>20.332;
+		ts.frames = 20.332;
 
 		expect(ts.frames).toBe(20);
 
-		ts.frames = <frame>20.632;
+		ts.frames = 20.632;
 
 		expect(ts.frames).toBe(21);
 	});
@@ -86,17 +84,17 @@ describe('New Timestamp model', () => {
 	});
 
 	it('should add frames and round the result', () => {
-		const ts = Timestamp.fromFrames(<frame>20);
+		const ts = Timestamp.fromFrames(20);
 
-		ts.addFrames(<frame>20);
+		ts.addFrames(20);
 
 		expect(ts.frames).toBe(40);
 
-		ts.addFrames(<frame>21.4);
+		ts.addFrames(21.4);
 
 		expect(ts.frames).toBe(61);
 
-		ts.addFrames(<frame>-20);
+		ts.addFrames(-20);
 
 		expect(ts.frames).toBe(41);
 	});
@@ -112,8 +110,8 @@ describe('New Timestamp model', () => {
 	});
 
 	it('should be able to add a timestamp', () => {
-		const ts0 = Timestamp.fromFrames(<frame>30);
-		const ts1 = Timestamp.fromFrames(<frame>50);
+		const ts0 = Timestamp.fromFrames(30);
+		const ts1 = Timestamp.fromFrames(50);
 
 		const ts0ts1 = ts0.add(ts1);
 
@@ -136,8 +134,8 @@ describe('New Timestamp model', () => {
 	});
 
 	it('should be able to subtract a timestamp', () => {
-		const ts0 = Timestamp.fromFrames(<frame>20);
-		const ts1 = Timestamp.fromFrames(<frame>15)
+		const ts0 = Timestamp.fromFrames(20);
+		const ts1 = Timestamp.fromFrames(15)
 
 		const ts0ts1 = ts0.subtract(ts1);
 

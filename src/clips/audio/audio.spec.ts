@@ -8,11 +8,10 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { Composition } from '../../composition';
 import { AudioClip } from './audio';
-
-import type { MockInstance } from 'vitest';
-import type { frame } from '../../types';
 import { Timestamp } from '../../models';
 import { AudioSource } from '../../sources';
+
+import type { MockInstance } from 'vitest';
 
 const file = new File([], 'audio.mp3', { type: 'audio/mp3' });
 
@@ -26,23 +25,40 @@ describe('The Audio Clip', () => {
 	let clip: AudioClip;
 
 	beforeEach(async () => {
-		clip = await new AudioClip().load(file);
+		clip = new AudioClip(file);
 		clip.on('update', updateFn);
 		clip.on('error', errorFn);
 		clip.on('load', loadFn);
 
-		playFn = vi.spyOn(clip.element, 'play').mockImplementation(async () => {
-			clip.element.dispatchEvent(new Event('play'));
-		});
-		pauseFn = vi.spyOn(clip.element, 'pause').mockImplementation(async () => {
-			clip.element.dispatchEvent(new Event('pause'));
-		});
+		playFn = mockPlayValid(clip);
+		pauseFn = mockPauseValid(clip);
+
+		mockAudioValid(clip);
+		mockDurationValid(clip);
+
+		await clip.init();
 	});
 
-	it('should have an initial state', async () => {
-		clip.element.dispatchEvent(new Event('canplay'));
-		expect(clip.element).toBeDefined();
-		expect(loadFn).toBeCalledTimes(1);
+	it('should initialize', async () => {
+		const clip = new AudioClip(file);
+
+		expect(clip.state).toBe('IDLE');
+		expect(clip.duration.seconds).not.toBe(20);
+		expect(clip.source.file).toBeInstanceOf(File);
+		expect(clip.element.src).toBeFalsy();
+
+		const evtSpy = mockAudioValid(clip);
+		const timeSpy = mockDurationValid(clip);
+
+		await clip.init();
+
+		expect(clip.duration.seconds).toBe(20);
+		expect(clip.range[0].seconds).toBe(0);
+		expect(clip.range[1].seconds).toBe(20);
+
+		expect(evtSpy).toHaveBeenCalledOnce();
+		expect(timeSpy).toHaveBeenCalledOnce();
+
 		expect(clip.type).toBe('audio');
 		expect(clip.state).toBe('READY');
 		expect(clip.source.name).toBe('audio.mp3');
@@ -51,83 +67,112 @@ describe('The Audio Clip', () => {
 		);
 	});
 
-	it('should update its state when canplay is called', () => {
-		vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(30);
-		expect(clip.element.duration).toBe(30);
-		expect(clip.duration.seconds).toBe(0);
-		clip.element.dispatchEvent(new Event('canplay'));
-		expect(clip.duration.seconds).toBe(30);
-		expect(clip.range[0].seconds).toBe(0);
-		expect(clip.range[1].seconds).toBe(30);
-		expect(clip.state).toBe('READY');
-		expect(loadFn).toBeCalledTimes(1);
-	});
+	it("should throw an error if the media can't be loaded", async () => {
+		const clip = new AudioClip(file);
 
-	it('should go to idle state if the media gets emptied', () => {
-		vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(30);
-		clip.element.dispatchEvent(new Event('canplay'));
+		mockDurationValid(clip);
+		const evtSpy = mockAudioInvalid(clip);
+		mockDurationValid(clip);
 
-		clip.playing = true;
-		clip.element.dispatchEvent(new Event('emptied'));
-		expect(clip.playing).toBe(false);
-		expect(clip.state).toBe('IDLE');
-		expect(clip.track).toBeUndefined();
-	});
+		await expect(() => clip.init()).rejects.toThrowError();
 
-	it("should throw an error if the media can't be loaded", () => {
-		vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(30);
-		clip.element.dispatchEvent(new Event('canplay'));
-		clip.element.dispatchEvent(new Event('error'));
+		expect(clip.duration.seconds).not.toBe(20);
+		expect(evtSpy).toHaveBeenCalledOnce();
+
 		expect(clip.state).toBe('ERROR');
-		expect(clip.track).toBeUndefined();
-		expect(errorFn).toBeCalledTimes(1);
 	});
 
-	it('should play and pause the audio with the render method', () => {
-		vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(5);
-
+	it('should play and pause the audio with the render method', async () => {
 		const composition = new Composition();
-		Object.assign(clip, { track: { composition } });
+		await composition.add(clip.offsetBy(30));
 
-		clip.element.dispatchEvent(new Event('canplay'));
-		expect(clip.duration.seconds).toBe(5);
+		const enterSpy = vi.spyOn(clip, 'enter');
+		const updateSpy = vi.spyOn(clip, 'update');
+		const exitSpy = vi.spyOn(clip, 'exit');
 
 		expect(clip.playing).toBe(false);
-		composition.state = 'PLAY';
-		clip.render();
 
-		expect(clip.playing).toBe(true);
+		composition.state = 'PLAY';
+		composition.computeFrame();
+
+		expect(playFn).toBeCalledTimes(0);
+		expect(clip.playing).toBe(false);
+		expect(enterSpy).toHaveBeenCalledTimes(0);
+		expect(updateSpy).toHaveBeenCalledTimes(0);
+		expect(exitSpy).toHaveBeenCalledTimes(0);
+
+		composition.frame = 30;
+		composition.computeFrame();
+
 		expect(playFn).toBeCalledTimes(1);
+		expect(clip.playing).toBe(true);
+		expect(enterSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(1);
+		expect(exitSpy).toHaveBeenCalledTimes(0);
 
 		composition.state = 'IDLE';
-		clip.render();
-		expect(clip.playing).toBe(false);
-		expect(pauseFn).toBeCalledTimes(1);
-
-		pauseFn.mockClear();
-
-		clip.playing = true;
-		clip.unrender();
+		composition.frame = 60;
+		composition.computeFrame();
 
 		expect(clip.playing).toBe(false);
 		expect(pauseFn).toBeCalledTimes(1);
+		expect(enterSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(2);
+		expect(exitSpy).toHaveBeenCalledTimes(0);
+
+		composition.state = 'PLAY';
+		composition.frame = 90;
+		composition.computeFrame();
+
+		expect(playFn).toBeCalledTimes(2);
+		expect(clip.playing).toBe(true);
+		expect(enterSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(3);
+		expect(exitSpy).toHaveBeenCalledTimes(0);
+
+		composition.frame = clip.stop.frames + 1;
+		composition.computeFrame();
+
+		expect(pauseFn).toBeCalledTimes(2);
+		expect(clip.playing).toBe(false);
+		expect(enterSpy).toHaveBeenCalledTimes(1);
+		expect(updateSpy).toHaveBeenCalledTimes(3);
+		expect(exitSpy).toHaveBeenCalledTimes(1);
 	});
 
 	it('slice should be persistant after adding clip', async () => {
-		vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(30);
-		vi.spyOn(clip, 'seek').mockImplementation(async () => { });
-
-		clip.subclip(<frame>20, <frame>60);
+		clip.offsetBy(30).subclip(20, 60).set({ muted: true, volume: 0.2 });
 
 		const composition = new Composition();
-		const promise = composition.add(clip);
-		clip.element.dispatchEvent(new Event('canplay'));
-		await promise;
+		await composition.add(clip)
 
 		expect(clip.state).toBe('ATTACHED');
-		expect(clip.duration.seconds).toBe(30);
+		expect(clip.duration.seconds).toBe(20);
 		expect(clip.range[0].frames).toBe(20);
 		expect(clip.range[1].frames).toBe(60);
+		expect(clip.offset.frames).toBe(30);
+		expect(clip.muted).toBe(true);
+		expect(clip.volume).toBe(0.2);
+	});
+
+	it("should not render the clip if it's disabled", async () => {
+		const composition = new Composition();
+		await composition.add(clip);
+
+		const exitSpy = vi.spyOn(clip, 'exit');
+		const updateSpy = vi.spyOn(clip, 'update');
+
+		composition.state = 'PLAY';
+		composition.computeFrame();
+
+		expect(updateSpy).toHaveBeenCalledTimes(1);
+		expect(exitSpy).not.toHaveBeenCalled();
+		expect(clip.playing).toBe(true);
+
+		clip.set({ disabled: true });
+
+		expect(exitSpy).toHaveBeenCalledTimes(1);
+		expect(clip.playing).toBe(false);
 	});
 
 	afterEach(() => {
@@ -143,8 +188,8 @@ describe('The Audio Clip', () => {
 describe('Copying the AudioClip', () => {
 	let clip: AudioClip;
 
-	beforeEach(async () => {
-		clip = await new AudioClip().load(file);
+	beforeEach(() => {
+		clip = new AudioClip();
 	});
 
 	it('should transfer audio properties', async () => {
@@ -180,22 +225,34 @@ describe('Copying the AudioClip', () => {
 		expect(copy.id).not.toBe(clip.id);
 		expect(copy.track).not.toBeDefined();
 	});
-})
-
-// copied from src/clips/clip/clip.decorator.spec.ts
-describe('The render decorator', () => {
-	it('should not render the compostition if the clip is disabled', () => {
-		const clip = new AudioClip();
-
-		const unrenderSpy = vi.spyOn(clip, 'unrender');
-
-		clip.render();
-
-		expect(unrenderSpy).not.toHaveBeenCalled();
-
-		clip.set({ disabled: true });
-		clip.render();
-
-		expect(unrenderSpy).toHaveBeenCalledOnce()
-	});
 });
+
+function mockAudioValid(clip: AudioClip) {
+	return vi.spyOn(clip.element, 'oncanplay', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('canplay'));
+		});
+}
+
+function mockDurationValid(clip: AudioClip) {
+	return vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(20);
+}
+
+function mockAudioInvalid(clip: AudioClip) {
+	return vi.spyOn(clip.element, 'onerror', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('error'));
+		});
+}
+
+function mockPlayValid(clip: AudioClip) {
+	return vi.spyOn(clip.element, 'play').mockImplementation(async () => {
+		clip.element.dispatchEvent(new Event('play'));
+	});
+}
+
+function mockPauseValid(clip: AudioClip) {
+	return vi.spyOn(clip.element, 'pause').mockImplementation(async () => {
+		clip.element.dispatchEvent(new Event('pause'));
+	});
+}

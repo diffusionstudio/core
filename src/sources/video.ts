@@ -12,7 +12,6 @@ export class VideoSource extends AudioSource {
 	public readonly type: ClipType = 'video';
 
 	public async thumbnail(): Promise<HTMLVideoElement> {
-		await this.loaded();
 		const video = document.createElement('video');
 		video.className = 'object-cover w-full aspect-video h-auto';
 		video.controls = false;
@@ -33,7 +32,7 @@ export class VideoSource extends AudioSource {
 			}
 		});
 
-		video.src = this.objectURL ?? '';
+		video.src = await this.createObjectURL();
 		return video;
 	}
 }

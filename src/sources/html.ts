@@ -7,6 +7,8 @@
 
 import { Source } from './source';
 import { documentToSvgImageUrl } from './html.utils';
+import { parseMimeType } from '../clips';
+import { IOError } from '../errors';
 
 import type { ClipType } from '../clips';
 
@@ -43,13 +45,60 @@ export class HtmlSource extends Source {
 		return this.iframe.contentWindow?.document;
 	}
 
-	public async createObjectURL(obj: Blob): Promise<string> {
-		this.iframe.setAttribute('src', URL.createObjectURL(obj));
-		await new Promise<void>((resolve) => {
-			this.iframe.onload = () => resolve();
-		});
+	public async createObjectURL(): Promise<string> {
+		if (!this.file && this.state == 'LOADING') {
+			await new Promise(this.resolve('load'));
+		}
 
-		return documentToSvgImageUrl(this.document);
+		if (this.objectURL) return this.objectURL;
+
+		this.objectURL = documentToSvgImageUrl(this.document);
+
+		return this.objectURL;
+	}
+
+	public async from(input: File | string, init?: RequestInit | undefined): Promise<this> {
+		try {
+			this.state = 'LOADING';
+
+			if (input instanceof File) {
+				this.name = input.name;
+				this.mimeType = parseMimeType(input.type);
+				this.external = false;
+				this.file = input;
+			} else {
+				// case input is a request url
+				const res = await fetch(input, init);
+
+				if (!res?.ok) throw new IOError({
+					i18n: 'unexpectedIOError',
+					message: 'An unexpected error occurred while fetching the file',
+				});
+
+				const blob = await res.blob();
+				this.name = input.toString().split('/').at(-1) ?? '';
+				this.external = true;
+				this.file = new File([blob], this.name, { type: blob.type });
+				this.externalURL = input;
+				this.mimeType = parseMimeType(blob.type);
+			}
+
+			this.iframe.setAttribute('src', URL.createObjectURL(this.file));
+
+			await new Promise<void>((resolve, reject) => {
+				this.iframe.onload = () => resolve();
+				this.iframe.onerror = (e) => reject(e);
+			});
+
+			this.state = 'READY';
+			this.trigger('load', undefined);
+		} catch (e) {
+			this.state = 'ERROR';
+			this.trigger('error', new Error(String(e)));
+			throw e;
+		}
+
+		return this;
 	}
 
 	/**
@@ -57,13 +106,15 @@ export class HtmlSource extends Source {
 	 * contents of the iframe document
 	 */
 	public update() {
+		// url has not been created yet
+		if (!this.objectURL) return;
+
 		this.objectURL = documentToSvgImageUrl(this.document);
 	}
 
 	public async thumbnail(): Promise<HTMLImageElement> {
-		await this.loaded();
 		const image = new Image();
-		image.src = this.objectURL ?? '';
+		image.src = await this.createObjectURL();
 		image.className = 'object-contain w-full aspect-video h-auto';
 		return image;
 	}

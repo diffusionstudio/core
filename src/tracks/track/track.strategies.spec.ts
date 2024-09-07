@@ -12,15 +12,13 @@ import { Timestamp } from '../../models';
 import { Composition } from '../../composition';
 import { Track } from './track';
 
-import type { frame } from '../../types';
-
 describe('The Track Strategy Object (default mode)', () => {
 	const strategy = new DefaultInsertStrategy();
 
 	it('should be able to insert clips to any position', () => {
 		// insert at beginning
 		let track = createDefaultTrack();
-		strategy.add(new Clip().set({ start: <frame>0, stop: <frame>9 }), track);
+		strategy.add(new Clip({ start: 0, stop: 9 }), track);
 
 		expect(track.clips[0].start.frames).toBe(0);
 		expect(track.clips[0].stop.frames).toBe(9);
@@ -36,7 +34,7 @@ describe('The Track Strategy Object (default mode)', () => {
 
 		// insert between
 		track = createDefaultTrack();
-		strategy.add(new Clip().set({ start: <frame>30, stop: <frame>50 }), track);
+		strategy.add(new Clip({ start: 30, stop: 50 }), track);
 
 		expect(track.clips[0].start.frames).toBe(10);
 		expect(track.clips[0].stop.frames).toBe(20);
@@ -49,7 +47,7 @@ describe('The Track Strategy Object (default mode)', () => {
 
 		// insert end
 		track = createDefaultTrack();
-		strategy.add(new Clip().set({ start: <frame>111, stop: <frame>112 }), track);
+		strategy.add(new Clip({ start: 111, stop: 112 }), track);
 
 		expect(track.clips[2].start.frames).toBe(101);
 		expect(track.clips[2].stop.frames).toBe(110);
@@ -61,7 +59,7 @@ describe('The Track Strategy Object (default mode)', () => {
 	it('should be able to align overlapping clips', () => {
 		// overlap start
 		let track = createDefaultTrack();
-		strategy.add(new Clip().set({ start: <frame>15, stop: <frame>30 }), track);
+		strategy.add(new Clip({ start: 15, stop: 30 }), track);
 
 		expect(track.clips[0].start.frames).toBe(10);
 		expect(track.clips[0].stop.frames).toBe(20);
@@ -73,7 +71,7 @@ describe('The Track Strategy Object (default mode)', () => {
 
 		// overlap end
 		track = createDefaultTrack();
-		strategy.add(new Clip().set({ start: <frame>60, stop: <frame>90 }), track);
+		strategy.add(new Clip({ start: 60, stop: 90 }), track);
 
 		expect(track.clips[1].start.frames).toBe(60);
 		expect(track.clips[1].stop.frames).toBe(80);
@@ -84,17 +82,17 @@ describe('The Track Strategy Object (default mode)', () => {
 		expect(track.clips[2].stop.frames).toBe(100);
 	});
 
-	it('should add overlapping clipd to a new track', async () => {
+	it('should add overlapping clip to a new track', async () => {
 		const composition = new Composition();
 		const track = composition.createTrack('base');
-		await track.add(new Clip().set({ start: <frame>0, stop: <frame>20 }));
+		await track.add(new Clip({ start: 0, stop: 20 }));
 
 		expect(composition.tracks.length).toBe(1);
 		expect(composition.tracks[0].clips.length).toBe(1);
 		expect(composition.tracks[0].clips[0].start.frames).toBe(0);
 		expect(composition.tracks[0].clips[0].stop.frames).toBe(20);
 
-		await track.add(new Clip().set({ start: <frame>5, stop: <frame>10 }));
+		await track.add(new Clip({ start: 5, stop: 10 }));
 		expect(composition.tracks.length).toBe(2);
 
 		expect(composition.tracks[0].clips.length).toBe(1);
@@ -105,7 +103,7 @@ describe('The Track Strategy Object (default mode)', () => {
 		expect(composition.tracks[1].clips[0].start.frames).toBe(0);
 		expect(composition.tracks[1].clips[0].stop.frames).toBe(20);
 
-		await track.add(new Clip().set({ start: <frame>11, stop: <frame>20 }));
+		await track.add(new Clip({ start: 11, stop: 20 }));
 		expect(composition.tracks.length).toBe(2);
 
 		expect(composition.tracks[0].clips.length).toBe(2);
@@ -119,7 +117,7 @@ describe('The Track Strategy Object (default mode)', () => {
 		expect(composition.tracks[1].clips[0].start.frames).toBe(0);
 		expect(composition.tracks[1].clips[0].stop.frames).toBe(20);
 
-		await track.add(new Clip().set({ start: <frame>12, stop: <frame>18 }));
+		await track.add(new Clip({ start: 12, stop: 18 }));
 		expect(composition.tracks.length).toBe(3);
 
 		expect(composition.tracks[0].clips.length).toBe(1);
@@ -142,8 +140,8 @@ describe('The Track Strategy Object (default mode)', () => {
 		const track = createDefaultTrack();
 
 		const clip = track.clips[1].set({
-			start: <frame>2,
-			stop: <frame>8,
+			start: 2,
+			stop: 8,
 			name: 'foo',
 		});
 
@@ -161,8 +159,8 @@ describe('The Track Strategy Object (default mode)', () => {
 		const track = createDefaultTrack();
 
 		const clip = track.clips[1].set({
-			start: <frame>105,
-			stop: <frame>120,
+			start: 105,
+			stop: 120,
 			name: 'foo',
 		});
 
@@ -211,13 +209,13 @@ describe('The Track Strategy Object (stack mode)', () => {
 	it('should be able to insert clips to the end', () => {
 		// insert at beginning
 		let track = new Track();
-		strategy.add(new Clip().set({ start: <frame>20, stop: <frame>30 }), track);
+		strategy.add(new Clip({ start: 20, stop: 30 }), track);
 		expect(track.clips.length).toBe(1);
 		expect(track.clips[0].start.frames).toBe(0);
 		expect(track.clips[0].stop.frames).toBe(10);
 
 		track = createStackedTrack();
-		strategy.add(new Clip().set({ start: <frame>0, stop: <frame>9 }), track);
+		strategy.add(new Clip({ start: 0, stop: 9 }), track);
 
 		expect(track.clips[2].start.frames).toBe(21);
 		expect(track.clips[2].stop.frames).toBe(30);
@@ -251,9 +249,9 @@ describe('The Track Strategy Object (stack mode)', () => {
 function createDefaultTrack(): Track<Clip> {
 	const track = new Track();
 	track.clips = [
-		new Clip().set({ start: <frame>10, stop: <frame>20 }),
-		new Clip().set({ start: <frame>80, stop: <frame>100 }),
-		new Clip().set({ start: <frame>101, stop: <frame>110 }),
+		new Clip({ start: 10, stop: 20 }),
+		new Clip({ start: 80, stop: 100 }),
+		new Clip({ start: 101, stop: 110 }),
 	];
 	return track;
 }
@@ -261,9 +259,9 @@ function createDefaultTrack(): Track<Clip> {
 function createStackedTrack(): Track<Clip> {
 	const track = new Track();
 	track.clips = [
-		new Clip().set({ start: <frame>0, stop: <frame>10 }),
-		new Clip().set({ start: <frame>11, stop: <frame>20 }),
-		new Clip().set({ start: <frame>21, stop: <frame>30 }),
+		new Clip({ start: 0, stop: 10 }),
+		new Clip({ start: 11, stop: 20 }),
+		new Clip({ start: 21, stop: 30 }),
 	];
 	return track;
 }

@@ -43,7 +43,7 @@ export class ComplexTextClip extends TextClip<ComplexTextClipProps> {
 	public constructor(props?: string | ComplexTextClipProps) {
 		super();
 
-		this.container.addChild(this.model);
+		this.view.addChild(this.model);
 
 		if (typeof props == 'string') {
 			this.text = props;
@@ -231,8 +231,8 @@ export class ComplexTextClip extends TextClip<ComplexTextClipProps> {
 	}
 
 	private drawBackground() {
-		if (this.container.children.length > 1) {
-			this.container.removeChildAt(0);
+		if (this.view.children.length > 1) {
+			this.view.removeChildAt(0);
 		}
 		if (!this.background) return;
 
@@ -253,7 +253,7 @@ export class ComplexTextClip extends TextClip<ComplexTextClipProps> {
 		graphics.fill(this.background.fill ?? '#000000');
 		graphics.alpha = this.background.alpha ?? 1;
 
-		this.container.addChildAt(graphics, 0);
+		this.view.addChildAt(graphics, 0);
 	}
 
 	protected reflectUpdate() {
@@ -268,11 +268,11 @@ export class ComplexTextClip extends TextClip<ComplexTextClipProps> {
 		this.textAlign = this.textAlign;
 		this.textBaseline = this.textBaseline;
 
-		const width = this.container.width;
-		const height = this.container.height;
+		const width = this.view.width;
+		const height = this.view.height;
 		const offset = (this.style.dropShadow?.distance ?? 0) * SCALE_OFFSET;
 
-		this.container.pivot = {
+		this.view.pivot = {
 			x: (width - offset) * this._anchor.x,
 			y: (height - offset) * this._anchor.y,
 		};
