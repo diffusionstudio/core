@@ -11,8 +11,6 @@ import { Clip, TextClip } from '../clips';
 import { AudioTrack, CaptionTrack, HtmlTrack, ImageTrack, TextTrack, Track, VideoTrack } from '../tracks';
 import { Timestamp } from '../models';
 
-import type { frame } from '../types';
-
 describe('The composition', () => {
 	let composition: Composition;
 	const frameMock = vi.fn();
@@ -54,13 +52,13 @@ describe('The composition', () => {
 	});
 
 	it('should get the correct duration', async () => {
-		const clip0 = new Clip().set({ stop: <frame>(12 * 30) });
+		const clip0 = new Clip({ stop: 12 * 30 });
 		const track0 = composition.createTrack('base');
 		await track0.add(clip0);
 		expect(composition.duration.seconds).toBe(12);
 		expect(composition.duration.frames).toBe(12 * 30);
 
-		const clip1 = new Clip().set({ stop: <frame>(18 * 30) });
+		const clip1 = new Clip({ stop: 18 * 30 });
 		const track1 = composition.createTrack('base');
 		await track1.add(clip1);
 		expect(composition.duration.seconds).toBe(18);
@@ -68,7 +66,7 @@ describe('The composition', () => {
 	});
 
 	it('should set the duration appropriately', async () => {
-		const clip0 = new Clip().set({ stop: <frame>(12 * 30) });
+		const clip0 = new Clip({ stop: 12 * 30 });
 		const track0 = composition.createTrack('base');
 		await track0.add(clip0);
 		expect(composition.duration.seconds).toBe(12);
@@ -77,7 +75,7 @@ describe('The composition', () => {
 		composition.duration = 4;
 		expect(composition.duration.frames).toBe(4);
 
-		composition.duration = Timestamp.fromFrames(<frame>(8 * 30));
+		composition.duration = Timestamp.fromFrames(8 * 30);
 		expect(composition.duration.seconds).toBe(8);
 		expect(composition.duration.frames).toBe(8 * 30);
 	});
@@ -167,7 +165,7 @@ describe('The composition', () => {
 	});
 
 	it('should render clips when user called play', async () => {
-		const clip = new Clip().set({ stop: <frame>15 });
+		const clip = new Clip({ stop: 15 });
 
 		const track = composition.createTrack('base');
 		await track.add(clip);
@@ -196,7 +194,7 @@ describe('The composition', () => {
 	});
 
 	it('should stop rendering when pause gets called', async () => {
-		const clip = new Clip().set({ stop: <frame>(6 * 30) });
+		const clip = new Clip({ stop: 6 * 30 });
 		const track = composition.createTrack('base');
 		await track.add(clip);
 
@@ -219,7 +217,7 @@ describe('The composition', () => {
 	});
 
 	it('should stop rendering at the end of the duration', async () => {
-		const clip = new Clip().set({ stop: <frame>(6 * 30) });
+		const clip = new Clip({ stop: 6 * 30 });
 		const track = composition.createTrack('base');
 		await track.add(clip);
 		composition.duration = 15;
@@ -238,35 +236,35 @@ describe('The composition', () => {
 	});
 
 	it('should be able to screenshot a frame', async () => {
-		const clip = new Clip().set({ stop: <frame>(6 * 30) });
+		const clip = new Clip({ stop: 6 * 30 });
 		const track = composition.createTrack('base');
 		await track.add(clip);
 
-		composition.frame = <frame>10;
+		composition.frame = 10;
 		expect(composition.screenshot()).toBe('data:image/png;base64,00');
 		expect(composition.screenshot('webp')).toBe('data:image/webp;base64,00');
 		expect(composition.screenshot('jpeg')).toBe('data:image/jpeg;base64,00');
 	});
 
 	it('should be able to calculate the correct time', async () => {
-		composition.duration = Timestamp.fromFrames(<frame>(20 * 30));
-		composition.frame = <frame>(10 * 30);
+		composition.duration = Timestamp.fromFrames(20 * 30);
+		composition.frame = 10 * 30;
 		expect(composition.time()).toBe('00:10 / 00:20');
 
-		composition.duration = Timestamp.fromFrames(<frame>(90 * 30));
-		composition.frame = <frame>(80 * 30);
+		composition.duration = Timestamp.fromFrames(90 * 30);
+		composition.frame = 80 * 30;
 
 		expect(composition.time()).toBe('01:20 / 01:30');
 
 		// test milliseconds
-		composition.duration = Timestamp.fromFrames(<frame>10);
-		composition.frame = <frame>1;
+		composition.duration = Timestamp.fromFrames(10);
+		composition.frame = 1;
 
 		expect(composition.time({ milliseconds: true })).toBe('00:00.033 / 00:00.333');
 
 		// test hours
-		composition.duration = Timestamp.fromFrames(<frame>(2 * 60 * 60 * 30));
-		composition.frame = <frame>(40 * 60 * 30);
+		composition.duration = Timestamp.fromFrames(2 * 60 * 60 * 30);
+		composition.frame = 40 * 60 * 30;
 
 		expect(composition.time({ hours: true })).toBe('00:40:00 / 02:00:00');
 	});

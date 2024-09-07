@@ -55,10 +55,10 @@ export class WebcodecsEncoder extends EventEmitter<EncoderEvents>() implements R
 	 */
 	private async encodeVideo(muxer: Muxer<StreamTarget>, config: VideoEncoderConfig): Promise<void> {
 		const { renderer, tracks, duration } = this.composition;
-		const totalFrames = <frame>Math.floor(duration.seconds * this.fps);
+		const totalFrames = Math.floor(duration.seconds * this.fps);
 
 		if (!renderer) return;
-		await this.composition.seek(<frame>0);
+		await this.composition.seek(0);
 		const startTime = new Date().getTime();
 
 		const init: VideoEncoderInit = {

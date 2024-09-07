@@ -10,8 +10,6 @@ import { Clip } from '../../clips';
 import { Track } from './track';
 import { Timestamp } from '../../models';
 
-import type { frame } from '../../types';
-
 describe('The Track Object', () => {
 	let track: Track<Clip>;
 	let updateSpy: MockInstance<(time: Timestamp) => void | Promise<void>>;
@@ -35,9 +33,9 @@ describe('The Track Object', () => {
 		track.pointer = 0;
 
 		track.clips = [
-			new Clip().set({ start: <frame>0, stop: <frame>10 }),
-			new Clip().set({ start: <frame>20, stop: <frame>30 }),
-			new Clip().set({ start: <frame>50, stop: <frame>60 }),
+			new Clip().set({ start: 0, stop: 10 }),
+			new Clip().set({ start: 20, stop: 30 }),
+			new Clip().set({ start: 50, stop: 60 }),
 		];
 
 		const spys = track.clips.map((clip) => vi.spyOn(clip, 'update'));
@@ -95,8 +93,8 @@ describe('The Track Object', () => {
 		track.pointer = 0;
 
 		track.clips = [
-			new Clip().set({ start: <frame>10, stop: <frame>20 }),
-			new Clip().set({ start: <frame>21, stop: <frame>30 }),
+			new Clip().set({ start: 10, stop: 20 }),
+			new Clip().set({ start: 21, stop: 30 }),
 		];
 
 		const spys = track.clips.map((clip) => vi.spyOn(clip, 'update'));

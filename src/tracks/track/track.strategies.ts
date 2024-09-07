@@ -8,7 +8,6 @@
 import { insertModes } from './track.fixtures';
 import { Timestamp } from '../../models';
 
-import type { frame } from '../../types';
 import type { Clip } from '../../clips';
 import type { InsertStrategy } from './track.interfaces';
 import type { Track } from './track';
@@ -66,7 +65,7 @@ export class StackInsertStrategy implements InsertStrategy<'STACK'> {
 	public add(clip: Clip, track: Track<Clip>): void {
 		// fallback is -1 because one frame will be added
 		const stop = track.clips.at(-1)?.stop.millis ?? -1;
-		const offset = <frame>(stop - clip.start.millis + 1);
+		const offset = stop - clip.start.millis + 1;
 
 		clip.offsetBy(new Timestamp(offset));
 		track.clips.push(clip);
@@ -79,7 +78,7 @@ export class StackInsertStrategy implements InsertStrategy<'STACK'> {
 
 		for (const clip of track.clips) {
 			if (clip.start.millis != start) {
-				const offset = <frame>(start - clip.start.millis);
+				const offset = start - clip.start.millis;
 				clip.offsetBy(new Timestamp(offset));
 			}
 			start = clip.stop.millis + 1;

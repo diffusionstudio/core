@@ -15,8 +15,7 @@ import { Font, TextClip } from '../text';
 import { ValidationError } from '../../errors';
 import { VisualMixin, VisualMixinProps } from '../mixins';
 import { MediaClip } from './media';
-
-import type { frame, MixinType } from '../../types';
+import { MixinType } from '../../types';
 
 describe('The Media Clip', () => {
 	const mockFn = vi.fn();
@@ -51,22 +50,22 @@ describe('The Media Clip', () => {
 	});
 
 	it('should be able to cut a clip with subclip', () => {
-		clip.duration.frames = <frame>600;
+		clip.duration.frames = 600;
 		expect(clip.duration.frames).toBe(600);
 		expect(clip.range[0].frames).toBe(0);
 		// range 1 is using the duration timestamp by reference
 		expect(clip.range[1].frames).toBe(600);
-		clip.subclip(<frame>30, <frame>360);
+		clip.subclip(30, 360);
 		expect(frameFn).toBeCalledTimes(1);
 		expect(clip.range[0].frames).toBe(30);
 		expect(clip.range[1].frames).toBe(360);
 	});
 
 	it('should lead to correct frames in combination with the offset', () => {
-		clip.duration.frames = <frame>300;
-		clip.set({ offset: <frame>150 });
+		clip.duration.frames = 300;
+		clip.set({ offset: 150 });
 		expect(frameFn).toBeCalledTimes(1);
-		clip.subclip(<frame>30, <frame>100);
+		clip.subclip(30, 100);
 		expect(frameFn).toBeCalledTimes(2);
 		expect(clip.range[0].frames).toBe(30);
 		expect(clip.range[1].frames).toBe(100);
@@ -75,45 +74,45 @@ describe('The Media Clip', () => {
 	});
 
 	it('should not be possible to clip outside the duration boundaries', () => {
-		clip.duration.frames = <frame>20;
-		clip.subclip(<frame>-5, <frame>25);
+		clip.duration.frames = 20;
+		clip.subclip(-5, 25);
 		expect(clip.range[0].frames).toBe(0);
 		expect(clip.range[1].frames).toBe(20);
 	});
 
 	it('should not be possible to reverse the upper and lower bound', () => {
-		expect(() => clip.subclip(<frame>10, <frame>5)).toThrowError();
+		expect(() => clip.subclip(10, 5)).toThrowError();
 	});
 
 	it('should be possible to set either the upper or the lower bound', () => {
-		clip.duration.frames = <frame>20;
-		clip.subclip(undefined, <frame>15);
+		clip.duration.frames = 20;
+		clip.subclip(undefined, 15);
 		expect(clip.range[1].frames).toBe(15);
-		clip.subclip(<frame>5);
+		clip.subclip(5);
 		expect(clip.range[0].frames).toBe(5);
 	});
 
 	it('should be adapt the lower slice when setting start', () => {
-		clip.duration.frames = <frame>20;
-		clip.subclip(<frame>5, <frame>15);
-		clip.set({ offset: <frame>5 });
+		clip.duration.frames = 20;
+		clip.subclip(5, 15);
+		clip.set({ offset: 5 });
 		expect(clip.duration.frames).toBe(20);
 		expect(clip.start.frames).toBe(10);
 		expect(clip.stop.frames).toBe(20);
 		// case in valid range
-		clip.set({ start: <frame>15 });
+		clip.set({ start: 15 });
 		expect(clip.start.frames).toBe(15);
 		expect(clip.offset.frames).toBe(5);
 		expect(clip.range[0].frames).toBe(10);
 		expect(clip.range[1].frames).toBe(15);
 		// lower than min range
-		clip.set({ start: <frame>4 });
+		clip.set({ start: 4 });
 		expect(clip.start.frames).toBe(5);
 		expect(clip.offset.frames).toBe(5);
 		expect(clip.range[0].frames).toBe(0);
 		expect(clip.range[1].frames).toBe(15);
 		// larger than max range
-		clip.set({ start: <frame>21 });
+		clip.set({ start: 21 });
 		expect(clip.start.frames).toBe(20);
 		expect(clip.offset.frames).toBe(5);
 		expect(clip.range[0].frames).toBe(15);
@@ -123,20 +122,20 @@ describe('The Media Clip', () => {
 	});
 
 	it('should be adapt the upper slice when setting stop', () => {
-		clip.duration.frames = <frame>20;
-		clip.subclip(<frame>5, <frame>15);
-		clip.set({ offset: <frame>5 });
+		clip.duration.frames = 20;
+		clip.subclip(5, 15);
+		clip.set({ offset: 5 });
 		expect(clip.duration.frames).toBe(20);
 		expect(clip.start.frames).toBe(10);
 		expect(clip.stop.frames).toBe(20);
 		// case in valid range
-		clip.set({ stop: <frame>15 });
+		clip.set({ stop: 15 });
 		expect(clip.start.frames).toBe(10);
 		expect(clip.offset.frames).toBe(5);
 		expect(clip.range[0].frames).toBe(5);
 		expect(clip.range[1].frames).toBe(10);
 		// lower than min range
-		clip.set({ stop: <frame>10 });
+		clip.set({ stop: 10 });
 		expect(clip.start.frames).toBe(10);
 		expect(clip.offset.frames).toBe(5);
 		expect(clip.range[0].frames).toBe(5);
@@ -144,7 +143,7 @@ describe('The Media Clip', () => {
 		expect(clip.range[1].frames).toBe(5);
 		expect(clip.range[1].millis).toBe(168);
 		// larger than max range
-		clip.set({ stop: <frame>26 });
+		clip.set({ stop: 26 });
 		expect(clip.start.frames).toBe(10);
 		expect(clip.offset.frames).toBe(5);
 		expect(clip.range[0].frames).toBe(5);
@@ -153,8 +152,8 @@ describe('The Media Clip', () => {
 
 	it('should be adaptable to a track', async () => {
 		// use common multiples of 30 and 15
-		clip.duration.frames = <frame>60;
-		clip.set({ offset: <frame>30 }).subclip(<frame>5, <frame>50);
+		clip.duration.frames = 60;
+		clip.set({ offset: 30 }).subclip(5, 50);
 
 		// 30 fps is the default
 		const composition = new Composition();
@@ -199,7 +198,7 @@ describe('The Media Clip', () => {
 	it('should be seekable', async () => {
 		clip.element = document.createElement('video');
 		clip.duration.seconds = 20;
-		clip.subclip(<frame>150, <frame>450);
+		clip.subclip(150, 450);
 		// in range
 		clip.seek(Timestamp.fromFrames(300));
 		expect(clip.element.currentTime).toBe(10);
@@ -214,8 +213,8 @@ describe('The Media Clip', () => {
 	it('should be seekable with offset', async () => {
 		clip.element = document.createElement('video');
 		clip.duration.seconds = 20;
-		clip.subclip(<frame>(5 * 30), <frame>(15 * 30));
-		clip.set({ offset: <frame>(10 * 30) });
+		clip.subclip(5 * 30, 15 * 30);
+		clip.set({ offset: 10 * 30 });
 		expect(clip.start.seconds).toBe(15);
 		expect(clip.stop.seconds).toBe(25);
 		// in range
@@ -230,12 +229,12 @@ describe('The Media Clip', () => {
 	});
 
 	it('should offset by a given number', async () => {
-		clip.duration.frames = <frame>20;
-		clip.set({ offset: <frame>100, name: 'foo' });
+		clip.duration.frames = 20;
+		clip.set({ offset: 100, name: 'foo' });
 		clip.state = 'READY';
 
-		const clip2 = new MediaClip({ offset: <frame>60 });
-		clip2.duration.frames = <frame>30;
+		const clip2 = new MediaClip({ offset: 60 });
+		clip2.duration.frames = 30;
 		clip2.state = 'READY';
 
 		const composition = new Composition();
@@ -246,14 +245,14 @@ describe('The Media Clip', () => {
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[1].name).toBe('foo');
 
-		clip.offsetBy(<frame>-80);
+		clip.offsetBy(-80);
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[0].name).toBe('foo');
 		expect(track.clips[0].start.frames).toBe(20);
 		expect(track.clips[0].stop.frames).toBe(40);
 
-		clip.offsetBy(<frame>30);
+		clip.offsetBy(30);
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[0].name).toBe('foo');

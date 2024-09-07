@@ -8,31 +8,30 @@
 import { describe, it, expect } from 'vitest';
 import { Timestamp } from '../models';
 import { framesToMillis, framesToSeconds, secondsToFrames } from './timestamp.utils';
-import type { frame } from '../types';
 
 describe('Timestamp utils', () => {
 	it('should be able to convert frames to milliseconds', () => {
-		expect(framesToMillis(<frame>10)).toBe(333);
-		expect(framesToMillis(<frame>-10)).toBe(-333);
-		expect(framesToMillis(<frame>0)).toBe(0);
-		expect(framesToMillis(<frame>10, 2)).toBe(5000);
-		expect(framesToMillis(<frame>-10, 2)).toBe(-5000);
-		expect(framesToMillis(<frame>5, 7)).toBe(714);
-		expect(framesToMillis(<frame>8, 9)).toBe(889);
-		expect(() => framesToMillis(<frame>8, 0)).toThrowError();
-		expect(() => framesToMillis(<frame>8, -1)).toThrowError();
+		expect(framesToMillis(10)).toBe(333);
+		expect(framesToMillis(-10)).toBe(-333);
+		expect(framesToMillis(0)).toBe(0);
+		expect(framesToMillis(10, 2)).toBe(5000);
+		expect(framesToMillis(-10, 2)).toBe(-5000);
+		expect(framesToMillis(5, 7)).toBe(714);
+		expect(framesToMillis(8, 9)).toBe(889);
+		expect(() => framesToMillis(8, 0)).toThrowError();
+		expect(() => framesToMillis(8, -1)).toThrowError();
 	});
 
 	it('should be able to convert frames to seconds', () => {
-		expect(framesToSeconds(<frame>10)).toBe(0.333);
-		expect(framesToSeconds(<frame>-10)).toBe(-0.333);
-		expect(framesToSeconds(<frame>0)).toBe(0);
-		expect(framesToSeconds(<frame>10, 2)).toBe(5);
-		expect(framesToSeconds(<frame>-10, 2)).toBe(-5);
-		expect(framesToSeconds(<frame>5, 7)).toBe(0.714);
-		expect(framesToSeconds(<frame>8, 9)).toBe(0.889);
-		expect(() => framesToSeconds(<frame>8, 0)).toThrowError();
-		expect(() => framesToSeconds(<frame>8, -1)).toThrowError();
+		expect(framesToSeconds(10)).toBe(0.333);
+		expect(framesToSeconds(-10)).toBe(-0.333);
+		expect(framesToSeconds(0)).toBe(0);
+		expect(framesToSeconds(10, 2)).toBe(5);
+		expect(framesToSeconds(-10, 2)).toBe(-5);
+		expect(framesToSeconds(5, 7)).toBe(0.714);
+		expect(framesToSeconds(8, 9)).toBe(0.889);
+		expect(() => framesToSeconds(8, 0)).toThrowError();
+		expect(() => framesToSeconds(8, -1)).toThrowError();
 	});
 
 	it('should be able to convert seconds to frames', () => {

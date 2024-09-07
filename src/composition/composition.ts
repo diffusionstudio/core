@@ -52,7 +52,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	/**
 	 * The current frame that the playback is set to
 	 */
-	public frame: frame = <frame>0;
+	public frame: frame = 0;
 
 	/**
 	 * User defined fixed duration, use the duration
@@ -330,7 +330,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.trigger('currentframe', this.frame);
 
 		if (this.playing) {
-			this.frame = <frame>(this.frame + 1);
+			this.frame++;
 		}
 	}
 
@@ -382,7 +382,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.state = 'PLAY';
 
 		if (this.frame >= this.duration.frames) {
-			this.frame = <frame>0;
+			this.frame = 0;
 		}
 
 		for (const track of this.tracks) {
@@ -508,7 +508,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		// reached end of composition
 		if (this.playing) {
-			this.seek(<frame>0);
+			this.seek(0);
 		}
 	}
 
@@ -522,7 +522,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		const lastFrame = Math.max(...lastFrames, 0);
 
 		if (lastFrame != this._duration.frames) {
-			this._duration.frames = <frame>lastFrame;
+			this._duration.frames = lastFrame;
 			this.trigger('frame', lastFrame);
 		}
 	}

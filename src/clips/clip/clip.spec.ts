@@ -11,8 +11,6 @@ import { Timestamp } from '../../models';
 import { Composition } from '../../composition';
 import { Track } from '../../tracks';
 
-import type { frame } from '../../types';
-
 describe('The Clip Object', () => {
 	const updateFn = vi.fn();
 	const detachFn = vi.fn();
@@ -44,7 +42,7 @@ describe('The Clip Object', () => {
 	});
 
 	it('should have setters that trigger an update', () => {
-		clip.set({ stop: <frame>200, start: <frame>100 });
+		clip.set({ stop: 200, start: 100 });
 
 		expect(clip.start.frames).toBe(100);
 		expect(clip.stop.frames).toBe(200);
@@ -53,14 +51,14 @@ describe('The Clip Object', () => {
 	});
 
 	it('should should set start and stop if the start is larger than the stop', () => {
-		clip.set({ stop: <frame>40, start: <frame>60 });
+		clip.set({ stop: 40, start: 60 });
 
 		// 1ms more than start;
 		expect(clip.start.millis).toBe(2000);
 		expect(clip.stop.millis).toBe(2001);
 
 		// 1ms less than stop
-		clip.set({ stop: <frame>35 });
+		clip.set({ stop: 35 });
 		expect(clip.stop.millis).toBe(1167);
 		expect(clip.start.millis).toBe(1166);
 
@@ -69,7 +67,7 @@ describe('The Clip Object', () => {
 	});
 
 	it('should connect to a track', async () => {
-		clip.set({ stop: <frame>60, start: <frame>30 });
+		clip.set({ stop: 60, start: 30 });
 
 		const composition = new Composition();
 		const track = composition.createTrack('base');
@@ -126,24 +124,24 @@ describe('The Clip Object', () => {
 	});
 
 	it('should be offset by a given frame', async () => {
-		clip.set({ stop: <frame>120, start: <frame>100, name: 'foo' });
+		clip.set({ stop: 120, start: 100, name: 'foo' });
 
 		const composition = new Composition();
 		const track = composition.createTrack('base');
 		await track.add(clip);
-		await track.add(new Clip({ stop: <frame>80, start: <frame>60 }));
+		await track.add(new Clip({ stop: 80, start: 60 }));
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[1].name).toBe('foo');
 
-		clip.offsetBy(<frame>-80);
+		clip.offsetBy(-80);
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[0].name).toBe('foo');
 		expect(track.clips[0].start.frames).toBe(20);
 		expect(track.clips[0].stop.frames).toBe(40);
 
-		clip.offsetBy(<frame>30);
+		clip.offsetBy(30);
 
 		expect(track.clips.length).toBe(2);
 		expect(track.clips[0].name).toBe('foo');

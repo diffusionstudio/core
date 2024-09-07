@@ -14,7 +14,7 @@ import type { frame } from '../types';
 export function secondsToFrames(seconds: number, fps = FPS_DEFAULT): frame {
 	if (fps < 1) throw new Error('FPS must be greater or equal to 1');
 	
-	return <frame>Math.round(seconds * fps);
+	return Math.round(seconds * fps);
 }
 
 /**
