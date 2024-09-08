@@ -61,37 +61,6 @@ describe('Keyframe', () => {
     expect(keyframe1.value(f(18))).toBe('#000000');
   });
 
-  it('should interpolate degree values correctly', () => {
-    const keyframe0 = new Keyframe([0, 12], [0, 360 * 2], { type: "degrees" });
-    expect(keyframe0.value(f(-3))).toBe(0);
-    expect(keyframe0.value(f(0))).toBe(0);
-    expect(keyframe0.value(f(3))).toBe(180);
-    expect(keyframe0.value(f(6))).toBe(0);
-    expect(keyframe0.value(f(9))).toBe(180);
-    expect(keyframe0.value(f(12))).toBe(0);
-    expect(keyframe0.value(f(15))).toBe(0);
-
-    const keyframe1 = new Keyframe([6, 12, 18], [180, 360, 360 * 2], { type: "degrees" });
-    expect(keyframe1.value(f(0))).toBe(180);
-    expect(keyframe1.value(f(6))).toBe(180);
-    expect(keyframe1.value(f(9))).toBe(270);
-    expect(keyframe1.value(f(12))).toBe(0);
-    expect(keyframe1.value(f(15))).toBe(180);
-    expect(keyframe1.value(f(18))).toBe(0);
-    expect(keyframe1.value(f(21))).toBe(0);
-  });
-
-  it('should interpolate degree values correctly with extend', () => {
-    const keyframe = new Keyframe([0, 12], [0, 360 * 2], { extrapolate: "extend", type: "degrees" });
-    expect(keyframe.value(f(-3))).toBe(-180);
-    expect(keyframe.value(f(0))).toBe(0);
-    expect(keyframe.value(f(3))).toBe(180);
-    expect(keyframe.value(f(6))).toBe(0);
-    expect(keyframe.value(f(9))).toBe(180);
-    expect(keyframe.value(f(12))).toBe(0);
-    expect(keyframe.value(f(15))).toBe(180);
-  });
-
   it('should not clamp values when extrapolate is set to "extend"', () => {
     const keyframe = new Keyframe([0, 12], [0, 100], { extrapolate: "extend" });
     expect(keyframe.value(f(-6))).toBe(-50);

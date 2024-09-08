@@ -25,10 +25,9 @@ export type KeyframeOptions = {
    * Specifies the type of output values.
    * - "number": Output values are numbers.
    * - "color": Output values are colors in hex format.
-   * - "degrees": Output values are angles in degrees.
    * @default "number"
    */
-  type?: "number" | "color" | "degrees";
+  type?: "number" | "color";
 
   /**
    * An optional easing function to apply to the interpolation.
