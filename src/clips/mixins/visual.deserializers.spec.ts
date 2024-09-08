@@ -17,7 +17,7 @@ describe('Deserializer1D', () => {
 	});
 
 	it('should desialize Keyframes', () => {
-		const keyframe = new Keyframe([30, 60], [30, 80], { extrapolate: 'extend', type: 'degrees' });
+		const keyframe = new Keyframe([30, 60], [30, 80], { extrapolate: 'extend' });
 		const data = JSON.parse(JSON.stringify(keyframe));
 
 		const rot = Deserializer1D.fromJSON(data);
@@ -31,7 +31,7 @@ describe('Deserializer1D', () => {
 		expect(rot.output[1]).toBe(80);
 
 		expect(rot.options.extrapolate).toBe('extend');
-		expect(rot.options.type).toBe('degrees');
+		expect(rot.options.type).toBe('number');
 	});
 
 	it('should not desialize functions', () => {
@@ -64,7 +64,7 @@ describe('Deserializer2D', () => {
 
 	it('should desialize nested Keyframes', () => {
 		const keyframes = {
-			x: new Keyframe([30, 60], [30, 80], { extrapolate: 'extend', type: 'degrees' }),
+			x: new Keyframe([30, 60], [30, 80], { extrapolate: 'extend' }),
 			y: new Keyframe([90, 120], ['#000000', '#FFFFFF'], { type: 'color' })
 		};
 		const data = JSON.parse(JSON.stringify(keyframes));
@@ -80,7 +80,7 @@ describe('Deserializer2D', () => {
 		expect(pos.x.output[1]).toBe(80);
 
 		expect(pos.x.options.extrapolate).toBe('extend');
-		expect(pos.x.options.type).toBe('degrees');
+		expect(pos.x.options.type).toBe('number');
 
 		expect(pos.y).toBeInstanceOf(Keyframe);
 

@@ -100,10 +100,6 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
     const easedT = utils.easingFunctions[this.options.easing](t);
 
     if (typeof outputStart === 'number' && typeof outputEnd === 'number') {
-      if (this.options.type === "degrees") {
-        const totalDegrees = outputEnd - outputStart;
-        return (outputStart + totalDegrees * easedT) % 360 as T;
-      }
       return utils.lerp(outputStart, outputEnd, easedT) as T;
     }
     if (typeof outputStart === 'string' && typeof outputEnd === 'string') {

@@ -555,7 +555,7 @@ describe('The visualize decorator', () => {
 		expect(clip.view.angle).toBe(93);
 		expect(angleSpy).toHaveBeenCalledOnce();
 
-		clip.rotation = new Keyframe([0, 60], [0, 180], { type: 'degrees' })
+		clip.rotation = new Keyframe([0, 60], [0, 180])
 
 		clip.update(new Timestamp(1000));
 		expect(clip.view.angle).toBe(90);
