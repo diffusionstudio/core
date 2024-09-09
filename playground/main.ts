@@ -8,38 +8,34 @@ const composition = new core.Composition({ background: '#76b7f5' });
 setupControls(composition);
 setupTimeline(composition);
 
-await composition.add(
-  new core.VideoClip(
-    await core.VideoSource
-      .from('/sample_aac_h264_yuv420p_1080p_60fps.mp4'),
-    {
-      volume: 0.1,
-      anchor: 0.5,
-      position: 'center',
-      height: '100%',
-      alpha: new core.Keyframe([0, 120, 240, 300], [0.5, 1, 0.5, 1]),
-      scale: new core.Keyframe([0, 30], [0.1, 1], { easing: 'easeIn' }),
-      rotation: new core.Keyframe([0, 30], [0, 360], { easing: 'easeOut' }),
-    })
+const video = await composition.add(
+  new core.VideoClip(await core.VideoSource
+    .from('/sample_aac_h264_yuv420p_1080p_60fps.mp4'), {
+    volume: 0.1,
+    anchor: 0.5,
+    position: 'center',
+    height: '100%',
+  })
     .subclip(30, 540)
     .offsetBy(30)
 );
 
-await composition.add(
+video.animate()
+  .alpha(0.5).to(1, 120).to(0.5, 120).to(1, 60)
+  .scale(0.1, 0, 'easeIn').to(1, 30)
+  .rotation(0, 0, 'easeOut').to(360, 30)
+
+const image = await composition.add(
   new core.ImageClip(await core.ImageSource.from('/lenna.png'), {
     position: 'center',
     height: 600,
-    translate: {
-      x: new core.Keyframe([0, 40], [1700, -1400], { easing: 'easeOut' }),
-      y: 0
-    },
-    rotation: new core.Keyframe(
-      [0, 5, 10, 15, 20, 25, 30, 35, 40],
-      [-16, 14, -7, 24, -3, 19, -14, 5, -30]
-    ),
-    scale: new core.Keyframe([0, 40], [2, 1])
   })
 );
+
+image.animate()
+  .rotation(-16).to(14, 5).to(-7, 10).to(24, 7).to(-3, 9).to(19, 7).to(-14, 12).to(5, 9).to(-30, 13)
+  .translateX(1700, 0, 'easeOut').to(-1400, 40)
+  .scale(2).to(1, 40);
 
 await composition.add(
   new core.HtmlClip(await core.HtmlSource.from('/test.html'), {
