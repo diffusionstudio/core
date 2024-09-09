@@ -34,6 +34,32 @@ describe('Keyframe', () => {
     expect(keyframe1.value(f(21))).toBe(120);
   });
 
+  it('should push a new keyframe', () => {
+    const keyframe = new Keyframe<number>([0, 12], [0, 100]);
+
+    keyframe.push(18, 200);
+
+    expect(keyframe.input.length).toBe(3);
+    expect(keyframe.output.length).toBe(3);
+    expect(keyframe.input[2]).toBe(18 * 1000 / 30);
+    expect(keyframe.output[2]).toBe(200);
+  });
+
+  it('should be able to handle single value keyframes', () => {
+    const keyframe0 = new Keyframe([12], [40]);
+
+    expect(keyframe0.value(f(0))).toBe(40);
+    expect(keyframe0.value(f(12))).toBe(40);
+    expect(keyframe0.value(f(18))).toBe(40);
+  });
+
+  it('should handle undefined keyframe options', () => {
+    const keyframe0 = new Keyframe([0, 12], [0, 100], { easing: undefined });
+
+    expect(keyframe0.value(f(0))).toBe(0);
+    expect(keyframe0.value(f(12))).toBe(100);
+  });
+
   it('should interpolate number values correctly using milliseconds', () => {
     const keyframe0 = new Keyframe([0, 12], [0, 100]);
     expect(keyframe0.value(-200)).toBe(0);

@@ -47,7 +47,7 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
       extrapolate: 'clamp',
       easing: 'linear',
       type: 'number',
-      ...options,
+      ...JSON.parse(JSON.stringify(options)),
     };
   }
 
@@ -105,6 +105,9 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
     if (typeof outputStart === 'string' && typeof outputEnd === 'string') {
       return utils.interpolateColor(outputStart, outputEnd, easedT) as T;
     }
+    if(this.output.length == 1) {
+      return this.output[0];
+    }
     throw new Error("Unsupported output range types");
   }
 
@@ -116,6 +119,18 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
   public value(time: number | Timestamp): T {
     const { t, segment } = this.normalize(typeof time == 'number' ? time : time.millis);
     return this.interpolate(t, segment);
+  }
+
+  /**
+   * Add a new keyframe to the animation
+   * @param frame time of the keyframe
+   * @param value value of the keyframe
+   */
+  public push(input: frame, output: T): this {
+    this.input.push(framesToMillis(input));
+    this.output.push(output);
+
+    return this;
   }
 
   public toJSON(): this {

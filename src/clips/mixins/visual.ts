@@ -7,6 +7,8 @@
 
 import { serializable } from '../../services';
 import * as deserializers from './visual.deserializers';
+import { createAnimationBuilder } from '../../models/animation-builder';
+import { AnimationBuilder } from './visual.animation';
 import { Keyframe } from '../../models';
 import { Sprite } from 'pixi.js';
 
@@ -18,6 +20,13 @@ type BaseClass = { view: Container } & Serializer;
 
 export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 	class Mixin extends Base {
+		/**
+		 * Apply one or more `Pixi.js` filters to the clip. 
+		 * @example 
+		 * clip.filters = [new BlurFilter()];
+		 */
+		public filters?: Filter | Filter[];
+
 		@serializable(deserializers.Deserializer1D)
 		public _height?: int | Keyframe<int> | Percent | NumberCallback;
 
@@ -32,12 +41,6 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 
 		@serializable(deserializers.Deserializer2D)
 		public _scale?: Scale;
-
-		/**
-		 * Apply one or more `Pixi.js` filters to the clip. 
-		 * @example 
-		 */
-		public filters?: Filter | Filter[];
 
 		/**
 		 * Defines the rotation of the clip in degrees
@@ -125,6 +128,30 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		}
 
 		/**
+		 * Offset relative to the x position
+		 * @default 0
+		 */
+		public get translateX(): int | Keyframe<int> | NumberCallback {
+			return this.translate.x;
+		}
+
+		public set translateX(value: int | Keyframe<int> | NumberCallback) {
+			this.translate.x = value;
+		}
+
+		/**
+		 * Offset relative to the y position
+		 * @default 0
+		 */
+		public get translateY(): int | Keyframe<int> | NumberCallback {
+			return this.translate.y;
+		}
+
+		public set translateY(value: int | Keyframe<int> | NumberCallback) {
+			this.translate.y = value;
+		}
+
+		/**
 		 * The height of the clip/container
 		 */
 		public get height(): Keyframe<int> | Percent | int | NumberCallback {
@@ -183,6 +210,12 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 			if (this.filters && this.view.filters) {
 				this.view.filters = null as any;
 			}
+		}
+
+		public animate() {
+			return createAnimationBuilder(
+				new AnimationBuilder(this)
+			);
 		}
 	}
 

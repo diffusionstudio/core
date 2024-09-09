@@ -8,6 +8,7 @@
 import type { easingFunctions } from "./keyframe.utils";
 
 export type EasingFunctions = typeof easingFunctions;
+export type EasingFunction = keyof EasingFunctions;
 
 /**
  * Options for configuring a Keyframe instance.
@@ -34,5 +35,5 @@ export type KeyframeOptions = {
    * Easing functions can modify the interpolation to be non-linear.
    * @default "linear"
    */
-  easing?: keyof EasingFunctions;
+  easing?: EasingFunction;
 }

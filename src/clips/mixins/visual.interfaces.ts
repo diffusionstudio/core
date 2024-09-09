@@ -18,6 +18,8 @@ export interface VisualMixinProps {
   scale?: Scale | float | Keyframe<number> | NumberCallback;
   x?: int | Keyframe<int> | Percent | NumberCallback;
   y?: int | Keyframe<int> | Percent | NumberCallback;
+  translateX?: int | Keyframe<int> | NumberCallback;
+  translateY?: int | Keyframe<int> | NumberCallback;
   height?: Keyframe<int> | Percent | int | NumberCallback;
   width?: Keyframe<int> | Percent | int | NumberCallback;
   anchor?: Anchor | float;
