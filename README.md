@@ -14,21 +14,23 @@
 
 # Getting Started
 
-Diffusion Studio is a browser-based framework for programmatic video editing. It enables developers to automate complex editing workflows, build AI-powered video editors and create videos at scale.
-
-```sh
-npm i @diffusionstudio/core
-```
+Diffusion Studio is an open-source, browser-based video editing library that allows developers to automate video editing workflows at scale, build custom editing applications, or seamlessly integrate video processing capabilities into existing projects.
 
 ## Documentation
 
 Visit https://docs.diffusion.studio to view the full documentation.
 
 ## Why Use Diffusion Studio
-💻 Fully client-side<br/>
-📦 Fully extensible with Pixi.js<br/>
-🩸 WebGPU/WebGL API support<br/>
-🏎️ WebCodecs API support<br/>
+💻 100% **client-side**<br/>
+📦 Fully **extensible** with [Pixi.js](https://pixijs.com/)<br/>
+🩸 Blazingly **fast** WebGPU/WebGL renderer<br/>
+🏎️ **Cutting edge** WebCodecs export<br/>
+
+## Getting Started
+
+```sh
+npm install @diffusionstudio/core
+```
 
 ## Basic Usage
 Let's take a look at an example:
@@ -66,7 +68,7 @@ This may look familiar to some. That is because the API is heavily inspired by *
 
 ![Composition Visulization](./assets/composition.png)
 
-Whereas each track contains zero or more clips of a single type in ascending chronological order. Clips within a track cannot overlap with other clips, similar to Adobe Premiere etc.
+Whereas each track contains zero or more clips of a single type in ascending chronological order.
 
 A track will be created implicitly with `composition.add(clip)` however you can also create them manually like this:
 
@@ -85,13 +87,11 @@ https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
 ## How does Diffusion Studio compare to Remotion and Motion Canvas?
 
-**Remotion** acts as a React-based video creation tool, enabling you to render the entire DOM tree as well as the full suite of browser visualization features, such as HTML, CSS, Canvas, etc.. This makes Remotion ideal for beginners looking to create videos with code. However, it is limited to react and relies heavily on the CPU, which can be less efficient compared to GPU backed rendering.
+**Remotion** is a React-based video creation tool that transforms the entire DOM into videos. It's particularly suited for beginners, as web developers can start creating videos using the skills they already have.
 
-In contrast, **Motion Canvas** uses a Canvas 2D implementation for rendering. It is intended as a standalone editor for creating production-quality animations. In addition, Motion Canvas uses an imperative API. Instead of rendering markup based on timestamps, elements are procedurally added to the timeline. This approach is perfect for creating animations with code (the intended purpose). However, it usually demands static workflows with little variability, making it difficult to build dynamic applications.
+**Motion Canvas** uses a Canvas 2D implementation for rendering. It is intended as a standalone editor for creating production-quality animations. It features a unique imperative API that adds elements to the timeline procedurally, rather than relying on keyframes like traditional video editing tools. This makes Motion Canvas ideal for crafting detailed, animated videos.
 
-**Diffusion Studio** combines the strengths of both Remotion and Motion Canvas by offering a declarative (yet framework-agnostic) API like Remotion, while also being GPU-backed like Motion Canvas. Diffusion Studio is optimized for video processing performance, utilizing the latest and greatest technologies (WebGPU and WebCodecs). Its API is specifically designed for building video editing apps and to automate complex video workflows.
-
-**Note: Diffusion Studio eliminates the need to pay for rendering server infrastructure, since all processing is performed client-side!**
+In contrast, **Diffusion Studio** is not a framework with a visual editing interface but a video editing library that can be integrated into existing projects. It operates entirely on the client-side, eliminating the need for additional backend infrastructure. Diffusion Studio is also dedicated to supporting the latest rendering technologies, including WebGPU, WebGL, and WebCodecs. If a feature you need isn't available, you can easily extend it using [Pixi.js](https://github.com/pixijs/pixijs).
 
 ## Current features
 * **Video/Audio** trim and offset
@@ -100,6 +100,7 @@ In contrast, **Motion Canvas** uses a Canvas 2D implementation for rendering. It
 * **Html & Image** rendering
 * **Text** with multiple styles
 * Web & Local **Fonts**
+* **Custom Clips** based on Pixi.js
 * **Filters**
 * **Keyframe** animations
   * **Numbers, Degrees and Colors**
@@ -108,6 +109,27 @@ In contrast, **Motion Canvas** uses a Canvas 2D implementation for rendering. It
 * **Realtime playback**
 * **Hardware accelerated** encoding via WebCodecs
 * **Dynamic render resolution and framerate**
+
+## Contributing
+Contributions to Diffusion Studio are welcome and highly appreciated. Simply fork this respository and run:
+
+```sh
+npm install
+```
+
+Before checking in a pull request please verify that all unit tests are still green by running:
+
+```sh
+npm run test
+```
+
+## Background
+
+This project began in March 2023 with the mission of creating the "video processing toolkit for the era of AI." As someone passionate about video editing for over a decade, I saw Chrome’s release of Webcodecs and WebGPU without a feature flag as the perfect moment to build something new.
+
+Currently, most browser-based video editors rely on server-side rendering, requiring time-consuming uploads and downloads of large video files. With Webcodecs, video processing can now be handled directly in the browser, making it faster and more efficient.
+
+I’m excited to be part of the next generation of video editing technology.
 
 ## Compatability
 
@@ -159,25 +181,3 @@ In contrast, **Motion Canvas** uses a Canvas 2D implementation for rendering. It
 | Mp3         | ✅       | ❌                |
 | Ogg         | ✅       | ❌                |
 | Wav         | ✅       | N/A               |
-
-## Contributing
-Contributions to Diffusion Studio are welcome and highly appreciated. Simply fork this respository and run:
-
-```sh
-npm install
-```
-
-Before checking in a pull request please verify that all unit tests are still green by running:
-
-```sh
-npm run test
-```
-
-## Background
-
-This project has been started in March 2023 with the mission of creating the *"video processing toolkit for the area of AI"*. During an extensive research period, we quickly decided to fully embrace **WebGPU**, which offers a substantial performance improvement over its predecessor WebGL and technologies alike. The following implementations were evaluated:
-* **C++ w/ Python bindings** - inefficient to develop.
-* **Rust** - early ecosystem (might come back here).
-* **Typescript** - efficient to develop, great performance when gpu based.
-
-They all support WebGPU, however, in the case of Typescript, WebGPU is currently only available in Chromium-based browsers, which is why a WebGL fallback is mandatory.
