@@ -11,6 +11,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "skipLibCheck": true,
+    "allowJs": true,
     "types": [
       "@webgpu/types",
       "@types/wicg-file-system-access",

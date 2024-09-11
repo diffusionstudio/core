@@ -47,7 +47,10 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	public constructor(source?: File | VideoSource, props: VideoClipProps = {}) {
 		super();
 
-		(this.textrues.html5.source as any).playsInline = true;
+		this.element.controls = false;
+		this.element.playsInline = true;
+		this.element.style.display = 'hidden';
+
 		(this.textrues.html5.source as any).autoPlay = false;
 		(this.textrues.html5.source as any).loop = false;
 		this.sprite.texture = this.textrues.html5;
@@ -96,11 +99,11 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	}
 
 	public async connect(track: Track<VideoClip>): Promise<void> {
+		super.connect(track);
+
 		// without seeking the first frame a black frame will be rendered
 		const frame = track.composition?.frame ?? 0;
 		await this.seek(Timestamp.fromFrames(frame));
-
-		super.connect(track);
 	}
 
 	@visualize
