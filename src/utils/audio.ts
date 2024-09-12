@@ -131,6 +131,25 @@ export function bufferToF32Planar(input: AudioBuffer): Float32Array {
 }
 
 /**
+ * Conver an audio buffer inter a interleaved int 16 array
+ */
+export function bufferToI16Interleaved(audioBuffer: AudioBuffer): Int16Array {
+	const numberOfChannels = audioBuffer.numberOfChannels;
+	const length = audioBuffer.length;
+	const interleaved = new Int16Array(length * numberOfChannels);
+
+	for (let i = 0; i < length; i++) {
+		for (let channel = 0; channel < numberOfChannels; channel++) {
+			const sample = audioBuffer.getChannelData(channel)[i] * 32767; // Convert float [-1,1] to 16-bit PCM
+			interleaved[i * numberOfChannels + channel] = sample;
+		}
+	}
+
+	return interleaved;
+}
+
+
+/**
  * Merges the channels of the audio blob into a mono AudioBuffer
  */
 export async function blobToMonoBuffer(
@@ -168,6 +187,11 @@ export async function blobToMonoBuffer(
  * @returns The resampled audio buffer
  */
 export function resampleBuffer(buffer: AudioBuffer, sampleRate = 44100, numberOfChannels = 2) {
+	// sample rate and channels already match
+	if (buffer.sampleRate == sampleRate && buffer.numberOfChannels == numberOfChannels) {
+		return buffer;
+	}
+
 	const length = Math.floor(buffer.duration * sampleRate);
 	const audioContext = new OfflineAudioContext(numberOfChannels, 1, sampleRate);
 

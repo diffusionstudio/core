@@ -53,9 +53,14 @@ export async function getVideoEncoderConfigs(settings: VideoSettings): Promise<V
 	}
 
 	const supported: VideoEncoderConfig[] = [];
+
+	if (!('VideoEncoder' in window)) {
+		return supported;
+	}
+
 	for (const config of configs) {
 		const support = await VideoEncoder.isConfigSupported(config);
-		if (support.supported) supported.push(config);
+		if (support.supported) supported.push(support.config ?? config);
 	}
 
 	return supported.sort(sortHardwareAcceleration);
@@ -68,17 +73,23 @@ export async function getAudioEncoderConfigs(settings: AudioSettings): Promise<A
 	const { sampleRate, numberOfChannels, bitrate } = settings;
 
 	const codecs = ['mp4a.40.2', 'opus'];
-
 	const supported: AudioEncoderConfig[] = [];
+
+	if (!('AudioEncoder' in window)) {
+		return supported;
+	}
+
 	for (const codec of codecs) {
-		const config: AudioEncoderConfig = {
+		const support = await AudioEncoder.isConfigSupported({
 			codec,
 			numberOfChannels,
 			bitrate,
 			sampleRate,
+		});
+
+		if (support.supported) {
+			supported.push(support.config);
 		}
-		const support = await AudioEncoder.isConfigSupported(config);
-		if (support.supported) supported.push(config);
 	}
 
 	return supported;
@@ -91,11 +102,11 @@ export async function getAudioEncoderConfigs(settings: AudioSettings): Promise<A
 export async function getSupportedEncoderConfigs(settings: {
 	audio: AudioSettings,
 	video: VideoSettings
-}): Promise<[VideoEncoderConfig, AudioEncoderConfig]> {
+}): Promise<[VideoEncoderConfig, AudioEncoderConfig | undefined]> {
 	const audio = await getAudioEncoderConfigs(settings.audio);
 	const video = await getVideoEncoderConfigs(settings.video);
 
-	if (!audio.length || !video.length) {
+	if (!video.length) {
 		throw new ExportError({
 			message: "Encoder can't be configured with any of the tested profiles",
 			i18n: 'codecsNotSupported',

@@ -6,57 +6,53 @@
  */
 
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
+import { bufferToI16Interleaved, getVideoEncoderConfigs, resampleBuffer } from '../utils';
+import { OpusEncoder } from './opus';
+import { toOpusSampleRate } from './utils';
 import { ExportError } from '../errors';
-import * as utils from '../utils';
 
 import type { frame } from '../types';
-import type { EncoderOptions } from './config.types';
-
-type CanvasEncoderOptions = Omit<EncoderOptions, 'resolution' | 'debug'>;
+import type { EncoderInit } from './interfaces';
 
 /**
  * Generic encoder that allows you to encode
  * a canvas frame by frame
  */
-export class CanvasEncoder implements Required<CanvasEncoderOptions> {
+export class CanvasEncoder implements Required<EncoderInit> {
 	private canvas: HTMLCanvasElement | OffscreenCanvas;
 	private muxer?: Muxer<ArrayBufferTarget>;
 	private videoEncoder?: VideoEncoder;
-	private audioEncoder?: AudioEncoder;
-	private onready?: () => void;
 
 	public frame: frame = 0;
-	public sampleRate: number; // 44100
-	public numberOfChannels: number; // 2
-	public videoBitrate: number // 10e6
-	public gpuBatchSize: number; // 5
-	public fps: number; // 30
+	public sampleRate: number;
+	public numberOfChannels: number;
+	public videoBitrate: number;
+	public gpuBatchSize: number;
+	public fps: number;
 
 	public height: number;
 	public width: number;
-
-	private encodedAudio = false;
+	public audio: boolean;
 
 	/**
 	 * Create a new Webcodecs encoder
 	 * @param canvas - The canvas to encode
-	 * @param options - Configure the output
+	 * @param init - Configure the output
 	 * @example
-	 * ```typescript
+	 * ```
 	 * const encoder = new CanvasEncoder(canvas, { fps: 60 });
 	 * ```
 	 */
-	public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options?: CanvasEncoderOptions) {
+	public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, init?: EncoderInit) {
 		this.canvas = canvas;
 		this.width = canvas.width;
 		this.height = canvas.height;
-		this.fps = options?.fps ?? 30;
-		this.sampleRate = options?.sampleRate ?? 44100;
-		this.numberOfChannels = options?.numberOfChannels ?? 2;
-		this.videoBitrate = options?.videoBitrate ?? 10e6;
-		this.gpuBatchSize = options?.gpuBatchSize ?? 5;
-
-		this.init();
+		this.fps = init?.fps ?? 30;
+		this.sampleRate = toOpusSampleRate(init?.sampleRate ?? 48000);
+		this.numberOfChannels = init?.numberOfChannels ?? 2;
+		this.videoBitrate = init?.videoBitrate ?? 10e6;
+		this.gpuBatchSize = init?.gpuBatchSize ?? 5;
+		this.audio = init?.audio ?? false;
 	}
 
 	/**
@@ -65,29 +61,23 @@ export class CanvasEncoder implements Required<CanvasEncoderOptions> {
 	 */
 	private async init() {
 		// First check whether web codecs are supported
-		const [video, audio] = await utils.getSupportedEncoderConfigs({
-			video: {
-				height: Math.round(this.height),
-				width: Math.round(this.width),
-				bitrate: this.videoBitrate,
-				fps: this.fps,
-			},
-			audio: {
-				sampleRate: this.sampleRate,
-				numberOfChannels: this.numberOfChannels,
-				bitrate: 128_000, // 128 kbps
-			}
+		const configs = await getVideoEncoderConfigs({
+			height: Math.round(this.height),
+			width: Math.round(this.width),
+			bitrate: this.videoBitrate,
+			fps: this.fps,
 		});
 
 		this.muxer = new Muxer({
 			target: new ArrayBufferTarget(),
-			video: { ...video, codec: 'avc' },
+			video: { ...configs[0], codec: 'avc' },
 			firstTimestampBehavior: 'offset',
 			fastStart: 'in-memory',
-			audio: {
-				...audio,
-				codec: audio.codec == 'opus' ? 'opus' : 'aac',
-			},
+			audio: this.audio ? {
+				numberOfChannels: this.numberOfChannels,
+				sampleRate: this.sampleRate,
+				codec: 'opus',
+			} : undefined,
 		});
 
 		const init: VideoEncoderInit = {
@@ -98,18 +88,7 @@ export class CanvasEncoder implements Required<CanvasEncoderOptions> {
 		};
 
 		this.videoEncoder = new VideoEncoder(init);
-		this.videoEncoder.configure(video);
-
-		this.audioEncoder = new AudioEncoder({
-			output: (chunk, meta) => {
-				meta && this.muxer?.addAudioChunk(chunk, meta);
-			},
-			error: console.error,
-		});
-
-		this.audioEncoder.configure(audio);
-
-		this.onready?.()
+		this.videoEncoder.configure(configs[0]);
 	}
 
 	/**
@@ -118,7 +97,7 @@ export class CanvasEncoder implements Required<CanvasEncoderOptions> {
 	 * @returns {Promise<void>} - A promise that resolves when the frame has been encoded
 	 */
 	public async encodeVideo(canvas?: HTMLCanvasElement | OffscreenCanvas): Promise<void> {
-		if (!this.videoEncoder) await this.ready();
+		if (!this.videoEncoder) await this.init();
 
 		if (this.videoEncoder!.encodeQueueSize > this.gpuBatchSize) {
 			await new Promise((resolve) => {
@@ -142,40 +121,41 @@ export class CanvasEncoder implements Required<CanvasEncoderOptions> {
 	 * @returns {Promise<void>} - A promise that resolves when the audio has been added to the encoder queue
 	 */
 	public async encodeAudio(buffer: AudioBuffer): Promise<void> {
-		if (!this.audioEncoder) await this.ready();
+		if (!this.muxer) await this.init();
 
-		if (buffer.sampleRate != this.sampleRate || buffer.numberOfChannels != this.numberOfChannels) {
-			buffer = utils.resampleBuffer(buffer, this.sampleRate, this.numberOfChannels);
-		}
+		const data = resampleBuffer(buffer, this.sampleRate, this.numberOfChannels);
 
-		this.audioEncoder?.encode(
-			new AudioData({
-				format: 'f32-planar',
-				sampleRate: buffer.sampleRate,
-				numberOfChannels: buffer.numberOfChannels,
-				numberOfFrames: buffer.length,
-				timestamp: 0,
-				data: utils.bufferToF32Planar(buffer),
-			})
-		);
+		const encoder = new OpusEncoder({
+			output: (chunk, meta) => {
+				this.muxer?.addAudioChunkRaw(
+					chunk.data,
+					chunk.type,
+					chunk.timestamp,
+					chunk.duration,
+					meta
+				);
+			},
+			error: console.error,
+		});
 
-		this.encodedAudio = true;
+		await encoder.configure({
+			numberOfChannels: this.numberOfChannels,
+			sampleRate: this.sampleRate,
+		});
+
+		encoder.encode({
+			data: bufferToI16Interleaved(data),
+			numberOfFrames: data.length,
+		});
 	}
 
 	/**
 	 * Finalizes the rendering process and exports the result as an MP4
 	 * @returns {Promise<Blob>} - The rendered video as a Blob
 	 */
-	public async export(): Promise<Blob> {
+	public async finalize(): Promise<Blob> {
 		// encode empty buffer
-		if (!this.encodedAudio) {
-			const args = [this.numberOfChannels, 1, this.sampleRate] as const;
-			const context = new OfflineAudioContext(...args);
-			await this.encodeAudio(context.createBuffer(...args));
-		}
-
 		await this.videoEncoder?.flush();
-		await this.audioEncoder?.flush();
 
 		this.muxer?.finalize();
 
@@ -192,12 +172,9 @@ export class CanvasEncoder implements Required<CanvasEncoderOptions> {
 	}
 
 	/**
-	 * Wait until the encoder is ready
-	 * @returns {Promise<void>} - A promise that resolves when the encoder is ready
+	 * @deprecated use `finalize` instead
 	 */
-	private async ready() {
-		await new Promise<void>((resolve) => {
-			this.onready = () => resolve();
-		})
+	public async export(): Promise<Blob> {
+		return this.finalize();
 	}
 }

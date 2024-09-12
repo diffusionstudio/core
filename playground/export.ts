@@ -7,7 +7,7 @@ export async function exportComposition(composition: core.Composition) {
   if (loader.style.display != 'none') return;
 
   try {
-    const encoder = new core.WebcodecsEncoder(composition, { debug: true, fps });
+    const encoder = new core.Encoder(composition, { debug: true, fps });
 
     encoder.on('render', (event) => {
       const { progress, total } = event.detail;
@@ -25,7 +25,7 @@ export async function exportComposition(composition: core.Composition) {
       ],
     });
     loader.style.display = 'block';
-    await encoder.export(fileHandle);
+    await encoder.render(fileHandle);
   } catch (e) {
     if (e instanceof DOMException) {
       // user canceled file picker
@@ -52,3 +52,7 @@ fpsButton.addEventListener('click', () => {
 
   if (!Number.isNaN(value)) fps = value
 });
+
+if (!('showSaveFilePicker' in window)) {
+  Object.assign(window, { showSaveFilePicker: async () => undefined });
+}
