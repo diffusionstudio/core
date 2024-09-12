@@ -1,7 +1,7 @@
 {
   "name": "@diffusionstudio/core",
   "private": false,
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "type": "module",
   "description": "Build bleeding edge video processing applications",
   "files": [
@@ -61,21 +61,29 @@
     "url": "git@github.com:diffusionstudio/core.git"
   },
   "keywords": [
-    "edit videos",
-    "programmatic video editing",
-    "video editing",
+    "mp4",
+    "web",
+    "aac",
+    "h264",
+    "opus",
+    "edit",
+    "webgl",
+    "video",
+    "audio",
+    "record",
+    "canvas",
+    "tiktok",
+    "webgpu",
+    "encode",
+    "editor",
+    "decode",
+    "editing",
+    "youtube",
+    "recorder",
     "automate",
-    "web-based",
-    "browser-based",
-    "automation",
-    "ai video editor",
-    "video apps",
-    "video applications",
-    "create videos",
-    "automate workflows",
-    "automated video editing",
-    "free video editor",
-    "editor for youtube",
-    "online video editor"
+    "webcodecs",
+    "client-side",
+    "programmatic",
+    "browser-based"
   ]
 }

@@ -5,8 +5,5 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-export * from './IOError';
-export * from './BaseError';
-export * from './ValidationError';
-export * from './ExportError';
-export * from './EncoderError';
+export * from './opus.encoder';
+export * from './opus.types';

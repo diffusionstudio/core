@@ -5,8 +5,6 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-export * from './IOError';
-export * from './BaseError';
-export * from './ValidationError';
-export * from './ExportError';
-export * from './EncoderError';
+import { BaseError } from './BaseError';
+
+export class EncoderError extends BaseError {}

@@ -402,7 +402,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.trigger('pause', this.frame);
 	}
 
-	public async audio(numberOfChannels = 2, sampleRate = 44100): Promise<AudioBuffer> {
+	public async audio(numberOfChannels = 2, sampleRate = 48000): Promise<AudioBuffer> {
 		const length = this.duration.seconds * sampleRate;
 		const context = new OfflineAudioContext({
 			sampleRate,
@@ -445,7 +445,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 					output.getChannelData(i).set(outputData);
 				}
 			} catch (e) {
-				console.warn('could not get channel data', e);
+				console.error('could not get channel data', e);
 			}
 
 			clip.source.audioBuffer = undefined;
