@@ -25,6 +25,7 @@ Visit https://docs.diffusion.studio to view the full documentation.
 📦 Fully **extensible** with [Pixi.js](https://pixijs.com/)<br/>
 🩸 Blazingly **fast** WebGPU/WebGL renderer<br/>
 🏎️ **Cutting edge** WebCodecs export<br/>
+🪽 **Light weight** and tree-shakeable<br/>
 
 ## Getting Started
 
@@ -59,9 +60,9 @@ const composition = new core.Composition(); // 1920x1080
 await composition.add(video);  // convenience function for 
 await composition.add(text);   // clip -> track -> composition
 
-// export video using webcodecs at 25 FPS
-new core.WebcodecsEncoder(composition, { fps: 25 })
-  .export(); // use resolution = 2 to render at 4k 
+// render video using webcodecs at 25 FPS
+// use resolution: 2 to render at 4k 
+new core.Encoder(composition, { fps: 25 }).render();
 ```
 
 This may look familiar to some. That is because the API is heavily inspired by **Moviepy** and Swift UI. It models the structure of popular video editing applications such as Adobe Premiere or CapCut. The current state can be visualized as follows:
@@ -89,9 +90,9 @@ https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
 **Remotion** is a React-based video creation tool that transforms the entire DOM into videos. It's particularly suited for beginners, as web developers can start creating videos using the skills they already have.
 
-**Motion Canvas** uses a Canvas 2D implementation for rendering. It is intended as a standalone editor for creating production-quality animations. It features a unique imperative API that adds elements to the timeline procedurally, rather than relying on keyframes like traditional video editing tools. This makes Motion Canvas ideal for crafting detailed, animated videos.
+**Motion Canvas** is intended as a standalone editor for creating production-quality animations. It features a unique imperative API that adds elements to the timeline procedurally, rather than relying on keyframes like traditional video editing tools. This makes Motion Canvas ideal for crafting detailed, animated videos.
 
-In contrast, **Diffusion Studio** is not a framework with a visual editing interface but a video editing library that can be integrated into existing projects. It operates entirely on the client-side, eliminating the need for additional backend infrastructure. Diffusion Studio is also dedicated to supporting the latest rendering technologies, including WebGPU, WebGL, and WebCodecs. If a feature you need isn't available, you can easily extend it using [Pixi.js](https://github.com/pixijs/pixijs).
+In contrast, **Diffusion Studio** is not a framework with a visual editing interface but a **video editing library** that can be integrated into existing projects. It operates entirely on the **client-side**, eliminating the need for additional backend infrastructure. Diffusion Studio is also dedicated to supporting the latest rendering technologies, including WebGPU, WebGL, and WebCodecs. If a feature you need isn't available, you can **easily extend** it using [Pixi.js](https://github.com/pixijs/pixijs).
 
 ## Current features
 * **Video/Audio** trim and offset
@@ -134,9 +135,8 @@ I’m excited to be part of the next generation of video editing technology.
 ## Compatability
 
 ✅ Supported 
-⏰ Not yet supported 
-❌ Not planned 
-🔬 Not tested
+🧪 Experimental 
+❌ Not supported 
 
 ### Desktop
 
@@ -144,40 +144,40 @@ I’m excited to be part of the next generation of video editing technology.
 | ----------------- | -- | ----------------- | -- |
 | Chrome            | ✅ | Windows           | ✅ |
 | Edge              | ✅ | Macos             | ✅ |
-| Firefox           | ⏰ | Linux             | ✅ |
-| Safari            | ⏰ |
-| Opera             | 🔬 |
+| Firefox           | 🧪 | Linux             | ✅ |
+| Safari            | ✅ |
+| Opera             | ✅ |
 | Brave             | ✅ |
-| Vivaldi           | 🔬 |
+| Vivaldi           | ✅ |
 
 
 ### Mobile
 
 | Browser           |    | Operating System  |    |
 | ----------------- | -- | ----------------- | -- |
-| Brave Android     | 🔬 | Android           | 🔬 |
-| Chrome Android    | 🔬 | iOS               | ⏰ |
-| Firefox Android   | ⏰ |
-| Opera Android     | 🔬 |
-| Safari iOS        | ⏰ |
+| Brave Android     | ✅ | Android           | ✅ |
+| Chrome Android    | ✅ | iOS               | ✅ |
+| Firefox Android   | 🧪 |
+| Opera Android     | ✅ |
+| Safari iOS        | ✅ |
 
 
 |             | Demultiplexing | Multiplexing |
 | ----------- | -------------- | -------------|
 | Mp4         | ✅             | ✅           |
-| Webm        | ✅             | ⏰           |
+| Webm        | ✅             | ❌           |
 | Mov         | ✅             | ❌           |
-| Mkv         | ⏰             | ❌           |
-| Avi         | ⏰             | ❌           |
+| Mkv         | ❌             | ❌           |
+| Avi         | ❌             | ❌           |
 
 |             | Decoding | Encoding          |
 | ----------- | -------- | ----------------- |
 | Avc1        | ✅       | ✅                |
-| Hevc        | ✅       | ⏰                |
-| VP9         | ✅       | ⏰                |
-| VP8         | ✅       | ⏰                |
-| AAC         | ✅       | ✅ (except Linux) |
+| AAC         | ✅       | ✅ (Chromium only)|
 | Opus        | ✅       | ✅                |
+| Wav         | ✅       | ✅                |
+| Hevc        | ✅       | ❌                |
+| VP9         | ✅       | ❌                |
+| VP8         | ✅       | ❌                |
 | Mp3         | ✅       | ❌                |
 | Ogg         | ✅       | ❌                |
-| Wav         | ✅       | N/A               |

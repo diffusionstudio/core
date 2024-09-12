@@ -3,7 +3,7 @@ import * as core from '../src';
 
 let fps = 30;
 
-export async function exportComposition(composition: core.Composition) {
+export async function render(composition: core.Composition) {
   if (loader.style.display != 'none') return;
 
   try {
@@ -24,15 +24,17 @@ export async function exportComposition(composition: core.Composition) {
         },
       ],
     });
+
     loader.style.display = 'block';
     await encoder.render(fileHandle);
   } catch (e) {
     if (e instanceof DOMException) {
+      console.log(e)
       // user canceled file picker
-    } else if (e instanceof core.ExportError) {
+    } else if (e instanceof core.EncoderError) {
       alert(e.message);
     } else {
-      alert(String(e))
+      alert(String(e));
     }
   } finally {
     loader.style.display = 'none';

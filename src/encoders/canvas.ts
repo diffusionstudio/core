@@ -9,7 +9,7 @@ import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
 import { bufferToI16Interleaved, getVideoEncoderConfigs, resampleBuffer } from '../utils';
 import { OpusEncoder } from './opus';
 import { toOpusSampleRate } from './utils';
-import { ExportError } from '../errors';
+import { EncoderError } from '../errors';
 
 import type { frame } from '../types';
 import type { EncoderInit } from './interfaces';
@@ -121,6 +121,13 @@ export class CanvasEncoder implements Required<EncoderInit> {
 	 * @returns {Promise<void>} - A promise that resolves when the audio has been added to the encoder queue
 	 */
 	public async encodeAudio(buffer: AudioBuffer): Promise<void> {
+		if (!this.audio) {
+			throw new EncoderError({
+				i18n: 'initializationError',
+				message: 'Encoder must be initialized using {audio: true} to use this method'
+			});
+		}
+
 		if (!this.muxer) await this.init();
 
 		const data = resampleBuffer(buffer, this.sampleRate, this.numberOfChannels);
@@ -150,10 +157,10 @@ export class CanvasEncoder implements Required<EncoderInit> {
 	}
 
 	/**
-	 * Finalizes the rendering process and exports the result as an MP4
+	 * Finalizes the rendering process and creates a blob
 	 * @returns {Promise<Blob>} - The rendered video as a Blob
 	 */
-	public async finalize(): Promise<Blob> {
+	public async blob(): Promise<Blob> {
 		// encode empty buffer
 		await this.videoEncoder?.flush();
 
@@ -162,8 +169,8 @@ export class CanvasEncoder implements Required<EncoderInit> {
 		const buffer = this.muxer?.target.buffer;
 
 		if (!buffer) {
-			throw new ExportError({
-				i18n: 'unexpectedEncoderError',
+			throw new EncoderError({
+				i18n: 'unexpectedRenderError',
 				message: 'Muxer could not be finalized because the target buffer is not defined'
 			})
 		}
@@ -172,9 +179,9 @@ export class CanvasEncoder implements Required<EncoderInit> {
 	}
 
 	/**
-	 * @deprecated use `finalize` instead
+	 * @deprecated use `blob` instead
 	 */
 	public async export(): Promise<Blob> {
-		return this.finalize();
+		return this.blob();
 	}
 }

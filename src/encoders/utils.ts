@@ -123,6 +123,6 @@ export function toOpusSampleRate(sampleRate: number) {
       closest = rate;
     }
   }
-	console.log('closest', closest);
+
   return closest;
 }

@@ -10,6 +10,7 @@ import { VideoClip } from '../clips';
 import { Timestamp } from '../models';
 import { createRenderEventDetail } from './utils';
 import { EventEmitter } from '../services';
+import { EncoderError } from '../errors';
 
 import type { StreamTarget } from 'mp4-muxer';
 import type { Composition } from '../composition';
@@ -50,7 +51,10 @@ export class WebcodecsVideoEncoder extends EventEmitter<EncoderEvents>() impleme
 		const totalFrames = Math.floor(duration.seconds * this.fps);
 
 		if (!renderer) {
-			throw new DOMException('Cannot encode composition before the renderer has been initialized');
+			throw new EncoderError({
+				i18n: 'rendererNotInitialized',
+				message: 'Cannot encode composition before the renderer has been initialized'
+			});
 		};
 
 		await this.composition.seek(0);
@@ -69,7 +73,7 @@ export class WebcodecsVideoEncoder extends EventEmitter<EncoderEvents>() impleme
 		for (let frame = 0 as frame; frame <= totalFrames; frame++) {
 			if (signal && signal.aborted) {
 				this.composition.findClips(VideoClip).forEach((clip) => clip.cancelDecoding());
-				throw new DOMException('Export has been aborted')
+				throw new DOMException('User aborted rendering')
 			}
 
 			if (encoder.encodeQueueSize > this.gpuBatchSize) {

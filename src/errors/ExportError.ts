@@ -7,4 +7,7 @@
 
 import { BaseError } from './BaseError';
 
+/**
+ * @deprecated please replace with `EncoderError`
+ */
 export class ExportError extends BaseError {}

@@ -12,6 +12,7 @@ import { WebcodecsVideoEncoder } from './webcodecs.video';
 import { audioClipFilter, createStreamTarget, withError } from './utils';
 import { getSupportedEncoderConfigs } from '../utils';
 import { FPS_DEFAULT } from '../models';
+import { EncoderError } from '../errors';
 
 import type { Composition } from '../composition';
 import type { VideoEncoderInit } from './interfaces';
@@ -39,7 +40,12 @@ export class Encoder extends WebcodecsVideoEncoder {
 	 * @throws DOMException if the export has been aborted
 	 */
 	public async render(target: FileSystemFileHandle | string = 'video.mp4', signal?: AbortSignal): Promise<void> {
-		if (!this.composition.renderer) return; // should not happen
+		if (!this.composition.renderer) {
+			throw new EncoderError({
+				i18n: 'rendererNotInitialized',
+				message: 'Cannot encode composition before the renderer has been initialized'
+			});
+		};
 
 		const [videoConfig, audioConfig] = await this.getConfigs();
 

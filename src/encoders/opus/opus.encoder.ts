@@ -6,13 +6,13 @@
  */
 
 import createModule from './opus';
-import wasmPath from './opus.wasm?url';
 import { createOpusHead } from './opus.utils';
-import { SUPPORTED_RATES } from './opus.fixtures';
+import { OPUS_WASM_PATH, SUPPORTED_RATES } from './opus.fixtures';
+import { EncoderError } from '../../errors';
 
-import type { 
-  EncodedOpusChunkOutputCallback, 
-  OpusEncoderConfig, 
+import type {
+  EncodedOpusChunkOutputCallback,
+  OpusEncoderConfig,
   OpusEncoderInit,
   OpusEncoderSamples,
 } from './opus.types';
@@ -43,14 +43,17 @@ export class OpusEncoder {
     const { numberOfChannels, sampleRate } = this.config = config;
 
     if (!SUPPORTED_RATES.includes(sampleRate)) {
-      throw new Error(`Unsupported sample rate, supported: ${SUPPORTED_RATES.join()}`)
+      throw new EncoderError({
+        i18n: 'sampleRateNotSupported',
+        message: `Unsupported sample rate, supported: ${SUPPORTED_RATES.join()}`,
+      })
     }
 
     // create new wasm module
     this.opus = await createModule({
       locateFile(path: string, scriptDirectory: string) {
         if (path.endsWith('.wasm')) {
-          return wasmPath;
+          return OPUS_WASM_PATH;
         }
         return scriptDirectory + path;
       }
@@ -76,7 +79,10 @@ export class OpusEncoder {
    */
   public encode({ data, numberOfFrames, timestamp = 0 }: OpusEncoderSamples) {
     if (!this.encoder || !this.opus || !this.config || !this.meta) {
-      throw new Error('Cannot encode samples using an unconfigured encoder');
+      throw new EncoderError({
+        i18n: 'unconfiguredEncoder',
+        message: 'Cannot encode samples using an unconfigured encoder',
+      });
     }
 
     // Parameters
@@ -134,10 +140,6 @@ export class OpusEncoder {
       // Move to the next chunk
       offset += chunkSize;
       timestamp += duration;
-    }
-
-    if (timestamp == 0 && numberOfFrames > 0) {
-      throw new Error('Could not encode data');
     }
   }
 }

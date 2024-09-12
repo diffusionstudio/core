@@ -7,6 +7,7 @@ import path from 'node:path';
 export default defineConfig(({ command }) => ({
   publicDir: command == 'build' ? false : 'public',
   build: {
+    minify: false,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'DiffusionStudio',
@@ -14,6 +15,11 @@ export default defineConfig(({ command }) => ({
       fileName: 'ds'
     },
     target: 'esnext',
+    rollupOptions: {
+      output: {
+        preserveModules: true,
+      },
+    },
   },
   plugins: [
     dts({

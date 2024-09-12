@@ -5,7 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { ExportError } from "../errors";
+import { EncoderError } from "../errors";
 
 type VideoSettings = {
 	height: number;
@@ -107,8 +107,8 @@ export async function getSupportedEncoderConfigs(settings: {
 	const video = await getVideoEncoderConfigs(settings.video);
 
 	if (!video.length) {
-		throw new ExportError({
-			message: "Encoder can't be configured with any of the tested profiles",
+		throw new EncoderError({
+			message: "Encoder can't be configured with any of the tested codecs",
 			i18n: 'codecsNotSupported',
 		});
 	}
@@ -117,7 +117,7 @@ export async function getSupportedEncoderConfigs(settings: {
 }
 
 /**
- * Sort function that prioritizes hardware acceleration
+ * Config sort function that prioritizes hardware acceleration
  */
 export function sortHardwareAcceleration(a: VideoEncoderConfig, b: VideoEncoderConfig): number {
 	const aHa = a.hardwareAcceleration ?? '';
