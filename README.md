@@ -143,7 +143,7 @@ I’m excited to be part of the next generation of video editing technology.
 | ----------------- | -- | ----------------- | -- |
 | Chrome            | ✅ | Windows           | ✅ |
 | Edge              | ✅ | Macos             | ✅ |
-| Firefox           | 🧪 | Linux             | ✅ |
+| Firefox           | ✅ | Linux             | ✅ |
 | Safari            | ✅ |
 | Opera             | ✅ |
 | Brave             | ✅ |
@@ -155,10 +155,10 @@ I’m excited to be part of the next generation of video editing technology.
 | Browser           |    | Operating System  |    |
 | ----------------- | -- | ----------------- | -- |
 | Brave Android     | ✅ | Android           | ✅ |
-| Chrome Android    | ✅ | iOS               | ✅ |
+| Chrome Android    | ✅ | iOS               | 🧪 |
 | Firefox Android   | 🧪 |
 | Opera Android     | ✅ |
-| Safari iOS        | ✅ |
+| Safari iOS        | 🧪 |
 
 
 |             | Demultiplexing | Multiplexing |
