@@ -25,7 +25,6 @@ Visit https://docs.diffusion.studio to view the full documentation.
 📦 Fully **extensible** with [Pixi.js](https://pixijs.com/)<br/>
 🩸 Blazingly **fast** WebGPU/WebGL renderer<br/>
 🏎️ **Cutting edge** WebCodecs export<br/>
-🪽 **Light weight** and tree-shakeable<br/>
 
 ## Getting Started
 
