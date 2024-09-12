@@ -5,9 +5,8 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import createModule from './opus';
 import { createOpusHead } from './opus.utils';
-import { OPUS_WASM_PATH, SUPPORTED_RATES } from './opus.fixtures';
+import { OPUS_WASM_PATH, OPUS_JS_PATH, SUPPORTED_RATES } from './opus.fixtures';
 import { EncoderError } from '../../errors';
 
 import type {
@@ -40,6 +39,7 @@ export class OpusEncoder {
    * @param config The sample rate and channel count to use
    */
   public async configure(config: OpusEncoderConfig): Promise<void> {
+    const opusModule = await import(/* @vite-ignore *//* webpackIgnore: true */OPUS_JS_PATH);
     const { numberOfChannels, sampleRate } = this.config = config;
 
     if (!SUPPORTED_RATES.includes(sampleRate)) {
@@ -50,7 +50,7 @@ export class OpusEncoder {
     }
 
     // create new wasm module
-    this.opus = await createModule({
+    this.opus = await opusModule.default({
       locateFile(path: string, scriptDirectory: string) {
         if (path.endsWith('.wasm')) {
           return OPUS_WASM_PATH;
