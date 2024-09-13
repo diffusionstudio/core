@@ -7,6 +7,7 @@
 
 import { MediaClip } from '../media';
 import { AudioSource } from '../../sources';
+import { IOError } from '../../errors';
 
 import type { Track } from '../../tracks';
 import type { AudioClipProps } from './audio.interfaces';
@@ -57,8 +58,10 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 			this.element.onerror = () => {
 				this.state = 'ERROR';
 
-				const error = new Error('An error occurred while processing the input medium.');
-				this.trigger('error', error);
+				const error = new IOError({
+					code: 'sourceNotProcessable',
+					message: 'An error occurred while processing the input medium.',
+				});
 
 				reject(this.element.error ?? error);
 			}

@@ -98,7 +98,7 @@ export class Source extends EventEmitterMixin(Serializer) {
 
 		if (!this.file) {
 			throw new ValidationError({
-				i18n: 'fileNotAccessible',
+				code: 'fileNotAccessible',
 				message: "The desired file cannot be accessed",
 			});
 		}
@@ -120,7 +120,7 @@ export class Source extends EventEmitterMixin(Serializer) {
 				const res = await fetch(input, init);
 
 				if (!res?.ok) throw new IOError({
-					i18n: 'unexpectedIOError',
+					code: 'unexpectedIOError',
 					message: 'An unexpected error occurred while fetching the file',
 				});
 
@@ -136,7 +136,6 @@ export class Source extends EventEmitterMixin(Serializer) {
 			this.trigger('load', undefined);
 		} catch (e) {
 			this.state == 'ERROR';
-			this.trigger('error', new Error(String(e)));
 			throw e;
 		}
 

@@ -10,6 +10,7 @@ import { Serializer, serializable } from '../../services';
 import { EventEmitterMixin } from '../../mixins';
 import { Container } from 'pixi.js';
 import { replaceKeyframes } from './clip.utils';
+import { ValidationError } from '../../errors';
 
 import type { ClipEvents, ClipState, ClipType } from './clip.types';
 import type { frame } from '../../types';
@@ -211,10 +212,16 @@ export class Clip<Props extends ClipProps = ClipProps> extends EventEmitterMixin
 
 		// invalid cases
 		if (!time || time.millis <= this.start.millis || time.millis >= this.stop.millis) {
-			throw new Error("Cannot split clip at the specified time")
+			throw new ValidationError({
+				code: 'splitOutOfRange',
+				message: 'Cannot split clip at the specified time'
+			})
 		}
 		if (!this.track) {
-			throw new Error('Split must be connected to a track')
+			throw new ValidationError({
+				code: 'trackNotAttached',
+				message: 'Track must be attached to a track',
+			})
 		}
 
 		const copy = this.copy() as this;

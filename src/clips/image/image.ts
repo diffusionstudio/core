@@ -9,6 +9,7 @@ import { Sprite, Texture } from 'pixi.js';
 import { ImageSource } from '../../sources';
 import { Clip } from '../clip';
 import { VisualMixin, visualize } from '../mixins';
+import { IOError } from '../../errors';
 
 import type { Track } from '../../tracks';
 import type { ImageClipProps } from './image.interfaces';
@@ -53,7 +54,10 @@ export class ImageClip extends VisualMixin(Clip<ImageClipProps>) {
 			this.element.onerror = (e) => {
 				console.error(e);
 				this.state = 'ERROR';
-				reject(new Error('An error occurred while processing the input medium.'));
+				reject(new IOError({
+					code: 'sourceNotProcessable',
+					message: 'An error occurred while processing the input medium.',
+				}));
 			}
 		});
 	}

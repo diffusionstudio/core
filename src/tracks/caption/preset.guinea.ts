@@ -9,6 +9,7 @@ import { Timestamp } from '../../models';
 import { Serializer, serializable } from '../../services';
 import { ComplexTextClip, Font } from '../../clips';
 import { randInt, splitAt } from '../../utils';
+import { ValidationError } from '../../errors';
 
 import type { MultiColorCaptionPresetConfig, CaptionPresetType } from './preset.types';
 import type { CaptionPresetStrategy } from './preset.interface';
@@ -31,7 +32,10 @@ export class GuineaCaptionPreset extends Serializer implements CaptionPresetStra
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
 		if (!track.clip?.transcript || !track.composition?.width) {
-			throw new Error('Captions need to be applied with a defined transcript and composition');
+			throw new ValidationError({
+				code: 'referenceError',
+				message: 'Captions need to be applied with a defined transcript and composition',
+			});
 		}
 
 		const offset = track.clip?.offset ?? new Timestamp();

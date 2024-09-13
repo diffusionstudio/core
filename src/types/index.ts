@@ -51,7 +51,7 @@ export type Constructor<T = {}> = new (...args: any[]) => T;
  */
 export type ErrorEventDetail = {
 	msg: string;
-	i18n: string;
+	code: string;
 	params?: any;
 };
 

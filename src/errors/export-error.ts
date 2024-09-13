@@ -5,7 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { BaseError } from './BaseError';
+import { BaseError } from './base-error';
 
 /**
  * @deprecated please replace with `EncoderError`

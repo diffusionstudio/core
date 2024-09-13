@@ -10,7 +10,7 @@ import { AudioSource } from '../../sources';
 import { RangeDeserializer } from './media.deserializer';
 import { serializable, } from '../../services';
 import { replaceKeyframes } from '../clip/clip.utils';
-import { ValidationError } from '../../errors';
+import { ReferenceError, ValidationError } from '../../errors';
 import { Clip } from '../clip';
 
 import type { CaptionPresetStrategy, CaptionTrack } from '../../tracks';
@@ -164,7 +164,10 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	public seek(time: Timestamp): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!this.element) {
-				return reject(new Error("Can't seek on element becaused it's not defined"));
+				return reject(new ReferenceError({
+					code: 'elementNotDefined',
+					message: 'Cannot seek on undefined element',
+				}));
 			}
 			if (time.millis < this.start.millis || time.millis > this.stop.millis) {
 				time = this.start;
@@ -194,7 +197,10 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 
 		// start is larger than the stop
 		if (start.millis >= stop.millis) {
-			throw new Error("Start can't lower than or equal the stop");
+			throw new ValidationError({
+				code: 'invalidKeyframe',
+				message: "Start can't lower than or equal the stop"
+			});
 		}
 		// start and/or stop are out of bounds
 		if (start.millis < 0) {
@@ -240,10 +246,16 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 
 		// invalid cases
 		if (!time || time.millis <= this.start.millis || time.millis >= this.stop.millis) {
-			throw new Error("Cannot split clip at the specified time")
+			throw new ValidationError({
+				code: 'invalidKeyframe',
+				message: 'Cannot split clip at the specified time',
+			});
 		}
 		if (!this.track) {
-			throw new Error('Split must be connected to a track')
+			throw new ReferenceError({
+				code: 'trackNotDefined',
+				message: 'Clip must be attached to a track',
+			});
 		}
 
 		// slice relative to the offset
@@ -267,7 +279,7 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	public async addCaptions(strategy?: CaptionPresetStrategy | (new () => CaptionPresetStrategy)): Promise<CaptionTrack> {
 		if (!this.track?.composition) {
 			throw new ValidationError({
-				i18n: 'compositionNotDefined',
+				code: 'compositionNotDefined',
 				message: 'Captions can only be generated after the clip has been added to the composition',
 			});
 		}

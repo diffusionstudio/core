@@ -7,6 +7,7 @@
 
 import * as utils from './keyframe.utils';
 import { framesToMillis } from './timestamp.utils';
+import { ValidationError } from '../errors';
 
 import type { Serializer } from '../services';
 import type { frame } from '../types';
@@ -38,7 +39,10 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
    */
   constructor(inputRange: frame[], outputRange: T[], options: KeyframeOptions = {}) {
     if (inputRange.length !== outputRange.length) {
-      throw new Error("inputRange and outputRange must have the same length");
+      throw new ValidationError({
+        code: 'invalidKeyframes',
+        message: 'inputRange and outputRange must have the same length',
+      });
     }
 
     this.input = inputRange.map(frame => framesToMillis(frame));
@@ -105,10 +109,13 @@ export class Keyframe<T extends number | string> implements Omit<Serializer, 'id
     if (typeof outputStart === 'string' && typeof outputEnd === 'string') {
       return utils.interpolateColor(outputStart, outputEnd, easedT) as T;
     }
-    if(this.output.length == 1) {
+    if (this.output.length == 1) {
       return this.output[0];
     }
-    throw new Error("Unsupported output range types");
+    throw new ValidationError({
+      code: 'invalidKeyframes',
+      message: 'Unsupported output range types',
+    });
   }
 
   /**

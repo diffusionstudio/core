@@ -9,6 +9,7 @@ import { HtmlSource } from '../../sources';
 import { Clip } from '../clip';
 import { VisualMixin, visualize } from '../mixins';
 import { Sprite, Texture } from 'pixi.js';
+import { IOError } from '../../errors';
 
 import type { Track } from '../../tracks';
 import type { HtmlClipProps } from './html.interfaces';
@@ -57,7 +58,7 @@ export class HtmlClip extends VisualMixin(Clip<HtmlClipProps>) {
 			this.context.imageSmoothingEnabled = false;
 			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			this.context.drawImage(this.element, 0, 0);
-			
+
 			this.sprite.texture = Texture.from(this.canvas, true);
 
 			this.trigger('load', undefined);
@@ -66,8 +67,11 @@ export class HtmlClip extends VisualMixin(Clip<HtmlClipProps>) {
 		this.element.addEventListener('error', (e) => {
 			console.error(e);
 			this.state = 'ERROR';
+			this.trigger('error', new IOError({
+				code: 'sourceNotProcessable',
+				message: 'An error occurred while processing the input medium.',
+			}));
 			if (this.track) this.detach();
-			this.trigger('error', new Error('An error occurred while processing the input medium.'));
 		});
 
 		this.on('update', async () => {
@@ -85,7 +89,10 @@ export class HtmlClip extends VisualMixin(Clip<HtmlClipProps>) {
 				const height = this.source.document?.body?.scrollHeight;
 
 				if (!width || !height) {
-					return reject(new Error('This html document cannot be displayed!'))
+					return reject(new IOError({
+						code: 'sourceNotProcessable',
+						message: 'Cannot display source with height or width at 0',
+					}))
 				}
 
 				this.state = 'READY';
@@ -93,7 +100,10 @@ export class HtmlClip extends VisualMixin(Clip<HtmlClipProps>) {
 			}
 			this.element.onerror = (e) => {
 				console.error(e);
-				reject(new Error('An error occurred while processing the input medium.'));
+				reject(new IOError({
+					code: 'sourceNotProcessable',
+					message: 'An error occurred while processing the input medium.',
+				}));
 			}
 		});
 	}

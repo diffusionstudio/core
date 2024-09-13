@@ -5,6 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
+import { ValidationError } from "../errors";
 import { EasingFunction, Keyframe, Timestamp } from "../models";
 
 export type AnimationFunction<V extends number | string, T> =
@@ -47,7 +48,10 @@ export function createAnimationBuilder<T extends AnimationBuilder>(builder: T) {
       if (prop == 'to') {
         return (value: number, relframe: number) => {
           if (!obj.animation) {
-            throw new Error("Cannot use 'to() before selecting a property");
+            throw new ValidationError({
+              code: 'undefinedKeyframe',
+              message: "Cannot use 'to() before selecting a property"
+            });
           }
 
           const timestamp = new Timestamp(obj.animation.input.at(-1));

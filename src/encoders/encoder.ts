@@ -42,7 +42,7 @@ export class Encoder extends WebcodecsVideoEncoder {
 	public async render(target: FileSystemFileHandle | string = 'video.mp4', signal?: AbortSignal): Promise<void> {
 		if (!this.composition.renderer) {
 			throw new EncoderError({
-				i18n: 'rendererNotInitialized',
+				code: 'rendererNotInitialized',
 				message: 'Cannot encode composition before the renderer has been initialized'
 			});
 		};

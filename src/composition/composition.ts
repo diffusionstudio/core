@@ -106,7 +106,10 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 			})
 			.catch(error => {
 				console.error(error);
-				this.trigger('error', new Error(`${error}`));
+				this.trigger('error', new BaseError({
+					code: 'backendDetectionError',
+					message: `${error}`
+				}));
 			});
 	}
 
@@ -342,7 +345,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		if (!this.renderer) {
 			throw new BaseError({
-				i18n: 'rendererNotDefined',
+				code: 'rendererNotDefined',
 				message: 'Please wait until the renderer is defined'
 			})
 		}

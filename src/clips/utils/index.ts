@@ -19,7 +19,7 @@ export function parseMimeType(mimeType: string): MimeType {
 	if (!Object.keys(SUPPORTED_MIME_TYPES.MIXED).includes(mimeType)) {
 		throw new errors.ValidationError({
 			message: `${mimeType} is not an accepted mime type`,
-			i18n: 'invalid_mimetype',
+			code: 'invalid_mimetype',
 		});
 	}
 	return mimeType as MimeType;
