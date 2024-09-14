@@ -148,4 +148,9 @@ describe('The event mixin', () => {
 
 type Events = {
 	delete: undefined;
+	update: any;
+	frame: number | undefined;
+	attach: undefined;
+	detach: undefined;
+	load: undefined;
 };

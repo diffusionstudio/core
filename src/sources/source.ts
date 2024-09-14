@@ -17,7 +17,12 @@ import type { ClipType } from '../clips';
 
 type Url = string | URL | Request;
 
-export class Source extends EventEmitterMixin(Serializer) {
+type Events = {
+	load: undefined;
+	update: undefined;
+}
+
+export class Source extends EventEmitterMixin<Events, typeof Serializer>(Serializer) {
 	/**
 	 * Indicates if the track is loading
 	 */

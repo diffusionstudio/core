@@ -49,6 +49,11 @@ export type CompositionEvents = {
 	pause: frame;
 	init: undefined;
 	currentframe: frame;
+	update: any;
+	frame: number | undefined;
+	attach: undefined;
+	detach: undefined;
+	load: undefined;
 };
 
 export type CompositionState = 'IDLE' | 'RENDER' | 'PLAY';

@@ -11,12 +11,7 @@ export type OverrideValues<T, U> = Omit<T, keyof U> & Pick<U, Extract<keyof U, k
 
 export type BaseEvents<E = {}> = {
 	'*': any;
-	update: any;
 	error: Error;
-	frame: number | undefined;
-	attach: undefined;
-	detach: undefined;
-	load: undefined;
 } & E;
 
 export type EmittedEvent<K, T extends {}> = OverrideValues<CustomEvent<K>, { target: T }>;

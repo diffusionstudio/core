@@ -98,6 +98,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.on('load', this.computeFrame.bind(this));
 		this.on('frame', this.computeFrame.bind(this));
 		this.on('error', this.computeFrame.bind(this));
+		this.on('*', this.updateDuration.bind(this));
 
 		autoDetectRenderer({ ...this.settings, preference: backend })
 			.then(renderer => {
@@ -206,15 +207,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.stage.addChild(track.view);
 		this.tracks.unshift(track);
 
-		track.on('*', this.updateDuration.bind(this));
-
-		this.bubble('frame', track);
-		this.bubble('update', track);
-		this.bubble('error', track);
-		this.bubble('attach', track);
-		this.bubble('detach', track);
-		this.bubble('load', track);
-
+		track.bubble(this);
 		this.trigger('update', undefined);
 
 		return track;
@@ -516,8 +509,6 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	}
 
 	private updateDuration(): void {
-		if (this.playing) this.pause();
-
 		const lastFrames = this.tracks
 			.filter((track) => !track.disabled)
 			.map((track) => track.stop?.frames ?? 0);
@@ -526,7 +517,6 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		if (lastFrame != this._duration.frames) {
 			this._duration.frames = lastFrame;
-			this.trigger('frame', lastFrame);
 		}
 	}
 }

@@ -8,7 +8,7 @@
 import type { Constructor } from '../types';
 import type { BaseEvents, EmittedEvent } from './event.types';
 
-export function EventEmitterMixin<Events  = {}, T extends Constructor = Constructor>(Base: T) {
+export function EventEmitterMixin<Events = {}, T extends Constructor = Constructor>(Base: T) {
 	return class EventEmitter extends Base {
 		_handlers: {
 			[T in keyof BaseEvents<Events>]?: {
@@ -64,8 +64,10 @@ export function EventEmitterMixin<Events  = {}, T extends Constructor = Construc
 			}
 		}
 
-		public bubble<T extends keyof BaseEvents>(eventType: T, target: EventEmitter) {
-			target.on(eventType, (arg: any) => this.trigger(eventType, arg));
+		public bubble(target: EventEmitter) {
+			return this.on('*', (event: EmittedEvent<any, any>) => {
+				target.trigger(event.type as any, event.target);
+			});
 		}
 
 		public resolve(eventType: keyof BaseEvents<Events>) {

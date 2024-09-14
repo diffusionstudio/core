@@ -10,7 +10,11 @@ import { Serializer } from '../services';
 
 import type { Store } from '.';
 
-export class StorageItem<T> extends EventEmitterMixin(Serializer) {
+type Events = {
+	update: any;
+}
+
+export class StorageItem<T> extends EventEmitterMixin<Events, typeof Serializer>(Serializer) {
 	private _key: string;
 	private _value: T | undefined;
 	private _store: Store;

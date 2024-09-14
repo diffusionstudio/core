@@ -18,7 +18,14 @@ import type { InsertMode, TrackLayer, TrackType } from './track.types';
 import type { InsertStrategy } from './track.interfaces';
 import type { frame } from '../../types';
 
-export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
+type Events = {
+	update: any;
+	frame: number | undefined;
+	attach: undefined;
+	detach: undefined;
+}
+
+export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Serializer>(Serializer) {
 	public view = new Container();
 	/**
 	 * Controls the visability of the track
@@ -182,13 +189,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin(Serializer) {
 		clip.on('frame', () => {
 			this.strategy.update(clip, this);
 		});
-
-		this.bubble('frame', clip);
-		this.bubble('update', clip);
-		this.bubble('error', clip);
-		this.bubble('attach', clip);
-		this.bubble('detach', clip);
-		this.bubble('load', clip);
+		clip.bubble(this);
 
 		this.trigger('attach', undefined);
 
