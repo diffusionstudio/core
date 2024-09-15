@@ -144,6 +144,32 @@ describe('The event mixin', () => {
 		expect(updateFn).toHaveBeenCalledTimes(1);
 		expect(errorFn).toHaveBeenCalledTimes(1);
 	});
+
+	it('should bubble events', async () => {
+		const cls0 = new TextClass();
+		const cls1 = new TextClass();
+
+		cls0.bubble(cls1);
+
+		const frameFn0 = vi.fn();
+		const frameFn1 = vi.fn();
+
+		cls0.on('update', frameFn0);
+		cls1.on('update', frameFn1);
+
+		cls0.trigger('update', 2);
+
+		expect(frameFn0).toHaveBeenCalledTimes(1);
+		expect(frameFn0.mock.calls[0][0].detail).toBe(2);
+
+		expect(frameFn1).toHaveBeenCalledTimes(1);
+		expect(frameFn1.mock.calls[0][0].detail).toBe(2);
+
+		cls1.trigger('update', 3);
+
+		expect(frameFn0).toHaveBeenCalledTimes(1);
+		expect(frameFn1).toHaveBeenCalledTimes(2);
+	});
 });
 
 type Events = {

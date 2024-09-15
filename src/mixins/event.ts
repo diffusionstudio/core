@@ -66,7 +66,7 @@ export function EventEmitterMixin<Events = {}, T extends Constructor = Construct
 
 		public bubble(target: EventEmitter) {
 			return this.on('*', (event: EmittedEvent<any, any>) => {
-				target.trigger(event.type as any, event.target);
+				target.trigger(event.type as any, event.detail);
 			});
 		}
 
