@@ -176,7 +176,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Se
 	 * Adds a new clip to the track
 	 * @throws Error if the clip can't be added
 	 */
-	public async add(clip: Clp): Promise<this> {
+	public async add(clip: Clp): Promise<Clp> {
 		// only append clip if composition is initialized
 		if (this.composition && !this.composition.renderer) {
 			await new Promise(this.composition.resolve('init'));
@@ -193,7 +193,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Se
 
 		this.trigger('attach', undefined);
 
-		return this;
+		return clip;
 	}
 
 	/**

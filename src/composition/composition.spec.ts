@@ -5,7 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { describe, expect, it, beforeEach, vi, afterEach, afterAll } from 'vitest';
+import { describe, expect, it, beforeEach, vi, afterEach, afterAll, MockInstance } from 'vitest';
 import { Composition } from './composition';
 import { Clip, TextClip } from '../clips';
 import { AudioTrack, CaptionTrack, HtmlTrack, ImageTrack, TextTrack, Track, VideoTrack } from '../tracks';
@@ -13,6 +13,8 @@ import { Timestamp } from '../models';
 
 describe('The composition', () => {
 	let composition: Composition;
+	let computeMock: MockInstance<() => void>;
+
 	const frameMock = vi.fn();
 	const playMock = vi.fn();
 	const pauseMock = vi.fn();
@@ -33,6 +35,7 @@ describe('The composition', () => {
 		composition.state = 'IDLE';
 
 		localStorage.clear();
+		computeMock = vi.spyOn(composition, 'computeFrame');
 	});
 
 	it('should initialize with default settings', () => {
@@ -173,7 +176,7 @@ describe('The composition', () => {
 		expect(composition.duration.seconds).toBe(0.5);
 
 		const seekMock = vi.spyOn(track, 'seek');
-		const computeMock = vi.spyOn(composition, 'computeFrame');
+		computeMock.mockClear();
 
 		const frameCallbacks: number[] = [];
 		composition.on('currentframe', (evt) => frameCallbacks.push(evt.detail));
@@ -379,6 +382,36 @@ describe('The composition', () => {
 		expect(res).toBe(undefined);
 		expect(track0.clips.length).toBe(1);
 		expect(track1.clips.length).toBe(2);
+	});
+
+	it('should redraw the composition when it changes', async () => {
+		expect(composition.duration.frames).toBe(0);
+		expect(computeMock).toBeCalledTimes(0);
+
+		const track = composition.createTrack('base');
+
+		expect(composition.duration.frames).toBe(0);
+		expect(computeMock).toBeCalledTimes(1);
+
+		await track.add(new Clip({ stop: 20 }));
+
+		expect(composition.duration.frames).toBe(20);
+		expect(computeMock).toBeCalledTimes(2);
+
+		const clip = await track.add(new Clip({ start: 30, stop: 60 }));
+
+		expect(composition.duration.frames).toBe(60);
+		expect(computeMock).toBeCalledTimes(3);
+
+		clip.stop = 80;
+
+		expect(composition.duration.frames).toBe(80);
+		expect(computeMock).toBeCalledTimes(4);
+
+		track.remove(clip);
+
+		expect(composition.duration.frames).toBe(20);
+		expect(computeMock).toBeCalledTimes(5);
 	});
 
 	afterEach(() => {
