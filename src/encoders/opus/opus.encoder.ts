@@ -44,7 +44,7 @@ export class OpusEncoder {
 
     if (!SUPPORTED_RATES.includes(sampleRate)) {
       throw new EncoderError({
-        i18n: 'sampleRateNotSupported',
+        code: 'sampleRateNotSupported',
         message: `Unsupported sample rate, supported: ${SUPPORTED_RATES.join()}`,
       })
     }
@@ -80,7 +80,7 @@ export class OpusEncoder {
   public encode({ data, numberOfFrames, timestamp = 0 }: OpusEncoderSamples) {
     if (!this.encoder || !this.opus || !this.config || !this.meta) {
       throw new EncoderError({
-        i18n: 'unconfiguredEncoder',
+        code: 'unconfiguredEncoder',
         message: 'Cannot encode samples using an unconfigured encoder',
       });
     }

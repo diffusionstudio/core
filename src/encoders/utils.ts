@@ -63,7 +63,7 @@ async function uploadObject(buffer: ArrayBuffer, url: string) {
 
 	if (!response.ok) {
 		throw new IOError({
-			i18n: 'fileUpdloadFailed',
+			code: 'fileUpdloadFailed',
 			message: `Error uploading buffer: ${response.status} ${response.statusText}`
 		});
 	}

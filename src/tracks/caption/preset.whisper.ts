@@ -8,6 +8,7 @@
 import { Font, ComplexTextClip } from '../../clips';
 import { Timestamp } from '../../models';
 import { serializable, Serializer } from '../../services';
+import { ValidationError } from '../../errors';
 
 import type { SingleColorCaptionPresetConfig } from './preset.types';
 import type { CaptionTrack } from './caption';
@@ -34,7 +35,10 @@ export class WhisperCaptionPreset extends Serializer implements CaptionPresetStr
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
 		if (!track.clip?.transcript || !track.composition?.width) {
-			throw new Error('Captions need to be applied with a defined transcript and composition');
+			throw new ValidationError({
+				code: 'referenceError',
+				message: 'Captions need to be applied with a defined transcript and composition',
+			});
 		}
 
 		const offset = track.clip?.offset ?? new Timestamp();

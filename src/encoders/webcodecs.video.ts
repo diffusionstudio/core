@@ -52,7 +52,7 @@ export class WebcodecsVideoEncoder extends EventEmitter<EncoderEvents>() impleme
 
 		if (!renderer) {
 			throw new EncoderError({
-				i18n: 'rendererNotInitialized',
+				code: 'rendererNotInitialized',
 				message: 'Cannot encode composition before the renderer has been initialized'
 			});
 		};

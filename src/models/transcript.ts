@@ -172,7 +172,7 @@ export class Transcript implements Serializer {
 
 		if (!res.ok) {
 			throw new IOError({
-				i18n: 'unexpectedIOError',
+				code: 'unexpectedIOError',
 				message: 'An unexpected error occurred while fetching the file',
 			})
 		}

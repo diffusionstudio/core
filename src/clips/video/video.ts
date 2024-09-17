@@ -13,6 +13,7 @@ import { MediaClip } from '../media';
 import { textureSwap } from './video.decorator';
 import { VisualMixin, visualize } from '../mixins';
 import { FPS_DEFAULT, Timestamp } from '../../models';
+import { IOError } from '../../errors';
 
 import type { Track } from '../../tracks';
 import type { InitMessageData } from './worker.types';
@@ -90,8 +91,10 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 			this.element.onerror = () => {
 				this.state = 'ERROR';
 
-				const error = new Error('An error occurred while processing the input medium.');
-				this.trigger('error', error);
+				const error = new IOError({
+					code: 'sourceNotProcessable',
+					message: 'An error occurred while processing the input medium.',
+				});
 
 				reject(this.element.error ?? error);
 			}

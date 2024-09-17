@@ -13,4 +13,9 @@ export type ClipState = 'IDLE' | 'LOADING' | 'ATTACHED' | 'READY' | 'ERROR';
 
 export type ClipEvents = {
 	offsetBy: Timestamp;
+	update: any;
+	frame: number | undefined;
+	attach: undefined;
+	detach: undefined;
+	load: undefined;
 };

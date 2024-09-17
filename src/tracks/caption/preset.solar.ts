@@ -9,6 +9,7 @@ import { GlowFilter } from 'pixi-filters';
 import { Keyframe, Timestamp } from '../../models';
 import { Serializer, serializable } from '../../services';
 import { Font, TextClip } from '../../clips';
+import { ValidationError } from '../../errors';
 
 import type { CaptionPresetType, DefaultCaptionPresetConfig } from './preset.types';
 import type { CaptionTrack } from './caption';
@@ -30,7 +31,10 @@ export class SolarCaptionPreset extends Serializer implements CaptionPresetStrat
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
 		if (!track.clip?.transcript || !track.composition?.width) {
-			throw new Error('Captions need to be applied with a defined transcript and composition');
+			throw new ValidationError({
+				code: 'referenceError',
+				message: 'Captions need to be applied with a defined transcript and composition',
+			});
 		}
 
 		const font = await Font.fromFamily({ family: 'Urbanist', weight: '800' }).load();

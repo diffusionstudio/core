@@ -123,7 +123,7 @@ export class CanvasEncoder implements Required<EncoderInit> {
 	public async encodeAudio(buffer: AudioBuffer): Promise<void> {
 		if (!this.audio) {
 			throw new EncoderError({
-				i18n: 'initializationError',
+				code: 'initializationError',
 				message: 'Encoder must be initialized using {audio: true} to use this method'
 			});
 		}
@@ -170,7 +170,7 @@ export class CanvasEncoder implements Required<EncoderInit> {
 
 		if (!buffer) {
 			throw new EncoderError({
-				i18n: 'unexpectedRenderError',
+				code: 'unexpectedRenderError',
 				message: 'Muxer could not be finalized because the target buffer is not defined'
 			})
 		}

@@ -109,7 +109,7 @@ export async function getSupportedEncoderConfigs(settings: {
 	if (!video.length) {
 		throw new EncoderError({
 			message: "Encoder can't be configured with any of the tested codecs",
-			i18n: 'codecsNotSupported',
+			code: 'codecsNotSupported',
 		});
 	}
 

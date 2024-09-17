@@ -71,7 +71,7 @@ export class HtmlSource extends Source {
 				const res = await fetch(input, init);
 
 				if (!res?.ok) throw new IOError({
-					i18n: 'unexpectedIOError',
+					code: 'unexpectedIOError',
 					message: 'An unexpected error occurred while fetching the file',
 				});
 
@@ -94,7 +94,6 @@ export class HtmlSource extends Source {
 			this.trigger('load', undefined);
 		} catch (e) {
 			this.state = 'ERROR';
-			this.trigger('error', new Error(String(e)));
 			throw e;
 		}
 

@@ -7,11 +7,11 @@
 
 export class BaseError extends Error {
 	public readonly message: string;
-	public readonly i18n: string;
-	public constructor({ message = '', i18n = '' }, ...args: any[]) {
+	public readonly code: string;
+	public constructor({ message = '', code = '' }, ...args: any[]) {
 		super(message, ...(args as []));
 		console.error(message);
-		this.i18n = i18n;
+		this.code = code;
 		this.message = message;
 	}
 }

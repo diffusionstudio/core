@@ -56,9 +56,9 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 	/**
 	 * User defined fixed duration, use the duration
-	 * property to change this value
+	 * property to set this value
 	 */
-	public durationLimit?: Timestamp;
+	public fixedDuration?: Timestamp;
 
 	/**
 	 * Defines the current state of the composition
@@ -92,12 +92,12 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		this.settings = { height, width, background, backend };
 
-		this.on('update', this.computeFrame.bind(this));
-		this.on('attach', this.computeFrame.bind(this));
-		this.on('detach', this.computeFrame.bind(this));
-		this.on('load', this.computeFrame.bind(this));
-		this.on('frame', this.computeFrame.bind(this));
-		this.on('error', this.computeFrame.bind(this));
+		this.on('update', this.update.bind(this));
+		this.on('attach', this.update.bind(this));
+		this.on('detach', this.update.bind(this));
+		this.on('load', this.update.bind(this));
+		this.on('frame', this.update.bind(this));
+		this.on('error', this.update.bind(this));
 
 		autoDetectRenderer({ ...this.settings, preference: backend })
 			.then(renderer => {
@@ -106,7 +106,10 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 			})
 			.catch(error => {
 				console.error(error);
-				this.trigger('error', new Error(`${error}`));
+				this.trigger('error', new BaseError({
+					code: 'backendDetectionError',
+					message: `${error}`
+				}));
 			});
 	}
 
@@ -143,8 +146,8 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 * This is where the playback stops playing
 	 */
 	public get duration(): Timestamp {
-		if (this.durationLimit) {
-			return this.durationLimit;
+		if (this.fixedDuration) {
+			return this.fixedDuration;
 		}
 		return this._duration;
 	}
@@ -154,14 +157,14 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 */
 	public set duration(time: frame | Timestamp | undefined) {
 		if (!time) {
-			this.durationLimit = undefined;
+			this.fixedDuration = undefined;
 		} else if (time instanceof Timestamp) {
-			this.durationLimit = time;
+			this.fixedDuration = time;
 		} else {
-			this.durationLimit = Timestamp.fromFrames(time);
+			this.fixedDuration = Timestamp.fromFrames(time);
 		}
 
-		this.trigger('frame', this.durationLimit?.frames ?? 0);
+		this.trigger('frame', this.fixedDuration?.frames ?? 0);
 	}
 
 	/**
@@ -203,15 +206,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.stage.addChild(track.view);
 		this.tracks.unshift(track);
 
-		track.on('*', this.updateDuration.bind(this));
-
-		this.bubble('frame', track);
-		this.bubble('update', track);
-		this.bubble('error', track);
-		this.bubble('attach', track);
-		this.bubble('detach', track);
-		this.bubble('load', track);
-
+		track.bubble(this);
 		this.trigger('update', undefined);
 
 		return track;
@@ -259,10 +254,6 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	public removeTracks(Track: new (composition: Composition) => Track<Clip>): Track<Clip>[] {
 		const removed = this.tracks.filter((track) => track instanceof Track);
 		this.tracks = this.tracks.filter((track) => !(track instanceof Track));
-
-		if (removed.length > 0) {
-			this.updateDuration();
-		}
 
 		return removed;
 	}
@@ -342,7 +333,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 		if (!this.renderer) {
 			throw new BaseError({
-				i18n: 'rendererNotDefined',
+				code: 'rendererNotDefined',
 				message: 'Please wait until the renderer is defined'
 			})
 		}
@@ -512,18 +503,17 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		}
 	}
 
-	private updateDuration(): void {
-		if (this.playing) this.pause();
+	/**
+	 * Updates the state of the composition
+	 */
+	private update(): void {
+		this._duration.frames = Math.max(
+			...this.tracks
+				.filter((track) => !track.disabled)
+				.map((track) => track.stop?.frames ?? 0),
+			0
+		);
 
-		const lastFrames = this.tracks
-			.filter((track) => !track.disabled)
-			.map((track) => track.stop?.frames ?? 0);
-
-		const lastFrame = Math.max(...lastFrames, 0);
-
-		if (lastFrame != this._duration.frames) {
-			this._duration.frames = lastFrame;
-			this.trigger('frame', lastFrame);
-		}
+		this.computeFrame();
 	}
 }

@@ -8,6 +8,7 @@
 import { serializable, Serializer } from '../../services';
 import { Keyframe, Timestamp } from '../../models';
 import { Font, TextClip } from '../../clips';
+import { ValidationError } from '../../errors';
 
 import type { CaptionPresetType, DefaultCaptionPresetConfig } from './preset.types';
 import type { GeneratorOptions } from '../../models';
@@ -30,7 +31,10 @@ export class ClassicCaptionPreset extends Serializer implements CaptionPresetStr
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
 		if (!track.clip?.transcript || !track.composition?.width) {
-			throw new Error('Captions need to be applied with a defined transcript and composition');
+			throw new ValidationError({
+				code: 'referenceError',
+				message: 'Captions need to be applied with a defined transcript and composition',
+			});
 		}
 
 		const offset = track.clip?.offset ?? new Timestamp();
