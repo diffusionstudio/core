@@ -7,8 +7,6 @@
 
 import { Source } from './source';
 import { documentToSvgImageUrl } from './html.utils';
-import { parseMimeType } from '../clips';
-import { IOError } from '../errors';
 
 import type { ClipType } from '../clips';
 
@@ -57,47 +55,26 @@ export class HtmlSource extends Source {
 		return this.objectURL;
 	}
 
-	public async from(input: File | string, init?: RequestInit | undefined): Promise<this> {
-		try {
-			this.state = 'LOADING';
+	protected async loadUrl(url: string | URL | Request, init?: RequestInit) {
+		await super.loadUrl(url, init);
 
-			if (input instanceof File) {
-				this.name = input.name;
-				this.mimeType = parseMimeType(input.type);
-				this.external = false;
-				this.file = input;
-			} else {
-				// case input is a request url
-				const res = await fetch(input, init);
+		this.iframe.setAttribute('src', URL.createObjectURL(this.file!));
 
-				if (!res?.ok) throw new IOError({
-					code: 'unexpectedIOError',
-					message: 'An unexpected error occurred while fetching the file',
-				});
+		await new Promise<void>((resolve, reject) => {
+			this.iframe.onload = () => resolve();
+			this.iframe.onerror = (e) => reject(e);
+		});
+	}
 
-				const blob = await res.blob();
-				this.name = input.toString().split('/').at(-1) ?? '';
-				this.external = true;
-				this.file = new File([blob], this.name, { type: blob.type });
-				this.externalURL = input;
-				this.mimeType = parseMimeType(blob.type);
-			}
+	protected async loadFile(file: File) {
+		await super.loadFile(file);
 
-			this.iframe.setAttribute('src', URL.createObjectURL(this.file));
+		this.iframe.setAttribute('src', URL.createObjectURL(this.file!));
 
-			await new Promise<void>((resolve, reject) => {
-				this.iframe.onload = () => resolve();
-				this.iframe.onerror = (e) => reject(e);
-			});
-
-			this.state = 'READY';
-			this.trigger('load', undefined);
-		} catch (e) {
-			this.state = 'ERROR';
-			throw e;
-		}
-
-		return this;
+		await new Promise<void>((resolve, reject) => {
+			this.iframe.onload = () => resolve();
+			this.iframe.onerror = (e) => reject(e);
+		});
 	}
 
 	/**

@@ -51,6 +51,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		this.element.controls = false;
 		this.element.playsInline = true;
 		this.element.style.display = 'hidden';
+		this.element.crossOrigin = "anonymous";
 
 		(this.textrues.html5.source as any).autoPlay = false;
 		(this.textrues.html5.source as any).loop = false;
@@ -140,7 +141,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 
 	public async seek(time: Timestamp): Promise<void> {
 		if (this.track?.composition?.rendering) {
-			const buffer = this.decodeVideo();
+			const buffer = await this.decodeVideo();
 			return new Promise<void>((resolve) => {
 				buffer.onenqueue = () => resolve();
 			});
@@ -149,7 +150,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		return super.seek(time);
 	}
 
-	private decodeVideo() {
+	private async decodeVideo() {
 		this.buffer = new FrameBuffer();
 		this.worker = new DecodeWorker();
 
@@ -165,7 +166,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 
 		this.worker.postMessage({
 			type: 'init',
-			file: this.source.file!,
+			file: await this.source.getFile(),
 			range: this.demuxRange,
 			fps: this.track?.composition?.fps ?? FPS_DEFAULT,
 		} satisfies InitMessageData);

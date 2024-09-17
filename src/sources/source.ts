@@ -15,8 +15,6 @@ import { Timestamp } from '../models';
 import type { MimeType } from '../types';
 import type { ClipType } from '../clips';
 
-type Url = string | URL | Request;
-
 type Events = {
 	load: undefined;
 	update: undefined;
@@ -32,7 +30,7 @@ export class Source extends EventEmitterMixin<Events, typeof Serializer>(Seriali
 	 * Locally accessible blob address to the data
 	 */
 	@serializable()
-	public objectURL: string | undefined;
+	public objectURL?: string;
 
 	/**
 	 * Defines the default duration
@@ -111,36 +109,44 @@ export class Source extends EventEmitterMixin<Events, typeof Serializer>(Seriali
 		return this.file;
 	}
 
-	public async from(input: File | Url, init?: RequestInit | undefined): Promise<this> {
+	protected async loadFile(file: File) {
+		this.name = file.name;
+		this.mimeType = parseMimeType(file.type);
+		this.external = false;
+		this.file = file;
+	}
+
+	protected async loadUrl(url: string | URL | Request, init?: RequestInit) {
+		const res = await fetch(url, init);
+
+		if (!res?.ok) throw new IOError({
+			code: 'unexpectedIOError',
+			message: 'An unexpected error occurred while fetching the file',
+		});
+
+		const blob = await res.blob();
+		this.name = url.toString().split('/').at(-1) ?? '';
+		this.external = true;
+		this.file = new File([blob], this.name, { type: blob.type });
+		this.externalURL = url;
+		this.mimeType = parseMimeType(blob.type);
+	}
+
+	public async from(input: File | string | URL | Request, init?: RequestInit): Promise<this> {
 		try {
 			this.state = 'LOADING';
 
 			if (input instanceof File) {
-				this.name = input.name;
-				this.mimeType = parseMimeType(input.type);
-				this.external = false;
-				this.file = input;
+				await this.loadFile(input);
 			} else {
-				// case input is a request url
-				const res = await fetch(input, init);
-
-				if (!res?.ok) throw new IOError({
-					code: 'unexpectedIOError',
-					message: 'An unexpected error occurred while fetching the file',
-				});
-
-				const blob = await res.blob();
-				this.name = input.toString().split('/').at(-1) ?? '';
-				this.external = true;
-				this.file = new File([blob], this.name, { type: blob.type });
-				this.externalURL = input;
-				this.mimeType = parseMimeType(blob.type);
+				await this.loadUrl(input, init);
 			}
 
 			this.state = 'READY';
 			this.trigger('load', undefined);
 		} catch (e) {
 			this.state == 'ERROR';
+			this.trigger('error', new Error(String(e)));
 			throw e;
 		}
 
@@ -173,7 +179,7 @@ export class Source extends EventEmitterMixin<Events, typeof Serializer>(Seriali
 	/**
 	 * Downloads the file
 	 */
-	public async export(): Promise<void> {
+	public async download(): Promise<void> {
 		const file = await this.getFile();
 
 		downloadObject(file, this.name);
@@ -192,7 +198,7 @@ export class Source extends EventEmitterMixin<Events, typeof Serializer>(Seriali
 	 */
 	public static async from<T extends Source>(
 		this: new () => T,
-		input: File | Url,
+		input: File | string | URL | Request,
 		init?: RequestInit | undefined,
 		source = new this(),
 	): Promise<T> {
