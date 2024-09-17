@@ -6,10 +6,46 @@
  */
 
 import { AudioSource } from './';
+import { parseMimeType } from '../clips';
+import { IOError, ValidationError } from '../errors';
+
 import type { ClipType } from '../clips';
 
 export class VideoSource extends AudioSource {
 	public readonly type: ClipType = 'video';
+	private downloadInProgress = true;
+
+	protected async loadUrl(url: string | URL | Request, init?: RequestInit | undefined) {
+		const res = await fetch(url, init);
+
+		if (!res?.ok) throw new IOError({
+			code: 'unexpectedIOError',
+			message: 'An unexpected error occurred while fetching the file',
+		});
+
+		this.name = url.toString().split('/').at(-1) ?? '';
+		this.external = true;
+		this.externalURL = url;
+		this.objectURL = String(url);
+		this.mimeType = parseMimeType(res.headers.get('Content-type'));
+
+		this.getBlob(res);
+	}
+
+	public async getFile(): Promise<File> {
+		if (!this.file && this.downloadInProgress) {
+			await new Promise(this.resolve('load'));
+		}
+
+		if (!this.file) {
+			throw new ValidationError({
+				code: 'fileNotAccessible',
+				message: "The desired file cannot be accessed",
+			});
+		}
+
+		return this.file;
+	}
 
 	public async thumbnail(): Promise<HTMLVideoElement> {
 		const video = document.createElement('video');
@@ -34,5 +70,20 @@ export class VideoSource extends AudioSource {
 
 		video.src = await this.createObjectURL();
 		return video;
+	}
+
+	private async getBlob(response: Response) {
+		try {
+			this.downloadInProgress = true;
+			const blob = await response.blob();
+
+			this.file = new File([blob], this.name, { type: blob.type });
+			this.trigger('load', undefined);
+		} catch (e) {
+			this.state == 'ERROR';
+			this.trigger('error', new Error(String(e)));
+		} finally {
+			this.downloadInProgress = false;
+		}
 	}
 }
