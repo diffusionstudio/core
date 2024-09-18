@@ -144,6 +144,13 @@ export class AudioEncoderMock {
 	public async flush(): Promise<void> {
 		return;
 	}
+
+	public static async isConfigSupported(config: VideoEncoderConfig): Promise<VideoEncoderSupport> {
+		return {
+			supported: true,
+			config
+		};
+	}
 }
 
 export class AudioDataMock {
