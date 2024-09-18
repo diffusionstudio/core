@@ -94,15 +94,6 @@ export function arraymove(arr: any[], fromIndex: number, toIndex: number) {
 }
 
 /**
- * Timer that rejects after n seconds
- */
-export async function rejectIn(seconds: number) {
-	await new Promise((_resolve, reject: any) =>
-		setTimeout(() => reject('took too long'), seconds * 1000),
-	);
-}
-
-/**
  * Short unique id (not as secure as uuid 4 though)
  */
 export function uid() {

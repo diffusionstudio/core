@@ -5,8 +5,8 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { describe, expect, it } from 'vitest';
-import { capitalize, groupBy, randInt, splitAt, toHex } from '.';
+import { describe, expect, it, vi } from 'vitest';
+import { assert, capitalize, debounce, groupBy, isClass, randInt, sleep, splitAt, toHex, uid } from '.';
 
 describe('The common utils', () => {
 	it.each([
@@ -82,5 +82,59 @@ describe('The common utils', () => {
 			expect(randInt(1, 5)).toBeGreaterThanOrEqual(1);
 			expect(randInt(1, 5)).toBeLessThanOrEqual(5);
 		}
+	});
+
+	it('should assert a condition (assert)', () => {
+		expect(() => assert(1)).not.toThrowError();
+		expect(() => assert(0)).toThrowError();
+	});
+
+	it('should debounce a method (debunce)', async () => {
+		const fn = vi.fn();
+
+		const debouncedFn = debounce(() => fn(performance.now()), 10);
+
+		debouncedFn();
+		debouncedFn();
+
+		await sleep(20);
+
+		expect(fn).toBeCalledTimes(1);
+
+		debouncedFn();
+		await sleep(11);
+		debouncedFn();
+
+		await sleep(20);
+
+		expect(fn).toBeCalledTimes(3);
+
+		expect(fn.mock.calls[0][0]).toBeTypeOf('number');
+	});
+
+	it('should be able to detect classes (isClass)', () => {
+		expect(isClass(5)).toBe(false);
+		expect(isClass(() => false)).toBe(false);
+		expect(isClass('')).toBe(false);
+		expect(isClass(new class { }())).toBe(false);
+		expect(isClass(class { })).toBe(true);
+	});
+
+	it('should be able to capitalize strings (capitalize)', () => {
+		expect(capitalize('hello World')).toBe('Hello World');
+	});
+
+	it('should be able to generate short uids (uid)', () => {
+		expect(uid()).toBeTypeOf('string');
+		expect(uid()?.length).toBe(8);
+		expect(uid()).not.toBe(uid());
+	});
+
+	it('should not sleep if the number is less than 0 (sleep)', async () => {
+		const now = performance.now();
+
+		await sleep(-10);
+
+		expect(performance.now() -now).toBeLessThan(1);
 	});
 });
