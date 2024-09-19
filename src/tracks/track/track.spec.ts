@@ -290,6 +290,48 @@ describe('The Track Object', () => {
 		expect(track.clips.at(0)?.stop.frames).toBe(10);
 	});
 
+	it('should switch from stack to default', async () => {
+		track.stacked();
+
+		await track.add(new Clip({ stop: 12}));
+		await track.add(new Clip({ stop: 24}));
+
+		expect(track.clips.length).toBe(2);
+		expect(track.stop.frames).toBe(36);
+
+		track.stacked(false);
+
+		// should not be realigned
+		await track.add(new Clip({ start: 72, stop: 99 }));
+
+		expect(track.stop.frames).toBe(99);
+	});
+
+	it('should apply values to all clips', async () => {
+		track.stacked();
+
+		await track.add(new Clip({ stop: 12}));
+		await track.add(new Clip({ stop: 24}));
+		
+		track.apply(clip => clip.set({ name: 'foo' }));
+
+		expect(track.clips[0].name).toBe('foo');
+		expect(track.clips[1].name).toBe('foo');
+	});
+
+	it('should offset all clips by a given frame numer', async () => {
+		await track.add(new Clip({ start: 6, stop: 12}));
+		await track.add(new Clip({ start: 15, stop: 24}));
+		
+		track.offsetBy(6);
+
+		expect(track.clips[0].start.frames).toBe(12);
+		expect(track.clips[0].stop.frames).toBe(18);
+
+		expect(track.clips[1].start.frames).toBe(21);
+		expect(track.clips[1].stop.frames).toBe(30);
+	});
+
 	it('should be be able to add a base clip with offset', async () => {
 		const clip = new Clip({ stop: 30 });
 
