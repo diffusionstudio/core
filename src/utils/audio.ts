@@ -19,18 +19,18 @@ export function interleave(input: AudioBuffer): Float32Array {
 	for (let i = 0; i < input.numberOfChannels; i++) {
 		channels.push(input.getChannelData(i));
 	}
-	const length = channels.reduce((prev, channelData) => prev + channelData.length, 0);
-	const result = new Float32Array(length);
+
+	const maxLength = Math.max(...channels.map(channelData => channelData.length));
+	const result = new Float32Array(maxLength * input.numberOfChannels);
 
 	let index = 0;
 	let inputIndex = 0;
 
 	// for 2 channels its like: [L[0], R[0], L[1], R[1], ... , L[n], R[n]]
-	while (index < length) {
+	while (inputIndex < maxLength) {
 		channels.forEach((channelData) => {
-			result[index++] = channelData[inputIndex];
+			result[index++] = channelData[inputIndex] !== undefined ? channelData[inputIndex] : 0;
 		});
-
 		inputIndex++;
 	}
 
@@ -40,7 +40,7 @@ export function interleave(input: AudioBuffer): Float32Array {
 /**
  * Writes a string to a DataView at the specified offset.
  */
-export function stringToDataView(dataview: DataView, offset: number, header: string): void {
+function stringToDataView(dataview: DataView, offset: number, header: string): void {
 	for (let i = 0; i < header.length; i++) {
 		dataview.setUint8(offset + i, header.charCodeAt(i));
 	}
@@ -66,7 +66,7 @@ export function floatTo16BitPCM(
  *
  * Returns a DataView containing the WAV headers and file content.
  */
-export function writeWavHeaders(
+function writeWavHeaders(
 	buffer: Float32Array,
 	numOfChannels: number,
 	sampleRate: number,
@@ -124,7 +124,7 @@ export function bufferToF32Planar(input: AudioBuffer): Float32Array {
 	for (let i = 0; i < input.numberOfChannels; i++) {
 		const data = input.getChannelData(i);
 		result.set(data, offset);
-		offset = data.length;
+		offset += data.length;
 	}
 
 	return result;
@@ -140,14 +140,18 @@ export function bufferToI16Interleaved(audioBuffer: AudioBuffer): Int16Array {
 
 	for (let i = 0; i < length; i++) {
 		for (let channel = 0; channel < numberOfChannels; channel++) {
-			const sample = audioBuffer.getChannelData(channel)[i] * 32767; // Convert float [-1,1] to 16-bit PCM
+			let sample = audioBuffer.getChannelData(channel)[i] * 32767; // Convert float [-1,1] to 16-bit PCM
+			
+			// Clamp values to the Int16 range
+			if (sample > 32767) sample = 32767;
+			if (sample < -32767) sample = -32767;
+
 			interleaved[i * numberOfChannels + channel] = sample;
 		}
 	}
 
 	return interleaved;
 }
-
 
 /**
  * Merges the channels of the audio blob into a mono AudioBuffer
