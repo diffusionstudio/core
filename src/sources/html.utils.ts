@@ -19,7 +19,8 @@ export function utf8ToBase64(str: string) {
 }
 
 export function documentToSvgImageUrl(doc?: Document) {
-	if (!doc) return emptySvg;
+	if (!doc || !doc.body) return emptySvg;
+	
 	const width = doc.body.scrollWidth;
 	const height = doc.body.scrollHeight;
 
