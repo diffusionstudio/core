@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { Transcript, Word, WordGroup } from '../models';
+import { setFetchMockReturnValue } from '../../vitest.mocks';
 
 describe('Transcript tests', () => {
 	it('the word should calculate the duration correctly', () => {
@@ -210,5 +211,86 @@ describe('Transcript tests', () => {
 
 		expect(subset.groups.at(0)?.words.at(-1)?.start.seconds).toBe(10);
 		expect(subset.groups.at(0)?.words.at(-1)?.stop.seconds).toBe(13);
+	});
+
+	it('should optimize the word timestamps', () => {
+		const transcript = new Transcript([
+			new WordGroup([new Word('Lorem', 0, 12), new Word('Ipsum', 15, 21)]),
+			new WordGroup([new Word('is', 18, 27)]),
+		]);
+
+		transcript.optimize();
+
+		expect(transcript.groups.length).toBe(2);
+		expect(transcript.groups[0].words[0].start.millis).toBe(0);
+		expect(transcript.groups[0].words[0].stop.millis).toBe(14);
+
+		expect(transcript.groups[0].words[1].start.millis).toBe(15);
+		expect(transcript.groups[0].words[1].stop.millis).toBe(21);
+
+		expect(transcript.groups[1].words[0].start.millis).toBe(22);
+		expect(transcript.groups[1].words[0].stop.millis).toBe(27);
+	});
+
+	it('should be converatble to an srt', () => {
+		const transcript = new Transcript([
+			new WordGroup([new Word('Lorem', 0, 1e3), new Word('Ipsum', 2e3, 5e3)]),
+			new WordGroup([new Word('is', 7e3, 8e3)]),
+		]);
+
+		const { text, blob } = transcript.toSRT({ count: [2] });
+
+		expect(text).toContain(`1
+00:00:00,000 --> 00:00:05,000
+Lorem Ipsum`
+		);
+
+		expect(text).toContain(`2
+00:00:07,000 --> 00:00:08,000
+is`
+		);
+
+		expect(blob.type).toBe('text/plain;charset=utf8');
+	});
+
+	it('should be able to instantiate from an url', async () => {
+		const resetFetch = setFetchMockReturnValue({
+			ok: true,
+			json: async () => ([
+				[
+					{ token: 'Lorem', start: 0, stop: 12 },
+					{ token: 'Ipsum', start: 15, stop: 20 },
+				],
+				[
+					{ token: 'is', start: 21, stop: 38 },
+				]
+			]),
+		});
+
+		const transcript = await Transcript.from('http://diffusion.mov/caption.json');
+
+
+		expect(transcript.groups.length).toBe(2);
+		expect(transcript.groups[0].words[0].start.millis).toBe(0);
+		expect(transcript.groups[0].words[0].stop.millis).toBe(12);
+		expect(transcript.groups[0].words[0].text).toBe('Lorem');
+
+		expect(transcript.groups[0].words[1].start.millis).toBe(15);
+		expect(transcript.groups[0].words[1].stop.millis).toBe(20);
+		expect(transcript.groups[0].words[1].text).toBe('Ipsum');
+
+		expect(transcript.groups[1].words[0].start.millis).toBe(21);
+		expect(transcript.groups[1].words[0].stop.millis).toBe(38);
+		expect(transcript.groups[1].words[0].text).toBe('is');
+
+		resetFetch();
+	});
+
+	it('should not be able to instantiate when the response is not ok', async () => {
+		const resetFetch = setFetchMockReturnValue({ ok: false, });
+
+		await expect(() => Transcript.from('http://diffusion.mov/caption.json')).rejects.toThrowError();
+
+		resetFetch();
 	});
 });

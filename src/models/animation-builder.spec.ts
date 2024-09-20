@@ -118,4 +118,8 @@ describe('The Animation Builder', () => {
     expect(width.input[0]).toBe(12 / 30 * 1000);
     expect(width.output[0]).toBe(20);
   });
+
+  it("should not create an animation if no property has been called first", () => {
+    expect(() => animate.to(20, 12)).toThrowError();
+  });
 });

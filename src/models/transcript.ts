@@ -88,7 +88,7 @@ export class Transcript implements Serializer {
 	 * Convert the transcript into a SRT compatible
 	 * string and downloadable blob
 	 */
-	public toSRT(options: GeneratorOptions): { text: string; blob: Blob } {
+	public toSRT(options: GeneratorOptions = {}): { text: string; blob: Blob } {
 		let idx: number = 1;
 		let srt: string = '';
 
