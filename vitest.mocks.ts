@@ -304,3 +304,86 @@ export class FileSystemDirectoryHandleMock {
 }
 
 export const opfs = new FileSystemDirectoryHandleMock();
+
+export class AudioBufferMock {
+  sampleRate: number;
+  length: number;
+  duration: number;
+  numberOfChannels: number;
+  channelData: Float32Array[];
+
+  constructor({ sampleRate, length, numberOfChannels }: { sampleRate: number; length: number; numberOfChannels: number }) {
+    this.sampleRate = sampleRate;
+    this.length = length;
+    this.duration = length / sampleRate;
+    this.numberOfChannels = numberOfChannels;
+    this.channelData = Array(numberOfChannels)
+      .fill(null)
+      .map(() => new Float32Array(length));
+  }
+
+  getChannelData(channel: number): Float32Array {
+    if (channel >= this.numberOfChannels || channel < 0) {
+      throw new Error("Channel index out of range");
+    }
+    return this.channelData[channel];
+  }
+
+  copyToChannel(source: Float32Array, channel: number, startInChannel = 0): void {
+    const channelData = this.getChannelData(channel);
+    channelData.set(source, startInChannel);
+  }
+
+  copyFromChannel(destination: Float32Array, channel: number, startInChannel = 0): void {
+    const channelData = this.getChannelData(channel);
+    destination.set(channelData.subarray(startInChannel, startInChannel + destination.length));
+  }
+}
+
+export class MockFileSystemFileHandleMock {
+  kind: 'file' = 'file';
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  async getFile(): Promise<File> {
+    const file = new File(['mock content'], this.name, { type: 'text/plain' });
+    return Promise.resolve(file);
+  }
+
+  async isSameEntry(other: FileSystemHandle): Promise<boolean> {
+    return this as any == other;
+  }
+
+  async createWritable(): Promise<FileSystemWritableFileStream> {
+    const stream = new MockFileSystemWritableFileStreamMock();
+    return Promise.resolve(stream) as any;
+  }
+
+  // Other methods can be added if needed
+}
+
+export class MockFileSystemWritableFileStreamMock {
+  async write(data: BufferSource | Blob | string | ArrayBufferView): Promise<void> {
+    // Mock writing to the file
+    console.log('Writing data:', data);
+    return Promise.resolve();
+  }
+
+  async seek(position: number): Promise<void> {
+    console.log('Seeking to position:', position);
+    return Promise.resolve();
+  }
+
+  async truncate(size: number): Promise<void> {
+    console.log('Truncating to size:', size);
+    return Promise.resolve();
+  }
+
+  async close(): Promise<void> {
+    console.log('Closing the file stream');
+    return Promise.resolve();
+  }
+}

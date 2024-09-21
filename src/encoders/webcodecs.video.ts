@@ -46,7 +46,7 @@ export class WebcodecsVideoEncoder extends EventEmitter<EncoderEvents>() impleme
 	/**
 	 * render and encode visual frames
 	 */
-	protected async encodeVideo(muxer: Muxer<StreamTarget>, config: VideoEncoderConfig, signal?: AbortSignal) {
+	public async encodeVideo(muxer: Muxer<StreamTarget>, config: VideoEncoderConfig, signal?: AbortSignal) {
 		const { renderer, tracks, duration } = this.composition;
 		const totalFrames = Math.floor(duration.seconds * this.fps);
 

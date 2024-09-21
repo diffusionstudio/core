@@ -12,6 +12,8 @@ Object.assign(navigator, {
 Object.assign(globalThis, { URL: mocks.URLMock });
 vi.stubGlobal('FontFace', mocks.FontFaceMock);
 vi.stubGlobal('File', mocks.FileMock);
+vi.stubGlobal('FileSystemFileHandle', mocks.FileSystemFileHandleMock);
+vi.stubGlobal('FileSystemWritableFileStream', mocks.FileSystemWritableFileStreamMock);
 Object.assign(globalThis, { queryLocalFonts: mocks.queryLocalFonts });
 Object.assign(globalThis, {
   AudioEncoder: mocks.AudioEncoderMock,
