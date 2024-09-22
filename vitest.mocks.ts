@@ -340,6 +340,22 @@ export class AudioBufferMock {
   }
 }
 
+export class OfflineAudioContextMock {
+	sampleRate: number;
+	length: number;
+	numberOfChannels: number;
+
+	constructor({ sampleRate, length, numberOfChannels }: OfflineAudioContextOptions) {
+		this.sampleRate = sampleRate;
+		this.length = length;
+		this.numberOfChannels = numberOfChannels ?? 2;
+	}
+
+	createBuffer(numberOfChannels: number, length: number, sampleRate: number): AudioBuffer {
+		return new AudioBufferMock({ numberOfChannels, length, sampleRate }) as any as AudioBuffer;
+	}
+}
+
 export class MockFileSystemFileHandleMock {
   kind: 'file' = 'file';
   name: string;

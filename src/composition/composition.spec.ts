@@ -5,11 +5,15 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
+import * as PIXI from 'pixi.js';
 import { describe, expect, it, beforeEach, vi, afterEach, afterAll, MockInstance } from 'vitest';
 import { Composition } from './composition';
-import { Clip, TextClip } from '../clips';
+import { AudioClip, Clip, TextClip } from '../clips';
 import { AudioTrack, CaptionTrack, HtmlTrack, ImageTrack, TextTrack, Track, VideoTrack } from '../tracks';
 import { Timestamp } from '../models';
+import { sleep } from '../utils';
+import { AudioBufferMock, OfflineAudioContextMock } from '../../vitest.mocks';
+import { AudioSource } from '../sources';
 
 describe('The composition', () => {
 	let composition: Composition;
@@ -49,6 +53,17 @@ describe('The composition', () => {
 		expect(composition.playing).toBe(false);
 	});
 
+	it("should trigger an error when the composition can't be initialized", async () => {
+		const errorFn = vi.fn();
+		vi.spyOn(PIXI, 'autoDetectRenderer')
+			.mockImplementationOnce(() => Promise.reject(new Error('Mocked rejection')));
+		const composition = new Composition();
+		composition.on('error', errorFn);
+		expect(errorFn).toBeCalledTimes(0);
+		await sleep(1);
+		expect(errorFn).toBeCalledTimes(1);
+	})
+
 	it('should return width and height', () => {
 		expect(composition.settings.height).toBe(composition.height);
 		expect(composition.settings.width).toBe(composition.width);
@@ -83,11 +98,14 @@ describe('The composition', () => {
 		expect(composition.duration.frames).toBe(8 * 30);
 	});
 
-	it('should append canvas to div', () => {
+	it('should attach a canvas to the dom and be able to remove it', () => {
 		const div = document.createElement('div');
 		composition.attachPlayer(div);
 		expect(div.children.length).toBe(1);
 		expect(div.children[0] instanceof HTMLCanvasElement).toBe(true);
+
+		composition.detachPlayer(div);
+		expect(div.children.length).toBe(0);
 	});
 
 	it('should append new tracks', () => {
@@ -167,6 +185,22 @@ describe('The composition', () => {
 		expect(search4.length).toBe(0);
 	});
 
+	it('should seek a time by timestamp', async () => {
+		const clip = new Clip({ stop: 15 });
+
+		const track = composition.createTrack('base');
+		await track.add(clip);
+
+		const seekMock = vi.spyOn(track, 'seek');
+		computeMock.mockClear();
+
+		const ts = new Timestamp(400) // 12 frames
+		composition.seek(ts);
+		expect(composition.frame).toBe(12);
+		expect(seekMock).toBeCalledTimes(1);
+		expect(seekMock.mock.calls[0][0].millis).toBe(400);
+	});
+
 	it('should render clips when user called play', async () => {
 		const clip = new Clip({ stop: 15 });
 
@@ -239,14 +273,20 @@ describe('The composition', () => {
 	});
 
 	it('should be able to screenshot a frame', async () => {
-		const clip = new Clip({ stop: 6 * 30 });
-		const track = composition.createTrack('base');
-		await track.add(clip);
+		await composition.add(new Clip({ stop: 6 * 30 }));
 
 		composition.frame = 10;
 		expect(composition.screenshot()).toBe('data:image/png;base64,00');
 		expect(composition.screenshot('webp')).toBe('data:image/webp;base64,00');
 		expect(composition.screenshot('jpeg')).toBe('data:image/jpeg;base64,00');
+	});
+
+	it('should not screenshot a frame when the renderer is undefined', async () => {
+		await composition.add(new Clip({ stop: 6 * 30 }));
+
+		delete composition.renderer;
+
+		expect(() => composition.screenshot()).toThrowError();
 	});
 
 	it('should be able to calculate the correct time', async () => {
@@ -423,5 +463,57 @@ describe('The composition', () => {
 
 	afterAll(() => {
 		requestAnimationFrameMock.mockClear();
+	});
+});
+
+describe('Composition audio', () => {
+	vi.stubGlobal('OfflineAudioContext', OfflineAudioContextMock);
+
+	const source = new AudioSource();
+
+	vi.spyOn(source, 'decode').mockImplementation(async (
+		numberOfChannels: number = 2,
+		sampleRate: number = 48000,
+	) => {
+		const buffer = new AudioBufferMock({ numberOfChannels, sampleRate, length: 8000 });
+
+		for (let i = 0; i < buffer.channelData.length; i++) {
+			for (let j = 0; j < buffer.channelData[i].length; j++) {
+				buffer.channelData[i][j] = 1;
+			}
+		}
+
+		return buffer as any;
+	});
+
+	vi.spyOn(source, 'createObjectURL').mockImplementationOnce(async () => '');
+
+	const clip = new AudioClip(source);
+
+	vi.spyOn(clip.element, 'oncanplay', 'set')
+		.mockImplementation(function (this: HTMLMediaElement, fn) {
+			fn?.call(this, new Event('canplay'));
+		});
+
+	vi.spyOn(clip.element, 'duration', 'get').mockReturnValue(1);
+
+	it('should merge audio clips', async () => {
+		const composition = new Composition();
+		await composition.add(clip.subclip(2, 26));
+
+		expect(composition.duration.frames).toBe(26);
+		composition.duration = 30;
+		expect(composition.duration.frames).toBe(30);
+
+		const buffer = await composition.audio(1, 8000);
+		expect(buffer.length).toBe(8000);
+		expect(buffer.numberOfChannels).toBe(1);
+		expect(buffer.sampleRate).toBe(8000);
+		
+		const data = buffer.getChannelData(0);
+		// audio clip has been trimmed and contains all ones
+		expect(data.at(0)).toBe(0);
+		expect(data.at(-1)).toBe(0);
+		expect(data.at(4000)).toBe(1);
 	});
 });

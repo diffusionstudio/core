@@ -16,7 +16,7 @@ export class AudioSource extends Source {
 
 	public async decode(
 		numberOfChannels: number = 2,
-		sampleRate: number = 44_100,
+		sampleRate: number = 48000,
 	): Promise<AudioBuffer> {
 		const buffer = await this.arrayBuffer();
 

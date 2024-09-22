@@ -370,6 +370,8 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 * Play the composition
 	 */
 	public async play(): Promise<void> {
+		if (this.rendering) return;
+
 		this.state = 'PLAY';
 
 		if (this.frame >= this.duration.frames) {
