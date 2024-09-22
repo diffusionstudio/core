@@ -12,7 +12,7 @@ import { AudioSource } from './audio'; // Import the AudioSource class
 class MockOfflineAudioContext {
 	constructor(public numberOfChannels: number, public length: number, public sampleRate: number) { }
 
-	decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer> {
+	decodeAudioData(_: ArrayBuffer): Promise<AudioBuffer> {
 		const audioBuffer = {
 			duration: 5, // Mock duration
 			sampleRate: this.sampleRate,

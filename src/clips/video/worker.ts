@@ -5,7 +5,7 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import { Demuxer } from './demuxer';
+import { WebDemuxer } from "web-demuxer"
 import { Decoder } from './decoder';
 import { withThreadErrorHandler } from '../../services';
 import { validateDecoderConfig } from './worker.utils';
@@ -19,7 +19,7 @@ async function main(event: MessageEvent<InitMessageData>) {
 
 	const { file, range, fps } = event.data;
 
-	const demuxer = new Demuxer({
+	const demuxer = new WebDemuxer({
 		wasmLoaderPath:
 			'https://cdn.jsdelivr.net/npm/@diffusionstudio/ffmpeg-wasm@1.0.0/dist/ffmpeg.js',
 	});
