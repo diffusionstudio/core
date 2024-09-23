@@ -16,5 +16,8 @@ export default defineConfig({
         resources: 'usable',
       },
     },
+    coverage: {
+      reporter: ['text'],
+    },
   }
 });

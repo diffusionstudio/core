@@ -11,7 +11,7 @@ import type { ClipType } from '../clips';
 import type { ArgumentTypes } from '../types';
 
 export class AudioSource extends Source {
-	public readonly type: ClipType = 'base';
+	public readonly type: ClipType = 'audio';
 	public audioBuffer?: AudioBuffer;
 
 	public async decode(

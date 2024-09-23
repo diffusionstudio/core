@@ -11,6 +11,8 @@ import { Source, VideoSource } from '../../sources';
 import { VideoClip } from './video';
 import { Composition } from '../../composition';
 import { Keyframe, Timestamp } from '../../models';
+import { sleep } from '../../utils';
+import { FrameBuffer } from './buffer';
 
 import type { MockInstance } from 'vitest';
 
@@ -24,7 +26,7 @@ describe('The Video Clip', () => {
 
 	let playFn: MockInstance<() => Promise<void>>;
 	let pauseFn: MockInstance<() => Promise<void>>;
-	let seekFn: MockInstance<(time: Timestamp) => Promise<void>>;
+	let seekFn: MockInstance<(arg: number) => void>;
 
 	const createObjectUrlSpy = vi.spyOn(Source.prototype as any, 'createObjectURL');
 
@@ -95,8 +97,8 @@ describe('The Video Clip', () => {
 
 	it('should connect to a track', async () => {
 		clip
-			.set({ offset: 10, height: '100%' })
-			.subclip(10, 80);
+			.set({ offset: 6, height: '100%' })
+			.subclip(6, 80);
 
 		const composition = new Composition();
 		const track = composition.createTrack('video');
@@ -106,17 +108,18 @@ describe('The Video Clip', () => {
 		await track.add(clip);
 
 		expect(seekFn).toHaveBeenCalledTimes(1);
-		expect(seekFn.mock.calls[0][0].seconds).toBe(1);
+		// composition.frame - offset = 24; 24 / 30fps = 0.8
+		expect(seekFn.mock.calls[0][0]).toBe(0.8);
 
 		expect(clip.state).toBe('ATTACHED');
-		expect(clip.offset.frames).toBe(10);
+		expect(clip.offset.frames).toBe(6);
 		expect(clip.duration.seconds).toBe(30);
 		expect(clip.height).toBe('100%');
-		expect(clip.range[0].frames).toBe(10);
+		expect(clip.range[0].frames).toBe(6);
 		expect(clip.range[1].frames).toBe(80);
 
-		expect(clip.start.frames).toBe(20);
-		expect(clip.stop.frames).toBe(90);
+		expect(clip.start.frames).toBe(12);
+		expect(clip.stop.frames).toBe(86);
 
 		expect(track.clips.findIndex((n) => n.id == clip.id)).toBe(0);
 		expect(attachFn).toBeCalledTimes(1);
@@ -151,6 +154,7 @@ describe('The Video Clip', () => {
 		expect(updateSpy).toHaveBeenCalledTimes(1);
 		expect(exitSpy).toHaveBeenCalledTimes(0);
 
+		pauseFn.mockClear();
 		composition.state = 'IDLE';
 		composition.frame = 60;
 		composition.computeFrame();
@@ -254,6 +258,60 @@ describe('The Video Clip', () => {
 		composition.computeFrame();
 
 		expect(clip.sprite.texture.uid).toBe(clip.textrues.html5.uid);
+	});
+
+	it('should start decoding the video when the seek method is called and the composition is rendering', async () => {
+		const composition = new Composition();
+		await composition.add(clip);
+
+		const buffer = new FrameBuffer();
+
+		Object.defineProperty(buffer, 'onenqueue', {
+			set: (fn: () => void) => fn()
+		});
+
+		//@ts-ignore
+		const decodeSpy = vi.spyOn(clip, 'decodeVideo').mockReturnValueOnce(buffer);
+		composition.state = 'RENDER';
+
+		await clip.seek(new Timestamp());
+
+		expect(decodeSpy).toBeCalledTimes(1);
+		expect(seekFn.mock.calls[0][0]).toBe(0);
+	});
+
+	it('should calculate the correct demux range', async () => {
+		const composition = new Composition();
+		await composition.add(clip);
+
+		clip.subclip(6, 63);
+
+		let [start, stop] = (clip as any).demuxRange;
+		expect(start).toBe(0.2);
+		expect(stop).toBe(2.1);
+
+		clip.offsetBy(-12)
+
+		composition.duration = 30;
+
+		[start, stop] = (clip as any).demuxRange;
+		expect(start).toBe(0.4);
+		expect(stop).toBe(1.4);
+	});
+
+	it('should be able to cancel decoding', async () => {
+		const workerSpy = vi.fn();
+		const bufferSpy = vi.fn();
+
+		// @ts-ignore
+		clip.worker = { terminate: workerSpy };
+		// @ts-ignore
+		clip.buffer = { terminate: bufferSpy };
+
+		clip.cancelDecoding();
+
+		expect(workerSpy).toBeCalledTimes(1);
+		expect(bufferSpy).toBeCalledTimes(1);
 	});
 });
 
@@ -382,5 +440,9 @@ function mockDimensions(clip: VideoClip, width = 540, height = 680) {
 }
 
 function mockSeek(clip: VideoClip) {
-	return vi.spyOn(clip, 'seek').mockImplementation(async () => { });
+	return vi.spyOn(clip.element, 'currentTime', 'set')
+		.mockImplementation(async function (this: HTMLVideoElement) {
+			await sleep(1);
+			this.dispatchEvent(new Event('seeked'));
+		});
 }
