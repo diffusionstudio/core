@@ -190,7 +190,7 @@ export class Source extends EventEmitterMixin<Events, typeof Serializer>(Seriali
 	 * as an html element
 	 */
 	public async thumbnail(): Promise<HTMLElement> {
-		return new HTMLElement();
+		return document.createElement('div');
 	}
 
 	/**

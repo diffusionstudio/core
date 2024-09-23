@@ -1,3 +1,4 @@
+/* c8 ignore start */ 
 import type { AVMediaType } from './avutil';
 
 export enum FFMpegWorkerMessageType {

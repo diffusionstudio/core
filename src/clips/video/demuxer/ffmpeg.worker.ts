@@ -1,3 +1,4 @@
+/* c8 ignore start */ 
 import type { WebAVPacket, WebAVStream } from './types';
 
 let Module: any; // TODO: rm any

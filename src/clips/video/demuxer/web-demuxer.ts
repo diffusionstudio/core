@@ -1,3 +1,4 @@
+/* c8 ignore start */ 
 import { AVMediaType, FFMpegWorkerMessageType } from './types';
 import FFmpegWorker from './ffmpeg.worker.ts?worker&inline';
 

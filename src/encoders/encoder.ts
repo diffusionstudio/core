@@ -50,7 +50,7 @@ export class Encoder extends WebcodecsVideoEncoder {
 		const [videoConfig, audioConfig] = await this.getConfigs();
 
 		if (this.debug) {
-			console.log('Hardware Preference', videoConfig.hardwareAcceleration);
+			console.info('Hardware Preference', videoConfig.hardwareAcceleration);
 		}
 
 		const now = performance.now();

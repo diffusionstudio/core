@@ -71,4 +71,60 @@ describe('The Video Source Object', () => {
 
 		resetFetch();
 	});
+
+	it('should not load from a http address when the response in not ok', async () => {
+		const resetFetch = setFetchMockReturnValue({ ok: false });
+
+		await expect(() => new VideoSource().from('https://external.url')).rejects.toThrowError();
+
+		resetFetch();
+	});
+
+	it('should throw an error if the file is not available after it has been downloaded', async () => {
+		const source = new VideoSource();
+
+		const promise = source.getFile();
+
+		source.trigger('load', undefined);
+
+		await expect(() => promise).rejects.toThrowError();
+	});
+
+	it('should retrun a video as thumbnail', async () => {
+		const video = document.createElement('video');
+
+		const createSpy = vi.spyOn(document, 'createElement').mockImplementationOnce(() => video);
+
+		const file = new File([], 'file.mp4', { type: 'video/mp4' });
+		const source = new VideoSource();
+
+		await source.from(file);
+
+		const thumbnail = await source.thumbnail();
+
+		expect(createSpy).toBeCalledTimes(1);
+		expect(thumbnail).toBeInstanceOf(HTMLVideoElement);
+		expect(video.src).toBe('blob:chrome://new-tab-page/3dc0f2b7-7773-4cd4-a397-2e43b1bba7cd');
+
+		vi.spyOn(video, 'duration', 'get').mockReturnValue(10);
+
+		video.dispatchEvent(new Event('loadedmetadata'));
+
+		expect(source.duration.seconds).toBe(10);
+
+		video.height = 1080;
+		video.width = 1920;
+
+		const seekSpy = vi.spyOn(video, 'currentTime', 'set');
+		const rectSpy = vi.spyOn(video, 'getBoundingClientRect').mockReturnValue({
+			width: 200
+		} as any);
+
+		video.dispatchEvent(new Event('mousemove'));
+
+		expect(seekSpy).toBeCalledTimes(1);
+		expect(rectSpy).toBeCalledTimes(1);
+
+		rectSpy.mockRestore();
+	});
 });

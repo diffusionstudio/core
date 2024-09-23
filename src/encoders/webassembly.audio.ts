@@ -42,7 +42,7 @@ export class WebassemblyAudioEncoder implements WebAudioEncoder {
       error: console.error,
     });
 
-    await encoder.configure(config);
+    await encoder.configure({ ...config, sampleRate });
 
     encoder.encode({
       data: bufferToI16Interleaved(output),

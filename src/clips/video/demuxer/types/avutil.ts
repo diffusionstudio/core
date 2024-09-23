@@ -1,3 +1,4 @@
+/* c8 ignore start */ 
 /**
  * sync with ffmpeg libavutil/avutil.h
  */

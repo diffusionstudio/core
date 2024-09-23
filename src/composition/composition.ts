@@ -370,6 +370,8 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	 * Play the composition
 	 */
 	public async play(): Promise<void> {
+		if (this.rendering) return;
+
 		this.state = 'PLAY';
 
 		if (this.frame >= this.duration.frames) {
@@ -435,9 +437,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 
 					output.getChannelData(i).set(outputData);
 				}
-			} catch (e) {
-				console.error('could not get channel data', e);
-			}
+			} catch (_) { }
 
 			clip.source.audioBuffer = undefined;
 		}

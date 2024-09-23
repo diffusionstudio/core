@@ -11,7 +11,7 @@ import { documentToSvgImageUrl } from './html.utils';
 import type { ClipType } from '../clips';
 
 export class HtmlSource extends Source {
-	public readonly type: ClipType = 'base';
+	public readonly type: ClipType = 'html';
 	/**
 	 * Access to the iframe that is required
 	 * for extracting the html's dimensions
