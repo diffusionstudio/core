@@ -46,8 +46,7 @@
     "vitest-canvas-mock": "^0.3.3"
   },
   "dependencies": {
-    "mp4-muxer": "^5.1.3",
-    "web-demuxer": "1.0.5"
+    "mp4-muxer": "^5.1.3"
   },
   "peerDependencies": {
     "pixi-filters": ">=6.0.0",
