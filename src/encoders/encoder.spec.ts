@@ -49,8 +49,7 @@ describe('The Encoder', () => {
     await encoder.render();
 
     expect(pauseSpy).toBeCalledTimes(1);
-    // before and after
-    expect(seekSpy).toBeCalledTimes(2);
+    expect(seekSpy).toBeCalledTimes(1);
   });
 
   it('should not render when the composition renderer is not defined', async () => {

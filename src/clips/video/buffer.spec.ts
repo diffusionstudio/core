@@ -27,8 +27,8 @@ describe('FrameBuffer', () => {
 
     frameBuffer.enqueue(mockVideoFrame);
 
-    expect(frameBuffer['buffer'].length).toBe(1);
-    expect(frameBuffer['buffer'][0]).toBe(mockVideoFrame);
+    expect(frameBuffer.frames.length).toBe(1);
+    expect(frameBuffer.frames[0]).toBe(mockVideoFrame);
     expect(mockOnEnqueue).toHaveBeenCalled();
   });
 
@@ -44,7 +44,7 @@ describe('FrameBuffer', () => {
 
     expect(dequeuedFrame1).toBe(frame1);
     expect(dequeuedFrame2).toBe(frame2);
-    expect(frameBuffer['buffer'].length).toBe(0);
+    expect(frameBuffer.frames.length).toBe(0);
   });
 
   it('should wait for a frame to be enqueued if buffer is empty and state is active', async () => {

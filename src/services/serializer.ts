@@ -4,7 +4,7 @@ export class Serializer {
 	/**
 	 * Unique identifier of the object
 	 */
-	public readonly id = crypto.randomUUID();
+	public id = crypto.randomUUID();
 
 	toJSON(): any {
 		const obj: any = {};

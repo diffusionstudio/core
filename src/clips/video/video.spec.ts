@@ -264,6 +264,10 @@ describe('The Video Clip', () => {
 		const composition = new Composition();
 		await composition.add(clip);
 
+		composition.computeFrame();
+
+		expect(clip.track?.view.children.length).toBe(1);
+
 		const buffer = new FrameBuffer();
 
 		Object.defineProperty(buffer, 'onenqueue', {
@@ -274,8 +278,13 @@ describe('The Video Clip', () => {
 		const decodeSpy = vi.spyOn(clip, 'decodeVideo').mockReturnValueOnce(buffer);
 		composition.state = 'RENDER';
 
-		await clip.seek(new Timestamp());
+		await composition.seek(0);
 
+		expect(clip.track?.view.children.length).toBe(0);
+
+		await composition.computeFrame();
+
+		expect(clip.track?.view.children.length).toBe(1);
 		expect(decodeSpy).toBeCalledTimes(1);
 		expect(seekFn.mock.calls[0][0]).toBe(0);
 	});
