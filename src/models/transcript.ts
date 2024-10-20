@@ -17,7 +17,7 @@ import type { Captions } from '../types';
 import type { Serializer } from '../services';
 
 export class Transcript implements Serializer {
-	public readonly id = crypto.randomUUID();
+	public id = crypto.randomUUID();
 	public language: Language = Language.en;
 	public groups: WordGroup[] = [];
 
