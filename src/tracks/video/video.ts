@@ -6,8 +6,19 @@
  */
 
 import { MediaTrack } from '../media';
+import { Timestamp } from '../../models';
+
 import type { VideoClip } from '../../clips';
 
 export class VideoTrack extends MediaTrack<VideoClip> {
 	public readonly type = 'video';
+
+	public async seek(time: Timestamp): Promise<void> {
+		if (this.composition?.rendering) {
+			// ensures that 'enter' method will be called again
+			this.view.removeChildren();
+		} else {
+			super.seek(time);
+		}
+	}
 }

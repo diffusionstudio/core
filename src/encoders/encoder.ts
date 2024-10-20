@@ -96,7 +96,6 @@ export class Encoder extends WebcodecsVideoEncoder {
 			this.composition.state = 'IDLE';
 			this.composition.renderer.resolution = 1;
 			this.composition.fps = FPS_DEFAULT;
-			this.composition.seek(0);
 		}
 	}
 

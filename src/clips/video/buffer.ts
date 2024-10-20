@@ -6,27 +6,27 @@
  */
 
 export class FrameBuffer {
-	private buffer: Array<VideoFrame> = [];
-	private state: 'active' | 'closed' = 'active';
+	public frames: Array<VideoFrame> = [];
+	public state: 'active' | 'closed' = 'active';
 
 	public onenqueue?: () => void;
 	public onclose?: () => void;
 
 	public enqueue(data: VideoFrame) {
-		this.buffer.unshift(data);
+		this.frames.unshift(data);
 		this.onenqueue?.();
 	}
 
 	public async dequeue() {
-		if (this.buffer.length == 0 && this.state == 'active') {
+		if (this.frames.length == 0 && this.state == 'active') {
 			await this.waitFor(20e3);
 		}
 
-		if (this.buffer.length == 0 && this.state == 'closed') {
+		if (this.frames.length == 0 && this.state == 'closed') {
 			return;
 		}
 
-		return this.buffer.pop();
+		return this.frames.pop();
 	}
 
 	public close() {
@@ -35,7 +35,7 @@ export class FrameBuffer {
 	}
 
 	public terminate() {
-		for (const frame of this.buffer) {
+		for (const frame of this.frames) {
 			frame.close();
 		}
 	}

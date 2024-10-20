@@ -110,6 +110,13 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		await this.seek(Timestamp.fromFrames(frame));
 	}
 
+	public enter() {
+		super.enter();
+		if (this.track?.composition?.rendering && this.buffer?.state != 'active') {
+			this.decodeVideo();
+		}
+	}
+
 	@visualize
 	@textureSwap
 	public update(_: Timestamp): void | Promise<void> {
@@ -137,17 +144,6 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		clip.source = this.source;
 
 		return clip;
-	}
-
-	public async seek(time: Timestamp): Promise<void> {
-		if (this.track?.composition?.rendering) {
-			const buffer = await this.decodeVideo();
-			return new Promise<void>((resolve) => {
-				buffer.onenqueue = () => resolve();
-			});
-		}
-
-		return super.seek(time);
 	}
 
 	private async decodeVideo() {
