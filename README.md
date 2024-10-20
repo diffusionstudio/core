@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <img src="./assets/icon.png" alt="Library Icon" width="164" height="164" />
-  <h1 align="center">Diffusion Studio</h1>
+  <h1 align="center">diffusionstudio/core</h1>
 </p>
 
 <p align="center">
