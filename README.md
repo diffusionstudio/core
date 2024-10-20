@@ -8,13 +8,13 @@
   <img src="https://img.shields.io/badge/Made with-Typescript-blue?color=000000&logo=typescript&logoColor=ffffff" alt="Static Badge">
   <a href="https://vitejs.dev"><img src="https://img.shields.io/badge/Powered%20by-Vite-000000?style=flat&logo=Vite&logoColor=ffffff" alt="powered by vite"></a>
   <a href="https://discord.gg/zPQJrNGuFB"><img src="https://img.shields.io/discord/1115673443141156924?style=flat&logo=discord&logoColor=fff&color=000000" alt="discord"></a>
-  <a href="https://x.com/diffusionmov"><img src="https://img.shields.io/badge/Follow for-Updates-blue?color=000000&logo=X&logoColor=ffffff" alt="Static Badge"></a>
+  <a href="https://x.com/diffusionhq"><img src="https://img.shields.io/badge/Follow for-Updates-blue?color=000000&logo=X&logoColor=ffffff" alt="Static Badge"></a>
 </p>
 <br/>
 
 # Getting Started
 
-Diffusion Studio is an open-source, browser-based video editing library that allows developers to automate video editing workflows at scale, build custom editing applications, or seamlessly integrate video processing capabilities into existing projects.
+`@diffusionstudio/core` is an open-source, browser-based video editing library that allows developers to automate video editing workflows at scale, build custom editing applications, or seamlessly integrate video processing capabilities into existing projects.
 
 ## Documentation
 
@@ -85,7 +85,7 @@ You can find more [examples here.](https://github.com/diffusionstudio/examples),
 
 https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
-## How does Diffusion Studio compare to Remotion and Motion Canvas?
+## How does DS Core compare to Remotion and Motion Canvas?
 
 **Remotion** is a React-based video creation tool that transforms the entire DOM into videos. It's particularly suited for beginners, as web developers can start creating videos using the skills they already have.
 
@@ -111,7 +111,7 @@ In contrast, **Diffusion Studio** is not a framework with a visual editing inter
 * **Dynamic render resolution and framerate**
 
 ## Contributing
-Contributions to Diffusion Studio are welcome and highly appreciated. Simply fork this respository and run:
+Contributions to DS Core are welcome and highly appreciated. Simply fork this respository and run:
 
 ```sh
 npm install
