@@ -448,6 +448,32 @@ describe('The Track Object', () => {
 		expect(updateFn).toHaveBeenCalledTimes(1);
 		expect(exitFn).toHaveBeenCalledTimes(1);
 	});
+
+	it('should remove the visible clip when disabled changes', async () => {
+		const clip = await track.add(new Clip());
+
+		const exitSpy = vi.spyOn(clip, 'exit');
+		const computeFrameSpy = vi.spyOn(comp, 'computeFrame');
+		expect(updateMock).toBeCalledTimes(0);
+		expect(computeFrameSpy).toBeCalledTimes(0);
+		expect(track.disabled).toBe(false);
+		expect(track.view.children.length).toBe(1);
+
+		track.disabled = true;
+
+		expect(updateMock).toBeCalledTimes(1);
+		expect(computeFrameSpy).toBeCalledTimes(1);
+		expect(exitSpy).toBeCalledTimes(1);
+		expect(track.view.children.length).toBe(0);
+		expect(track.disabled).toBe(true);
+
+		track.disabled = false;
+
+		expect(updateMock).toBeCalledTimes(2);
+		expect(computeFrameSpy).toBeCalledTimes(2);
+		expect(track.view.children.length).toBe(1);
+		expect(track.disabled).toBe(false);
+	});
 });
 
 describe("The Track Object's layers method", () => {
