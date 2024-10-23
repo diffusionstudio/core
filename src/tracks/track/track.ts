@@ -26,11 +26,9 @@ type Events = {
 }
 
 export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Serializer>(Serializer) {
+	private _disabled: boolean = false;
+
 	public view = new Container();
-	/**
-	 * Controls the visability of the track
-	 */
-	public disabled: boolean = false;
 
 	/**
 	 * The clips to be displayed
@@ -56,6 +54,24 @@ export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Se
 	 * Controls how the clips should be inserted and updated
 	 */
 	public strategy: InsertStrategy<InsertMode> = new DefaultInsertStrategy();
+
+	/**
+	 * Controls the visability of the track
+	 */
+	public get disabled(): boolean {
+		return this._disabled;
+	}
+
+	public set disabled(value: boolean) {
+		if (value && this.clipRef && inGraph(this.clipRef)) {
+			this.view.removeChild(this.clipRef.view);
+			this.clipRef?.exit();
+		}
+
+		this._disabled = value;
+
+		this.trigger('update', undefined);
+	}
 
 	/**
 	 * Connect the track with the composition
