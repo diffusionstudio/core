@@ -16,7 +16,8 @@ class MockOfflineAudioContext {
 		const audioBuffer = {
 			duration: 5, // Mock duration
 			sampleRate: this.sampleRate,
-			getChannelData: () => new Float32Array(5000), // Return a dummy Float32Array
+			length: 5000,
+			getChannelData: () => new Float32Array(5000).fill(0.5), // Return a dummy Float32Array
 		} as any as AudioBuffer;
 		return Promise.resolve(audioBuffer);
 	}
@@ -33,11 +34,59 @@ describe('AudioSource', () => {
 	});
 
 	it('should decode an audio buffer correctly', async () => {
-		const buffer = await audioSource.decode(2, 44100);
+		const buffer = await audioSource.decode(2, 44100, true);
 		expect(buffer.duration).toBe(5); // Mock duration
 		expect(buffer.sampleRate).toBe(44100);
 		expect(audioSource.audioBuffer).toBe(buffer);
 		expect(audioSource.duration.seconds).toBe(5); // Ensure duration is set
+
+		audioSource.audioBuffer = undefined;
+		await audioSource.decode(2, 44100, false);
+		expect(audioSource.audioBuffer).toBe(undefined);
+	});
+
+	it('should (fast) sample an audio buffer correctly', async () => {
+		const samples = await audioSource.fastsampler({ length: 20 });
+		expect(samples.length).toBe(20);
+
+		for (const sample of samples) {
+			expect(sample).toBe(0.5);
+		}
+	});
+
+	it('should (fast) sample an audio buffer correctly with start', async () => {
+		const samples = await audioSource.fastsampler({
+			length: 20,
+			start: 10,
+		});
+		expect(samples.length).toBe(20);
+
+		for (const sample of samples) {
+			expect(sample).toBe(0.5);
+		}
+	});
+
+	it('should (fast) sample an audio buffer correctly with stop', async () => {
+		const samples = await audioSource.fastsampler({
+			length: 20,
+			stop: 1000,
+			start: 20,
+		});
+		expect(samples.length).toBe(20);
+
+		for (const sample of samples) {
+			expect(sample).toBe(0.5);
+		}
+	});
+
+	it('should (fast) sample an audio buffer correctly with logarithmic scale', async () => {
+		const samples = await audioSource.fastsampler({ logarithmic: true });
+		expect(samples.length).toBe(60);
+
+		for (const sample of samples) {
+			expect(sample).toBeGreaterThanOrEqual(0.5);
+			expect(sample).toBeLessThanOrEqual(1);
+		}
 	});
 
 	it('should create a thumbnail with correct DOM elements', async () => {

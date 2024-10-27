@@ -8,5 +8,6 @@
 export * from './source';
 export * from './html';
 export * from './audio';
+export * from './audio.types';
 export * from './image';
 export * from './video';

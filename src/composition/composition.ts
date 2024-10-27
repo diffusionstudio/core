@@ -438,8 +438,6 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 					output.getChannelData(i).set(outputData);
 				}
 			} catch (_) { }
-
-			clip.source.audioBuffer = undefined;
 		}
 
 		return output;
