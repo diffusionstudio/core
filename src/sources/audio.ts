@@ -9,29 +9,48 @@ import { Source } from './source';
 
 import type { ClipType } from '../clips';
 import type { ArgumentTypes } from '../types';
+import type { FastSamplerOptions } from './audio.types';
 
 export class AudioSource extends Source {
+	private decoding = false;
+
 	public readonly type: ClipType = 'audio';
 	public audioBuffer?: AudioBuffer;
 
 	public async decode(
 		numberOfChannels: number = 2,
 		sampleRate: number = 48000,
+		cache = false,
 	): Promise<AudioBuffer> {
+		// make sure audio is not decoded multiple times
+		if (this.decoding && cache) {
+			await new Promise(this.resolve('update'));
+
+			if (this.audioBuffer) {
+				return this.audioBuffer;
+			}
+		}
+
+		this.decoding = true;
 		const buffer = await this.arrayBuffer();
 
 		const ctx = new OfflineAudioContext(numberOfChannels, 1, sampleRate);
 
-		this.audioBuffer = await ctx.decodeAudioData(buffer);
-		this.duration.seconds = this.audioBuffer.duration;
+		const audioBuffer = await ctx.decodeAudioData(buffer);
+		this.duration.seconds = audioBuffer.duration;
+		if (cache) this.audioBuffer = audioBuffer;
 
+		this.decoding = false;
 		this.trigger('update', undefined);
 
-		return this.audioBuffer;
+		return audioBuffer;
 	}
 
+	/**
+	 * @deprecated Use fastsampler instead.
+	 */
 	public async samples(numberOfSampes = 60, windowSize = 50, min = 0): Promise<number[]> {
-		const buffer = this.audioBuffer ?? (await this.decode(1, 16e3));
+		const buffer = this.audioBuffer ?? (await this.decode(1, 3000, true));
 
 		const window = Math.round(buffer.sampleRate / windowSize);
 		const length = buffer.sampleRate * buffer.duration - window;
@@ -48,6 +67,43 @@ export class AudioSource extends Source {
 		}
 
 		return res.map((v) => Math.round((v / Math.max(...res)) * (100 - min)) + min);
+	}
+
+	/**
+	 * Fast sampler that uses a window size to calculate the max value of the samples in the window.
+	 * @param options - Sampling options.
+	 * @returns An array of the max values of the samples in the window.
+	 */
+	public async fastsampler({ length = 60, start = 0, stop, logarithmic = false }: FastSamplerOptions): Promise<Float32Array> {
+		if (typeof start === 'object') start = start.millis;
+		if (typeof stop === 'object') stop = stop.millis;
+
+		const sampleRate = 3000;
+		const audioBuffer = this.audioBuffer ?? (await this.decode(1, sampleRate, true));
+		const channelData = audioBuffer.getChannelData(0);
+
+		const firstSample = Math.floor(Math.max(start * sampleRate / 1000, 0));
+		const lastSample = stop
+			? Math.floor(Math.min(stop * sampleRate / 1000, audioBuffer.length))
+			: audioBuffer.length;
+
+		const windowSize = Math.floor((lastSample - firstSample) / length);
+		const result = new Float32Array(length);
+
+		for (let i = 0; i < length; i++) {
+			const start = firstSample + i * windowSize;
+			const end = start + windowSize;
+			let min = Infinity;
+			let max = -Infinity;
+
+			for (let j = start; j < end; j++) {
+				const sample = channelData[j];
+				if (sample < min) min = sample;
+				if (sample > max) max = sample;
+			}
+			result[i] = logarithmic ? Math.log2(1 + max) : max;
+		}
+		return result;
 	}
 
 	public async thumbnail(...args: ArgumentTypes<this['samples']>): Promise<HTMLElement> {
