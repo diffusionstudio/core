@@ -244,6 +244,23 @@ describe('The Track Strategy Object (stack mode)', () => {
 		expect(track.clips[2].start.frames).toBe(30);
 		expect(track.clips[2].stop.frames).toBe(39);
 	});
+
+	it('should insert clips a specified index', () => {
+		const track = createDefaultTrack();
+		track.stacked();
+
+		expect(track.clips[0].stop.frames).toBe(10);
+		expect(track.clips[1].stop.frames).toBe(30);
+		expect(track.clips[2].stop.frames).toBe(39);
+
+		strategy.add(new Clip({ start: 20, stop: 25 }), track, 1);
+
+		expect(track.clips[0].stop.frames).toBe(10);
+		expect(track.clips[1].start.frames).toBe(10);
+		expect(track.clips[1].stop.frames).toBe(15);
+		expect(track.clips[2].start.frames).toBe(15);
+		expect(track.clips[2].stop.frames).toBe(35);
+	});
 });
 
 function createDefaultTrack(): Track<Clip> {

@@ -12,7 +12,7 @@ import type { Timestamp } from '../../models';
 
 export interface InsertStrategy<T extends InsertMode> {
 	readonly mode: T;
-	add(clip: Clip, track: Track<Clip>): void;
+	add(clip: Clip, track: Track<Clip>, index?: number): void;
 	update(clip: Clip, track: Track<Clip>): void;
 	offset(time: Timestamp, track: Track<Clip>): void;
 }

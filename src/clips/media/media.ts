@@ -233,7 +233,9 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	}
 
 	public copy(): MediaClip {
-		return MediaClip.fromJSON(JSON.parse(JSON.stringify(this)));
+		const clip = MediaClip.fromJSON(JSON.parse(JSON.stringify(this)));
+		clip.transcript = this.transcript;
+		return clip;
 	}
 
 	public async split(time?: frame | Timestamp): Promise<this> {
@@ -267,7 +269,8 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 
 		replaceKeyframes(copy, copy.start.subtract(this.start));
 
-		await this.track.add(copy);
+		const index = this.track.clips.findIndex((c) => c.id == this.id);
+		await this.track.add(copy, index + 1);
 
 		return copy;
 	}
