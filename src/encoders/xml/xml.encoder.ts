@@ -7,7 +7,7 @@
 
 import { create } from "xmlbuilder2";
 import { Composition } from "../../composition/composition";
-import { Source } from "../../sources/source";
+import { FcpAsset } from "./xml.fcp.types";
 
 /**
  * Encode a composition to a XML string for exporting to an external application
@@ -16,16 +16,24 @@ export class XMLEncoder {
   encode(composition: Composition) {
     const root = create();
 
-    root.ele("fcpxml", {version: "1.10"});
+    const fcpxml = root.ele("fcpxml", {version: "1.10"});
+    const resources = fcpxml.ele("resources");
 
-    let sources: Source[] = [];
+    let id_to_asset: Map<string, FcpAsset> = new Map();
     composition.tracks.forEach((track) => {
         track.clips.forEach((clip) => {
+            // clip
+
             const source = clip.source;
+            console.log(source?.id);
             if (source !== undefined) {
-                sources.push(source);
+                id_to_asset.set(source.id, FcpAsset.fromSource(source));
             }
         });
+    });
+
+    id_to_asset.forEach((asset) => {
+        asset.toXML(resources);
     });
 
     return root.end({ prettyPrint: true });

@@ -1,5 +1,6 @@
 import * as core from '../src';
 import { render } from './render';
+import { XMLEncoder } from '../src/encoders/xml';
 
 export function setupControls(composition: core.Composition) {
   const handlePlay = () => composition.play();
@@ -7,12 +8,14 @@ export function setupControls(composition: core.Composition) {
   const handleBack = () => composition.seek(0);
   const handleForward = () => composition.seek(composition.duration.frames);
   const handleExport = () => render(composition);
+  const handleToXml = () => console.log(new XMLEncoder().encode(composition));
 
   playButton.addEventListener('click', handlePlay);
   pauseButton.addEventListener('click', handlePause);
   backButton.addEventListener('click', handleBack);
   forwardButton.addEventListener('click', handleForward);
   exportButton.addEventListener('click', handleExport);
+  toXmlButton.addEventListener('click', handleToXml);
 
   composition.on('play', () => {
     playButton.style.display = 'none';
@@ -53,3 +56,4 @@ const playButton = document.querySelector('[data-lucide="play"]') as HTMLElement
 const pauseButton = document.querySelector('[data-lucide="pause"]') as HTMLElement;
 const backButton = document.querySelector('[data-lucide="skip-back"]') as HTMLElement;
 const forwardButton = document.querySelector('[data-lucide="skip-forward"]') as HTMLElement;
+const toXmlButton = document.querySelector('[id="to-xml"]') as HTMLButtonElement;

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<fcpxml version="1.10">
+  <resources>
+    <asset id="7659728c-78b1-44ae-9a63-78a2e72d8581" start="0" duration="16" hasVideo="0" hasAudio="0" format="format" audioSources="1" audioChannels="1" audioRate="48000">
+      <mediaRep kind="image/svg+xml" src="./dvd_logo.svg"/>
+    </asset>
+    <asset id="40533a97-70c7-49b0-b15c-fb92a49a98d5" start="0" duration="16" hasVideo="0" hasAudio="1" format="format" audioSources="1" audioChannels="1" audioRate="48000">
+      <mediaRep kind="audio/mpeg" src="./audio.mp3"/>
+    </asset>
+    <asset id="f2249320-a390-4871-a32c-aaf22bca6ea9" start="0" duration="16" hasVideo="0" hasAudio="0" format="format" audioSources="1" audioChannels="1" audioRate="48000">
+      <mediaRep kind="text/html" src="./test.html"/>
+    </asset>
+    <asset id="6da247a8-e9a2-4642-b17f-2550e755878c" start="0" duration="16" hasVideo="0" hasAudio="0" format="format" audioSources="1" audioChannels="1" audioRate="48000">
+      <mediaRep kind="image/png" src="./lenna.png"/>
+    </asset>
+    <asset id="b552e4bd-eb39-4823-933d-19706242ce0f" start="0" duration="16" hasVideo="1" hasAudio="1" format="format" audioSources="1" audioChannels="1" audioRate="48000">
+      <mediaRep kind="video/mp4" src="./sample_aac_h264_yuv420p_1080p_60fps.mp4"/>
+    </asset>
+  </resources>
+</fcpxml>

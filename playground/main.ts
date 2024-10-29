@@ -8,9 +8,10 @@ const composition = new core.Composition({ background: '#76b7f5' });
 setupControls(composition);
 setupTimeline(composition);
 
+const videoSource = await core.VideoSource.from('/sample_aac_h264_yuv420p_1080p_60fps.mp4');
+
 const video = await composition.add(
-  new core.VideoClip(await core.VideoSource
-    .from('/sample_aac_h264_yuv420p_1080p_60fps.mp4'), {
+  new core.VideoClip(videoSource, {
     volume: 0.1,
     anchor: 0.5,
     position: 'center',
@@ -24,6 +25,13 @@ video.animate()
   .alpha(0.5).to(1, 120).to(0.5, 120).to(1, 60)
   .scale(0.1, 0, 'easeIn').to(1, 30)
   .rotation(0, 0, 'easeOut').to(360, 30)
+
+await composition.add(
+  new core.VideoClip(videoSource, {
+    position: 'center',
+    height: '100%',
+  }).subclip(0, 30)
+);
 
 const image = await composition.add(
   new core.ImageClip(await core.ImageSource.from('/lenna.png'), {

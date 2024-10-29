@@ -5,9 +5,10 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
+import { XMLBuilder } from "xmlbuilder2/lib/interfaces";
 import { Source } from "../../sources/source";
 
-class MediaRep {
+export class FcpMediaRep {
   kind: string;
   src: string;
 
@@ -15,19 +16,26 @@ class MediaRep {
     this.kind = kind;
     this.src = src;
   }
+
+  toXML(builder: XMLBuilder) {
+    builder.ele("mediaRep", {
+      kind: this.kind,
+      src: this.src,
+    });
+  }
 }
 
-class Asset {
+export class FcpAsset {
   id: string;
   start: number;
   duration: number;
   hasVideo: boolean;
   hasAudio: boolean;
   format: string;
-  audioSources: string;
+  audioSources: number;
   audioChannels: number;
   audioRate: number;
-  mediaReps: MediaRep[];
+  mediaReps: FcpMediaRep[];
 
   constructor(
     id: string,
@@ -36,10 +44,10 @@ class Asset {
     hasVideo: boolean,
     hasAudio: boolean,
     format: string,
-    audioSources: string,
+    audioSources: number,
     audioChannels: number,
     audioRate: number,
-    mediaReps: MediaRep[]
+    mediaReps: FcpMediaRep[]
   ) {
     this.id = id;
     this.start = start;
@@ -53,7 +61,38 @@ class Asset {
     this.mediaReps = mediaReps;
   }
 
-//   fromSource(source: Source) {
-//     return new Asset(source.id, 0, source.duration, source.hasVideo, source.hasAudio, source.format, source.audioSources, source.audioChannels, source.audioRate, source.mediaReps);
-//   }
+  toXML(builder: XMLBuilder) {
+    const asset = builder.ele("asset", {
+      id: this.id,
+      start: this.start,
+      duration: this.duration,
+      hasVideo: this.hasVideo ? "1" : "0",
+      hasAudio: this.hasAudio ? "1" : "0",
+      format: this.format,
+      audioSources: this.audioSources.toString(),
+      audioChannels: this.audioChannels.toString(),
+      audioRate: this.audioRate.toString(),
+    });
+
+    this.mediaReps.forEach((mediaRep) => {
+      mediaRep.toXML(asset);
+    });
+  }
+
+  static fromSource(source: Source) {
+    const _type = source.file!.type;
+    const mediaRep = new FcpMediaRep(_type, `./${source.file!.name}`);
+    return new FcpAsset(
+      source.id,
+      0,
+      source.duration.seconds,
+      _type.startsWith("video"),
+      _type.startsWith("audio") || _type.startsWith("video"),
+      "format",
+      1,
+      1,
+      48000,
+      [mediaRep]
+    );
+  }
 }
