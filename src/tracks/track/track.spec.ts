@@ -57,6 +57,45 @@ describe('The Track Object', () => {
 		expect(track.clips.at(2)?.stop.frames).toBe(12);
 	});
 
+	it('should be able to add clips at an index, if stacked', async () => {
+		track.stacked();
+
+		await track.add(new Clip({ stop: 10, start: 0 }));
+		await track.add(new Clip({ stop: 10, start: 0 }));
+		await track.add(new Clip({ stop: 10, start: 0 }));
+
+		expect(track.clips.length).toBe(3);
+		expect(track.start.frames).toBe(0);
+		expect(track.stop.frames).toBe(30);
+
+		await track.add(new Clip({ stop: 2, start: 0 }), 1);
+
+		expect(track.clips[0].start.frames).toBe(0);
+		expect(track.clips[0].stop.frames).toBe(10);
+
+		expect(track.clips[1].start.frames).toBe(10);
+		expect(track.clips[1].stop.frames).toBe(12);
+
+		expect(track.clips[2].start.frames).toBe(12);
+		expect(track.clips[2].stop.frames).toBe(22);
+
+		await track.add(new Clip({ stop: 15, start: 10 }), 4);
+
+		expect(track.clips[0].start.frames).toBe(0);
+		expect(track.clips[0].stop.frames).toBe(10);
+		
+		expect(track.clips[4].start.frames).toBe(32);
+		expect(track.clips[4].stop.frames).toBe(37);
+
+		await track.clips[0].split(5);
+
+		expect(track.clips[0].start.frames).toBe(0);
+		expect(track.clips[0].stop.frames).toBe(5);
+
+		expect(track.clips[1].start.frames).toBe(5);
+		expect(track.clips[1].stop.frames).toBe(10);
+	});
+
 	it('should snap the clip when it overlaps with the end of another clip', async () => {
 		const clip0 = new Clip({ stop: 20, start: 0 });
 		const clip1 = new Clip({ stop: 30, start: 11 });
