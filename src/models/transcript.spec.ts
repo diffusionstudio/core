@@ -188,6 +188,19 @@ describe('Transcript tests', () => {
 		expect(subset.groups.at(0)?.words.at(-1)?.stop.seconds).toBe(10.5);
 	});
 
+	it('should be able to get all words', () => {
+		const transcript = new Transcript([
+			new WordGroup([new Word('Lorem', 0, 1e3)]),
+			new WordGroup([new Word('Ipsum', 2e3, 3e3)]),
+		]);
+
+		expect(transcript.words.length).toBe(2);
+		expect(transcript.words[0].text).toBe('Lorem');
+		expect(transcript.words[1].text).toBe('Ipsum');
+		expect(transcript.words[0]).toBeInstanceOf(Word);
+		expect(transcript.words[1]).toBeInstanceOf(Word);
+	});
+
 	it('should generated a cloned transcript with the max available number of words', () => {
 		const transcript = new Transcript([
 			new WordGroup([new Word('Lorem', 4e3, 6e3), new Word('Ipsum', 9e3, 11e3)]),

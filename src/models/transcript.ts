@@ -25,6 +25,10 @@ export class Transcript implements Serializer {
 		return this.groups.map(({ text }) => text).join(' ');
 	}
 
+	public get words(): Word[] {
+		return this.groups.flatMap(({ words }) => words);
+	}
+
 	public constructor(groups: WordGroup[] = [], language = Language.en) {
 		this.groups = groups;
 		this.language = language;
