@@ -6,9 +6,10 @@
  */
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { captions } from '../../test/captions';
 import { Composition } from '../../composition';
 import { AudioClip } from './audio';
-import { Timestamp } from '../../models';
+import { Timestamp, Transcript } from '../../models';
 import { AudioSource } from '../../sources';
 
 import type { MockInstance } from 'vitest';
@@ -197,6 +198,7 @@ describe('Copying the AudioClip', () => {
 		clip.duration.frames = 100;
 		clip.muted = true;
 		clip.volume = 0.2;
+		clip.transcript = Transcript.fromJSON(captions);
 
 		const copy = clip.copy();
 
@@ -208,6 +210,7 @@ describe('Copying the AudioClip', () => {
 		expect(copy.muted).toBe(true);
 		expect(copy.source).toBeInstanceOf(AudioSource);
 		expect(copy.source.id).toBe(clip.source.id);
+		expect(copy.transcript?.id).toBe(clip.transcript.id);
 	});
 
 	it('should transfer base properties', () => {

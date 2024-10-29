@@ -285,6 +285,7 @@ describe('The Media Clip', () => {
 		expect(copy.range[0].frames).toBe(10);
 		expect(copy.range[1]).toBeInstanceOf(Timestamp);
 		expect(copy.range[1].frames).toBe(80);
+		expect(copy.transcript?.id).toBe(clip.transcript.id);
 	});
 
 	it('should generate a caption track using a transcript', async () => {
@@ -295,7 +296,7 @@ describe('The Media Clip', () => {
 		const composition = new Composition();
 		await composition.add(clip);
 
-		const track = await clip.generateCaptions();
+		const track = await clip.addCaptions();
 
 		expect(composition.tracks.length).toBe(2);
 
@@ -418,6 +419,48 @@ describe('Split tests - the Media Clip object', () => {
 		await expect(() => clip.split(new Timestamp(5000))).rejects.toThrowError();
 		// not connected to the composition
 		await expect(() => clip.split()).rejects.toThrowError();
+	});
+
+	it('should split the clip in place when the track is set to stacked', async () => {
+		const clip1 = new MediaClip({
+			offset: new Timestamp(1000),
+			name: 'foo',
+		});
+
+		const clip2 = new MediaClip({
+			offset: new Timestamp(500),
+			name: 'bar',
+		});
+
+		clip1.duration.millis = 3000;
+		clip2.duration.millis = 2000;
+
+		const track = new MediaTrack().stacked();
+
+		await track.add(clip1);
+		await track.add(clip2);
+
+		expect(track.clips.length).toBe(2);
+
+		expect(track.clips[0].name).toBe('foo');
+		expect(track.clips[0].start.millis).toBe(0);
+		expect(track.clips[0].stop.millis).toBe(3000);
+
+		expect(track.clips[1].name).toBe('bar');
+		expect(track.clips[1].start.millis).toBe(3001);
+		expect(track.clips[1].stop.millis).toBe(5001);
+
+		await clip1.split(new Timestamp(2000));
+
+		expect(track.clips.length).toBe(3);
+		expect(track.clips[0].start.millis).toBe(0);
+		expect(track.clips[0].stop.millis).toBe(2000);
+
+		expect(track.clips[1].start.millis).toBe(2001);
+		expect(track.clips[1].stop.millis).toBe(3000);
+
+		expect(track.clips[2].start.millis).toBe(3001);
+		expect(track.clips[2].stop.millis).toBe(5001);
 	});
 
 	it('should not split the clip when no track is provided', async () => {
