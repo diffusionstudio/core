@@ -190,9 +190,11 @@ export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Se
 
 	/**
 	 * Adds a new clip to the track
+	 * @param clip The clip to add
+	 * @param index The index to insert the clip at, will be ignored if track is not stacked
 	 * @throws Error if the clip can't be added
 	 */
-	public async add(clip: Clp): Promise<Clp> {
+	public async add(clip: Clp, index?: number): Promise<Clp> {
 		// only append clip if composition is initialized
 		if (this.composition && !this.composition.renderer) {
 			await new Promise(this.composition.resolve('init'));
@@ -200,7 +202,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Se
 
 		await clip.init();
 		await clip.connect(this);
-		await this.strategy.add(clip, this);
+		await this.strategy.add(clip, this, index);
 
 		clip.on('frame', () => {
 			this.strategy.update(clip, this);
