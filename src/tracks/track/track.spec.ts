@@ -94,6 +94,15 @@ describe('The Track Object', () => {
 
 		expect(track.clips[1].start.frames).toBe(5);
 		expect(track.clips[1].stop.frames).toBe(10);
+
+		await track.add(new Clip({ stop: 17, start: 3, name: 'abc' }), 0);
+
+		expect(track.clips[0].start.frames).toBe(0);
+		expect(track.clips[0].stop.frames).toBe(14);
+		expect(track.clips[0].name).toBe('abc');
+
+		expect(track.clips[1].start.frames).toBe(14);
+		expect(track.clips[1].stop.frames).toBe(19);
 	});
 
 	it('should snap the clip when it overlaps with the end of another clip', async () => {
