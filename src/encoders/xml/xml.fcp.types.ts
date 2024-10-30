@@ -36,6 +36,7 @@ export class FcpAsset {
   audioChannels: number;
   audioRate: number;
   mediaReps: FcpMediaRep[];
+  name: string;
 
   constructor(
     id: string,
@@ -47,7 +48,8 @@ export class FcpAsset {
     audioSources: number,
     audioChannels: number,
     audioRate: number,
-    mediaReps: FcpMediaRep[]
+    mediaReps: FcpMediaRep[],
+    name: string
   ) {
     this.id = id;
     this.start = start;
@@ -59,19 +61,21 @@ export class FcpAsset {
     this.audioChannels = audioChannels;
     this.audioRate = audioRate;
     this.mediaReps = mediaReps;
+    this.name = name;
   }
 
   toXML(builder: XMLBuilder) {
     const asset = builder.ele("asset", {
       id: this.id,
       start: this.start,
-      duration: this.duration,
+      duration: this.duration, // TODO add /1s
       hasVideo: this.hasVideo ? "1" : "0",
       hasAudio: this.hasAudio ? "1" : "0",
       format: this.format,
       audioSources: this.audioSources.toString(),
       audioChannels: this.audioChannels.toString(),
       audioRate: this.audioRate.toString(),
+      name: this.name,
     });
 
     this.mediaReps.forEach((mediaRep) => {
@@ -79,20 +83,21 @@ export class FcpAsset {
     });
   }
 
-  static fromSource(source: Source) {
+  static fromSource(source: Source, formatId: string, id: string) {
     const _type = source.file!.type;
     const mediaRep = new FcpMediaRep(_type, `./${source.file!.name}`);
     return new FcpAsset(
-      source.id,
+      id,
       0,
       source.duration.seconds,
       _type.startsWith("video"),
       _type.startsWith("audio") || _type.startsWith("video"),
-      "format",
+      formatId,
       1,
       1,
       48000,
-      [mediaRep]
+      [mediaRep],
+      source.file!.name
     );
   }
 }
