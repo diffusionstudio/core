@@ -30,7 +30,7 @@ export class XMLVideoEncoder {
         const asset = resources.ele("asset", {
             id: assetId,
             start: 0,
-            duration: `${videoSource.duration}/1s`,
+            duration: `${videoSource.duration.millis}/1000s`,
             hasVideo: 1,
             hasAudio: 1,
             format: formatId,

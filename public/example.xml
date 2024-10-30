@@ -2,23 +2,25 @@
 <!DOCTYPE fcpxml>
 <fcpxml version="1.10">
   <resources>
-    <format id="r0" width="1920" height="1080" frameDuration="1/30s" name="FFVideoFormat1080p60"/>
-    <asset id="r1" start="0" duration="16/1s" hasVideo="1" hasAudio="1" format="r0" audioSources="1" audioChannels="1" audioRate="48000" name="sample_aac_h264_yuv420p_1080p_60fps.mp4">
+    <format id="r0" width="1920" height="1080" frameDuration="1/30s" name="FFVideoFormat1080p30"/>
+    <asset id="r1" start="0" duration="16000/1000s" hasVideo="1" hasAudio="1" format="r0" audioSources="1" audioChannels="1" audioRate="48000" name="sample_aac_h264_yuv420p_1080p_60fps.mp4">
       <mediaRep kind="video/mp4" src="./sample_aac_h264_yuv420p_1080p_60fps.mp4"/>
     </asset>
-    <asset id="r2" start="0" duration="16/1s" hasVideo="1" hasAudio="1" format="r0" audioSources="1" audioChannels="1" audioRate="48000" name="sample_aac_h264_yuv420p_1080p_60fps.mp4">
+    <asset id="r2" start="0" duration="16000/1000s" hasVideo="1" hasAudio="1" format="r0" audioSources="1" audioChannels="1" audioRate="48000" name="sample_aac_h264_yuv420p_1080p_60fps.mp4">
       <mediaRep kind="video/mp4" src="./sample_aac_h264_yuv420p_1080p_60fps.mp4"/>
     </asset>
   </resources>
   <library>
-    <event name="DiffusionStudio4">
-      <project name="DiffusionStudio4">
-        <sequence format="r0" tcFormat="NDF" tcStart="0/1000s" duration="2000/1000s">
-          <spine>
-            <asset-clip format="r0" tcFormat="NDF" start="3000/1000s" ref="r1" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="2000/1000s" duration="1000/1000s"/>
+    <event name="DiffusionStudio">
+      <project name="DiffusionStudio">
+        <sequence format="r0" tcFormat="NDF" tcStart="0/1s" duration="21967/1000s">
+          <spine lane="0">
+            <asset-clip format="r0" tcFormat="NDF" start="0/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="0/1000s" duration="1000/1000s"/>
+            <asset-clip format="r0" tcFormat="NDF" start="0/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="3/1s" duration="1000/1000s"/>
           </spine>
-          <spine>
-            <asset-clip format="r0" tcFormat="NDF" start="1000/1000s" ref="r1" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="0/1000s" duration="1000/1000s"/>
+          <spine lane="1">
+            <gap name="Gap_0_2000" duration="2000/1000s" offset="0/1000s"/>
+            <asset-clip format="r0" tcFormat="NDF" start="1000/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="2000/1000s" duration="17000/1000s"/>
           </spine>
         </sequence>
       </project>

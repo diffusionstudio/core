@@ -7,8 +7,6 @@
 
 import { create } from "xmlbuilder2";
 import { Composition } from "../../composition/composition";
-import { FcpAsset } from "./xml.fcp.types";
-import { VideoClip } from "../../clips/video/video";
 import { VideoTrack } from "../../tracks";
 import { ImageSource, Source, VideoSource } from "../../sources";
 import { XMLBuilder } from "xmlbuilder2/lib/interfaces";
@@ -35,6 +33,10 @@ export class XMLEncoder {
      *   <resources>
      *   </resources>
      *   <library>
+     *     <event name="DiffusionStudio">
+     *       <project name="DiffusionStudio">
+     *       </project>
+     *     </event>
      *   </library>
      * </fcpxml>
      */
@@ -43,7 +45,9 @@ export class XMLEncoder {
         const fcpxml = root.ele("fcpxml", { version: "1.10" });
         const resources = fcpxml.ele("resources");
         const library = fcpxml.ele("library");
-        return { root, resources, library };
+        const event = library.ele("event", { name: "DiffusionStudio" });
+        const project = event.ele("project", { name: "DiffusionStudio" });
+        return { root, resources, project };
     }
 
     /**
@@ -52,7 +56,10 @@ export class XMLEncoder {
      * @param sources The sources to encode
      * @param resources The resources element
      */
-    encodeSources(sources: Map<string, Source>, resources: XMLBuilder): Map<string, string> {
+    encodeSources(
+        sources: Map<string, Source>,
+        resources: XMLBuilder
+    ): Map<string, string> {
         // Currently all videos are given the same format of 30 fps and 1080p
         const videoFormat = resources.ele("format", {
             id: this.videoFormatId30fps1080p,
@@ -87,12 +94,31 @@ export class XMLEncoder {
         return sourceNameIdMap;
     }
 
-    encodeTracks(composition: Composition, resources: XMLBuilder, sourceNameIdMap: Map<string, string>) {
+    /**
+     * Encode the tracks to XML
+     *
+     * @param composition The composition to encode
+     * @param sourceNameIdMap The source name to asset id map
+     * @param sequence The sequence element
+     */
+    encodeTracks(
+        composition: Composition,
+        sourceNameIdMap: Map<string, string>,
+        sequence: XMLBuilder
+    ) {
+        let lane = 0;
         composition.tracks.forEach((track) => {
             switch (track.type) {
                 case "video":
                     const videoTrack = track as VideoTrack;
-                    XMLVideoTrackEncoder.encode(videoTrack, resources, sourceNameIdMap, this.videoFormatId30fps1080p);
+                    XMLVideoTrackEncoder.encode(
+                        videoTrack,
+                        sourceNameIdMap,
+                        this.videoFormatId30fps1080p,
+                        sequence,
+                        lane
+                    );
+                    lane++;
                     break;
             }
         });
@@ -105,7 +131,14 @@ export class XMLEncoder {
      * @returns The XML string
      */
     encode(composition: Composition) {
-        const { root, resources, library } = this.initializeXmlDocument();
+        const { root, resources, project } = this.initializeXmlDocument();
+
+        const sequence = project.ele("sequence", {
+            format: this.videoFormatId30fps1080p,
+            tcFormat: "NDF",
+            tcStart: "0/1s",
+            duration: `${composition.duration.millis}/1000s`,
+        });
 
         const sources = new Map<string, Source>();
 
@@ -118,102 +151,7 @@ export class XMLEncoder {
             });
         });
         const sourceNameIdMap = this.encodeSources(sources, resources);
-
-        this.encodeTracks(composition, resources, sourceNameIdMap);
-            
-
-        // const videoFormatId = "r0";
-        // // const audioFormatId = "r1";
-        // // const imageFormatId = "r2";
-        // const videoFormat = resources.ele("format", {
-        //     id: videoFormatId,
-        //     width: 1920,
-        //     height: 1080,
-        //     frameDuration: "1/60s", // TODO frame rate needs to be correct
-        //     name: "FFVideoFormat1080p60",
-        // });
-        // // const audioFormat = resources.ele("format", {id: audioFormatId});
-        // // const imageFormat = resources.ele("format", {id: imageFormatId});
-
-        // const event = library.ele("event", { name: "DiffusionStudio" }); // TODO add project name
-        // const project = event.ele("project", { name: "DiffusionStudio" });
-
-        // let id_to_asset: Map<string, FcpAsset> = new Map();
-        // let id_counter = 1;
-        // let asset_id_to_ref: Map<string, string> = new Map();
-        // composition.tracks.forEach((track) => {
-        //     console.log("type", track.type);
-        //     console.log("id", track.id);
-        //     if (track.type === "video") {
-        //         const videoTrack = track as VideoTrack;
-        //     }
-
-        //     track.clips.forEach((clip) => {
-        //         const source = clip.source;
-        //         console.log("source", source);
-
-        //         if (clip.type === "video" && source !== undefined) {
-        //             const videoClip = clip as VideoClip;
-        //             let asset_id: string;
-        //             if (asset_id_to_ref.has(source.id)) {
-        //                 asset_id = asset_id_to_ref.get(source.id)!;
-        //             } else {
-        //                 asset_id = `r${id_counter}`;
-        //                 id_counter++;
-        //                 asset_id_to_ref.set(source.id, asset_id);
-        //             }
-        //             console.log(videoClip.type);
-        //             console.log("video");
-        //             console.log(source?.id);
-        //             const asset = FcpAsset.fromSource(
-        //                 source,
-        //                 videoFormatId,
-        //                 asset_id
-        //             );
-        //             id_to_asset.set(source.id, asset);
-
-        //             const sequence = project.ele("sequence", {
-        //                 format: videoFormatId,
-        //                 tcFormat: "NDF",
-        //                 tcStart: `${
-        //                     videoClip.start.millis - videoClip.offset.millis
-        //                 }/1000s`, // TODO this has to be in reference to the track
-        //                 duration: `${
-        //                     videoClip.stop.millis - videoClip.start.millis
-        //                 }/1000s`, // same as above
-        //             });
-        //             const spine = sequence.ele("spine");
-        //             spine.ele("asset-clip", {
-        //                 format: videoFormatId,
-        //                 tcFormat: "NDF",
-        //                 start: `${
-        //                     videoClip.start.millis - videoClip.offset.millis
-        //                 }/1000s`,
-        //                 ref: asset_id,
-        //                 name: asset.name,
-        //                 offset: `${-videoClip.offset.millis}/1000s`,
-        //                 duration: `${
-        //                     videoClip.stop.millis - videoClip.start.millis
-        //                 }/1000s`,
-        //             });
-        //         } else if (clip.type === "image") {
-        //             console.log(clip.type);
-        //             console.log("image");
-        //             console.log(source?.id);
-        //         }
-
-        //         // if (source !== undefined) {
-        //         //     id_to_asset.set(source.id, FcpAsset.fromSource(source, formatId));
-        //         // }
-        //     });
-        // });
-
-        // id_to_asset.forEach((asset) => {
-        //     asset.toXML(resources);
-        // });
-
-        // const sequence = project.ele("sequence", {name: "DiffusionStudio"});
-
+        this.encodeTracks(composition, sourceNameIdMap, sequence);
         return root.end({ prettyPrint: true });
     }
 }

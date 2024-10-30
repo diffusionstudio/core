@@ -28,7 +28,15 @@ Each source is translated to an asset with a mediaRep. The mediaRep has the sour
 
 ### Sequence
 
-Each track is translated to a sequence and each clip is translated to an asset-clip surrounded by a spine.
+All tracks of one composition are translated to a sequence.
+
+#### Spine
+
+Each track is translated to a spine.
+
+#### Asset-clip
+
+Each clip is translated to an asset-clip.
 
 ### Differences
 
