@@ -10,11 +10,13 @@ import { Source } from './source';
 import type { ClipType } from '../clips';
 import type { ArgumentTypes } from '../types';
 import type { FastSamplerOptions } from './audio.types';
+import type { Transcript } from '../models';
 
-export class AudioSource extends Source {
+export class AudioSource<T extends Object = {}> extends Source<T> {
+	public readonly type: ClipType = 'audio';
 	private decoding = false;
 
-	public readonly type: ClipType = 'audio';
+	public transcript?: Transcript;
 	public audioBuffer?: AudioBuffer;
 
 	public async decode(

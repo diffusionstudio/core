@@ -20,11 +20,16 @@ type Events = {
 	update: undefined;
 }
 
-export class Source extends EventEmitterMixin<Events, typeof Serializer>(Serializer) {
+export class Source<T extends Object = {}> extends EventEmitterMixin<Events, typeof Serializer>(Serializer) {
 	/**
 	 * Indicates if the track is loading
 	 */
 	public state: 'READY' | 'LOADING' | 'ERROR' | 'IDLE' = 'IDLE';
+
+	/**
+	 * Metadata associated with the source
+	 */
+	public metadata?: T;
 
 	/**
 	 * Locally accessible blob address to the data

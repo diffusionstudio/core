@@ -86,7 +86,6 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 
 	public copy(): AudioClip {
 		const clip = AudioClip.fromJSON(JSON.parse(JSON.stringify(this)));
-		clip.transcript = this.transcript;
 		clip.source = this.source;
 
 		return clip;

@@ -89,6 +89,13 @@ describe('AudioSource', () => {
 		}
 	});
 
+	it('should accept custom metadata', async () => {
+		const metadata = { a: 1, b: 2 };
+		const source = new AudioSource<typeof metadata>();
+		source.metadata = metadata;
+		expect(source.metadata).toEqual(metadata);
+	});
+
 	it('should create a thumbnail with correct DOM elements', async () => {
 		const thumbnail = await audioSource.thumbnail(60, 50, 0);
 

@@ -8,7 +8,7 @@
 import { Source } from './source';
 import type { ClipType } from '../clips';
 
-export class ImageSource extends Source {
+export class ImageSource<T extends Object = {}> extends Source<T> {
 	public readonly type: ClipType = 'image';
 
 	public async thumbnail(): Promise<HTMLImageElement> {

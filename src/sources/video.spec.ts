@@ -127,4 +127,11 @@ describe('The Video Source Object', () => {
 
 		rectSpy.mockRestore();
 	});
+
+	it('should accept custom metadata', async () => {
+		const metadata = { a: 1, b: 2 };
+		const source = new VideoSource<typeof metadata>();
+		source.metadata = metadata;
+		expect(source.metadata).toEqual(metadata);
+	});
 });

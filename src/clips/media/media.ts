@@ -19,7 +19,7 @@ import type { MediaClipProps } from './media.interfaces';
 
 
 export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Clip<MediaClipProps> {
-	public readonly source = new AudioSource();
+	public source = new AudioSource();
 	public declare element?: HTMLAudioElement | HTMLVideoElement;
 
 	@serializable(Timestamp)
@@ -42,16 +42,22 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	@serializable(RangeDeserializer)
 	public range: [Timestamp, Timestamp] = [new Timestamp(), this.duration];
 
-	/**
-	 * Defines the transcript of the video/audio
-	 */
-	@serializable(Transcript)
-	public transcript?: Transcript;
-
 	public constructor(props: MediaClipProps = {}) {
 		super();
 
 		Object.assign(this, props);
+	}
+
+	/**
+	 * Defines the transcript of the video/audio
+	 */
+	@serializable(Transcript)
+	public get transcript(): Transcript | undefined {
+		return this.source.transcript;
+	};
+
+	public set transcript(transcript: Transcript | undefined) {
+		this.source.transcript = transcript;
 	}
 
 	public get start(): Timestamp {
@@ -234,7 +240,7 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 
 	public copy(): MediaClip {
 		const clip = MediaClip.fromJSON(JSON.parse(JSON.stringify(this)));
-		clip.transcript = this.transcript;
+		clip.source = this.source;
 		return clip;
 	}
 
