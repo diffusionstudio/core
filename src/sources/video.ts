@@ -11,7 +11,7 @@ import { IOError, ValidationError } from '../errors';
 
 import type { ClipType } from '../clips';
 
-export class VideoSource extends AudioSource {
+export class VideoSource<T extends Object = {}> extends AudioSource<T> {
 	public readonly type: ClipType = 'video';
 	private downloadInProgress = true;
 

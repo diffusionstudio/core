@@ -19,4 +19,11 @@ describe('The Image Source Object', () => {
 
 		expect(thumbnail).toBeInstanceOf(Image);
 	});
+
+	it('should accept custom metadata', async () => {
+		const metadata = { a: 1, b: 2 };
+		const source = new ImageSource<typeof metadata>();
+		source.metadata = metadata;
+		expect(source.metadata).toEqual(metadata);
+	});
 });

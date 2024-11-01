@@ -10,7 +10,7 @@ import { documentToSvgImageUrl } from './html.utils';
 
 import type { ClipType } from '../clips';
 
-export class HtmlSource extends Source {
+export class HtmlSource<T extends Object = {}> extends Source<T> {
 	public readonly type: ClipType = 'html';
 	/**
 	 * Access to the iframe that is required

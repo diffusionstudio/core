@@ -9,6 +9,7 @@ import { setFetchMockReturnValue } from '../../vitest.mocks';
 import { describe, expect, it, vi } from 'vitest';
 import { Source } from './source';
 import { sleep } from '../utils';
+import { AudioSource } from './audio';
 
 describe('The Source Object', () => {
 	it('should be createable from a file', async () => {
@@ -179,5 +180,12 @@ describe('The Source Object', () => {
 
 		expect(source).toBeInstanceOf(Source);
 		expect(source.name).toBe('file.mp4');
+	});
+
+	it('should accept custom metadata', async () => {
+		const metadata = { a: 1, b: 2 };
+		const source = new AudioSource<typeof metadata>();
+		source.metadata = metadata;
+		expect(source.metadata).toEqual(metadata);
 	});
 });

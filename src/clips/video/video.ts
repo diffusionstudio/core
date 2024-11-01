@@ -142,7 +142,6 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		const clip = VideoClip.fromJSON(JSON.parse(JSON.stringify(this)));
 		clip.filters = this.filters;
 		clip.source = this.source;
-		clip.transcript = this.transcript;
 
 		return clip;
 	}
