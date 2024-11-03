@@ -47,6 +47,7 @@ export class AudioClip extends MediaClip<AudioClipProps> {
 	public async init(): Promise<void> {
 		const objectURL = await this.source.createObjectURL();
 		this.element.setAttribute('src', objectURL);
+		this.element.load();
 
 		await new Promise<void>((resolve, reject) => {
 			this.element.oncanplay = () => {
