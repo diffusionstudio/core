@@ -82,8 +82,6 @@ export class StackInsertStrategy implements InsertStrategy<'STACK'> {
 	}
 
 	public update(_: Clip, track: Track<Clip>): void {
-		track.clips.sort(startAsc);
-
 		let start = 0;
 
 		for (const clip of track.clips) {
