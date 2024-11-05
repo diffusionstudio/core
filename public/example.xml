@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE fcpxml>
 <fcpxml version="1.10">
   <resources>
     <format id="r0" width="1920" height="1080" frameDuration="1/30s" name="FFVideoFormat1080p30"/>
@@ -13,14 +12,14 @@
   <library>
     <event name="DiffusionStudio">
       <project name="DiffusionStudio">
-        <sequence format="r0" tcFormat="NDF" tcStart="0/1s" duration="21967/1000s">
+        <sequence format="r0" tcFormat="NDF" tcStart="0/1s" duration="24567/1000s">
           <spine lane="0">
-            <asset-clip format="r0" tcFormat="NDF" start="0/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="0/1000s" duration="1000/1000s"/>
-            <asset-clip format="r0" tcFormat="NDF" start="0/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="3/1s" duration="1000/1000s"/>
+            <asset-clip format="r0" tcFormat="NDF" start="0/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="-58/1000s" duration="6458/1000s"/>
+            <asset-clip format="r0" tcFormat="NDF" start="10226/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="10168/1000s" duration="9774/1000s"/>
           </spine>
           <spine lane="1">
-            <gap name="Gap_0_2000" duration="2000/1000s" offset="0/1000s"/>
-            <asset-clip format="r0" tcFormat="NDF" start="1000/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="2000/1000s" duration="17000/1000s"/>
+            <gap name="Gap_0_4567" duration="4567/1000s" offset="0/1000s"/>
+            <asset-clip format="r0" tcFormat="NDF" start="0/1000s" ref="r2" name="sample_aac_h264_yuv420p_1080p_60fps.mp4" offset="4567/1000s" duration="20000/1000s"/>
           </spine>
         </sequence>
       </project>
