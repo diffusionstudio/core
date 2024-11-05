@@ -25,3 +25,6 @@ dist-ssr
 
 **/*.mjs
 **/*.env
+
+# TODO remove again just for testing
+public/tutorial.mp4

@@ -32,6 +32,24 @@ const image = await composition.add(
   })
 );
 
+const track = composition.findTracks(core.VideoTrack).at(0);
+
+console.log(await track?.detectSilences());
+
+const track2 = new core.VideoTrack();
+
+const video_tutorial = await new core.VideoClip(await core.VideoSource
+    .from('/tutorial.mp4'), {
+    volume: 0.1,
+    anchor: 0.5,
+    position: 'center',
+    height: '100%',
+  });
+
+await track2.add(video_tutorial);
+
+console.log("video_tutorial", await track2.detectSilences());
+
 image.animate()
   .rotation(-16).to(14, 5).to(-7, 10).to(24, 7).to(-3, 9).to(19, 7).to(-14, 12).to(5, 9).to(-30, 13)
   .translateX(1700, 0, 'easeOut').to(-1400, 40)
