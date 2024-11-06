@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2024 The Diffusion Studio Authors
  *
- * This Source Code Form is subject to the terms of the Mozilla 
+ * This Source Code Form is subject to the terms of the Mozilla
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
@@ -9,8 +9,11 @@ import { Source } from './source';
 
 import type { ClipType } from '../clips';
 import type { ArgumentTypes } from '../types';
-import type { FastSamplerOptions } from './audio.types';
-import type { Transcript } from '../models';
+import type { FastSamplerOptions, SilenceOptions } from './audio.types';
+import type { Timestamp, Transcript } from '../models';
+import { findSilences } from './audio.utils';
+
+const DEFAULT_SAMPLE_RATE = 3000;
 
 export class AudioSource<T extends Object = {}> extends Source<T> {
 	public readonly type: ClipType = 'audio';
@@ -76,17 +79,21 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 	 * @param options - Sampling options.
 	 * @returns An array of the max values of the samples in the window.
 	 */
-	public async fastsampler({ length = 60, start = 0, stop, logarithmic = false }: FastSamplerOptions): Promise<Float32Array> {
+	public async fastsampler({
+		length = 60,
+		start = 0,
+		stop,
+		logarithmic = false,
+	}: FastSamplerOptions): Promise<Float32Array> {
 		if (typeof start === 'object') start = start.millis;
 		if (typeof stop === 'object') stop = stop.millis;
 
-		const sampleRate = 3000;
-		const audioBuffer = this.audioBuffer ?? (await this.decode(1, sampleRate, true));
+		const audioBuffer = this.audioBuffer ?? (await this.decode(1, DEFAULT_SAMPLE_RATE, true));
 		const channelData = audioBuffer.getChannelData(0);
 
-		const firstSample = Math.floor(Math.max(start * sampleRate / 1000, 0));
+		const firstSample = Math.floor(Math.max((start * DEFAULT_SAMPLE_RATE) / 1000, 0));
 		const lastSample = stop
-			? Math.floor(Math.min(stop * sampleRate / 1000, audioBuffer.length))
+			? Math.floor(Math.min((stop * DEFAULT_SAMPLE_RATE) / 1000, audioBuffer.length))
 			: audioBuffer.length;
 
 		const windowSize = Math.floor((lastSample - firstSample) / length);
@@ -120,5 +127,26 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 			div.appendChild(bar);
 		}
 		return div;
+	}
+
+	/**
+	 * Find silences in the audio clip
+	 * 
+	 * uses default sample rate of 3000
+	 * @param options - Silences options.
+	 * @returns An array of the silences (in ms) in the clip.
+	 */
+	public async silences({
+		threshold = -50,
+		minDuration = 5,
+		windowSize = 50,
+	}: SilenceOptions): Promise<{ start: Timestamp; stop: Timestamp }[]> {
+		const audioBuffer = this.audioBuffer ?? (await this.decode(1, DEFAULT_SAMPLE_RATE, true));
+		const length = Math.floor(audioBuffer.length / windowSize);
+		const samples = await this.fastsampler({ length, logarithmic: false });
+
+		const silences = findSilences(samples, threshold, minDuration, this.duration.millis);
+
+		return silences;
 	}
 }

@@ -7,6 +7,8 @@
 
 import { describe, it, vi, beforeEach, expect } from 'vitest';
 import { AudioSource } from './audio'; // Import the AudioSource class
+import { findSilences } from './audio.utils';
+import { Timestamp } from '../models';
 
 // Mocking the OfflineAudioContext class
 class MockOfflineAudioContext {
@@ -25,12 +27,47 @@ class MockOfflineAudioContext {
 
 vi.stubGlobal('OfflineAudioContext', MockOfflineAudioContext); // Stub the global OfflineAudioContext
 
+describe('AudioUtils', () => {
+	it('all silent', () => {
+		const silences = findSilences(new Float32Array(100).fill(1), -50, 100, 100);
+		expect(silences).toEqual([{
+			start: new Timestamp(0),
+			stop: new Timestamp(100),
+		}]);
+	});
+
+	it('no silences', () => {
+		const silences = findSilences(new Float32Array(100).fill(0), -50, 100, 100);
+		expect(silences).toEqual([]);
+	});
+
+	it('find silences correctly', () => {
+		const samples = Array.from({ length: 500 }, (_, index) => index > 300 ? (index < 400 ? 0 : 1) : -1);
+		const silences = findSilences(new Float32Array(samples), -50, 100, 5000);
+		expect(silences).toEqual([{
+			start: new Timestamp(0),
+			stop: new Timestamp(3010),
+		}, {
+			start: new Timestamp(4000),
+			stop: new Timestamp(5000),
+		}]);
+	});
+});
+
 describe('AudioSource', () => {
 	let audioSource: AudioSource;
 
 	beforeEach(() => {
 		audioSource = new AudioSource();
 		audioSource.file = new File([], 'audio.mp3', { type: 'audio/mp3' });
+	});
+
+	it('find silences correctly', async () => {
+		const silences = await audioSource.silences({});
+		expect(silences).toEqual([{
+			start: new Timestamp(0),
+			stop: new Timestamp(5000),
+		}]);
 	});
 
 	it('should decode an audio buffer correctly', async () => {

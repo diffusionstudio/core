@@ -34,10 +34,15 @@ const image = await composition.add(
 
 const audioTrack = new core.AudioTrack();
 
-const audioTest = await new core.AudioClip(await core.AudioSource
-    .from('/silences.mp3'), {
-    volume: 0.1,
-  });
+const audioSource = await core.AudioSource.from('/silences.mp3');
+
+const silences = await audioSource.silences({});
+console.log(silences);
+
+const audioTest = await new core.AudioClip(audioSource, {
+  volume: 0.1,
+});
+console.log("duration", audioTest.duration.millis);
 
 await audioTrack.add(audioTest);
 
