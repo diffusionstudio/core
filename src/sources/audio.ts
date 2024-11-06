@@ -18,6 +18,7 @@ const DEFAULT_SAMPLE_RATE = 3000;
 export class AudioSource<T extends Object = {}> extends Source<T> {
 	public readonly type: ClipType = 'audio';
 	private decoding = false;
+	private _silences?: { start: Timestamp; stop: Timestamp }[];
 
 	public transcript?: Transcript;
 	public audioBuffer?: AudioBuffer;
@@ -130,7 +131,7 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 	}
 
 	/**
-	 * Find silences in the audio clip
+	 * Find silences in the audio clip. Results are cached.
 	 * 
 	 * uses default sample rate of 3000
 	 * @param options - Silences options.
@@ -141,11 +142,14 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 		minDuration = 5,
 		windowSize = 50,
 	}: SilenceOptions): Promise<{ start: Timestamp; stop: Timestamp }[]> {
+		if (this._silences) return this._silences;
+
 		const audioBuffer = this.audioBuffer ?? (await this.decode(1, DEFAULT_SAMPLE_RATE, true));
 		const length = Math.floor(audioBuffer.length / windowSize);
 		const samples = await this.fastsampler({ length, logarithmic: false });
 
 		const silences = findSilences(samples, threshold, minDuration, this.duration.millis);
+		this._silences = silences;
 
 		return silences;
 	}

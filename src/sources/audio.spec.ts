@@ -70,6 +70,12 @@ describe('AudioSource', () => {
 		}]);
 	});
 
+	it('find silences correctly after caching', async () => {
+		const silences = await audioSource.silences({});
+		const cachedSilences = await audioSource.silences({threshold: 0, minDuration: 1e10, windowSize: 1e10});
+		expect(silences).toEqual(cachedSilences);
+	});
+
 	it('should decode an audio buffer correctly', async () => {
 		const buffer = await audioSource.decode(2, 44100, true);
 		expect(buffer.duration).toBe(5); // Mock duration
