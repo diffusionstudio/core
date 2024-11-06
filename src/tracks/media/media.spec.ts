@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2024 The Diffusion Studio Authors
  *
- * This Source Code Form is subject to the terms of the Mozilla 
+ * This Source Code Form is subject to the terms of the Mozilla
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
@@ -13,10 +13,13 @@ import { MediaTrack } from './media';
 import { AudioSource } from '../../sources';
 import { getSilenceArrayBuffer } from './media.utils';
 
-
 // Mocking the OfflineAudioContext class for silence detection
 class MockSilenceAudioContext {
-	constructor(public numberOfChannels: number, public length: number, public sampleRate: number) { }
+	constructor(
+		public numberOfChannels: number,
+		public length: number,
+		public sampleRate: number,
+	) {}
 
 	decodeAudioData(_: ArrayBuffer): Promise<AudioBuffer> {
 		const audioBuffer = {
@@ -43,11 +46,10 @@ describe('Get silence array buffer', () => {
 			length: 5 * 44100,
 			getChannelData: () => {
 				const totalLength = 5 * 44100;
-				return Float32Array.from({length: totalLength}, (_, i) => {
+				return Float32Array.from({ length: totalLength }, (_, i) => {
 					if (i < 2 * 44100) {
 						return 1;
-					}
-					else if (i >= 3 * 44100) {
+					} else if (i >= 3 * 44100) {
 						return -1;
 					}
 					return 0;
@@ -55,14 +57,16 @@ describe('Get silence array buffer', () => {
 			},
 		} as any as AudioBuffer;
 		const silences = getSilenceArrayBuffer(audioBuffer, 44100, 1, -50, 0);
-		expect(silences).toEqual([{
-			start: 0,
-			stop: 2
-		},
-		{
-			start: 3,
-			stop: 5
-		}]);
+		expect(silences).toEqual([
+			{
+				start: 0,
+				stop: 2,
+			},
+			{
+				start: 3,
+				stop: 5,
+			},
+		]);
 	});
 
 	it('no silence in getSilenceArrayBuffer', () => {
@@ -84,10 +88,12 @@ describe('Get silence array buffer', () => {
 			getChannelData: () => new Float32Array(5 * 44100).fill(1),
 		} as any as AudioBuffer;
 		const silences = getSilenceArrayBuffer(audioBuffer, 1024, 1, -50, 0);
-		expect(silences).toEqual([{
-			start: 0,
-			stop: 5
-		}]);
+		expect(silences).toEqual([
+			{
+				start: 0,
+				stop: 5,
+			},
+		]);
 	});
 
 	it('should throw error if no sample rate', () => {
@@ -98,7 +104,6 @@ describe('Get silence array buffer', () => {
 	});
 });
 
-
 describe('Find silences in a track', () => {
 	let comp: Composition;
 	let track: MediaTrack<MediaClip>;
@@ -108,7 +113,7 @@ describe('Find silences in a track', () => {
 	beforeEach(() => {
 		// frame and seconds are the same
 		comp = new Composition();
-		file = new File([], "test.mp3");
+		file = new File([], 'test.mp3');
 		track = comp.shiftTrack(new MediaTrack<MediaClip>());
 		track.on('update', updateMock);
 	});
@@ -141,14 +146,16 @@ describe('Find silences in a track', () => {
 		await track.add(clip2);
 
 		const silences = await track.detectSilences();
-		expect(silences).toEqual([{
-			start: 0,
-			stop: 5
-		},
-		{
-			start: 5.001,
-			stop: 10.001000000000001
-		}]);
+		expect(silences).toEqual([
+			{
+				start: 0,
+				stop: 5,
+			},
+			{
+				start: 5.001,
+				stop: 10.001000000000001,
+			},
+		]);
 	});
 });
 
@@ -171,7 +178,7 @@ describe('The Media Track Object', () => {
 		clip.state = 'READY';
 		await track.add(clip);
 		expect(track.clips.length).toBe(1);
-		const seekSpy = vi.spyOn(clip, 'seek').mockImplementation(async (_) => { });
+		const seekSpy = vi.spyOn(clip, 'seek').mockImplementation(async (_) => {});
 		track.seek(Timestamp.fromFrames(5));
 		expect(seekSpy).toBeCalledTimes(1);
 	});
