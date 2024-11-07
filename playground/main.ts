@@ -20,6 +20,16 @@ const video = await composition.add(
     .offsetBy(30)
 );
 
+const mask = new core.CircleMask({
+  radius: 1080/2,
+  position: {
+    x: 1920 / 2,
+    y: 1080 / 2,
+  },
+});
+
+video.mask = mask;
+
 video.animate()
   .alpha(0.5).to(1, 120).to(0.5, 120).to(1, 60)
   .scale(0.1, 0, 'easeIn').to(1, 30)

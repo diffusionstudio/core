@@ -1,26 +1,20 @@
-import {Graphics} from "pixi.js";
+import { EllipseMaskProps } from './mask.types';
+import { Mask } from './mask';
 
+export class EllipseMask extends Mask {
+	private _radius: { x: number; y: number };
 
-export interface ellipseMaskProps {
-    radius: {
-        x?: number,
-        y?: number,
-    }
-}
+	public constructor(props: EllipseMaskProps) {
+		super(props);
 
-export class ellipseMask extends Graphics {
+		this._radius = props.radius;
 
-    public radius = {
-        x: 30,
-        y: 30
-    }
-
-    public constructor(props: ellipseMaskProps){
-        super()
-
-        Object.assign(this, props);
-
-        this.ellipse(this.position.x + (this.radius.x /2),  this.position.y + (this.radius.y /2), this.radius.x /2, this.radius.y /2 )
-        this.fill({color: '#FFF'})
-    }
+		this.ellipse(
+			this.position.x,
+			this.position.y,
+			this._radius.x,
+			this._radius.y,
+		);
+		this.fill({ color: '#FFF' });
+	}
 }

@@ -1,19 +1,19 @@
-import {Graphics} from "pixi.js";
+import { Mask } from "./mask";
+import { CircleMaskProps } from "./mask.types";
 
+/**
+ * A circular mask of a given radius
+ */
+export class CircleMask extends Mask {
 
-export interface CircleMaskProps {
-    radius?: number,
-}
+    private _radius: number;
 
-export class CircleMask extends Graphics {
-
-    public radius = 30
     public constructor(props: CircleMaskProps){
-        super()
+        super(props);
 
-        Object.assign(this, props);
+        this._radius = props.radius;
 
-        this.circle(this.position.x + this.radius,  this.position.y + this.radius, this.radius)
+        this.circle(this.position.x, this.position.y, this._radius)
         this.fill({color: '#FFF'})
     }
 }

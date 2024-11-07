@@ -1,23 +1,23 @@
 import {Graphics} from "pixi.js";
+import { StarMaskProps } from "./mask.types";
+import { Mask } from "./mask";
 
 
-export interface StarMaskProps {
-    points?: number,
-    radius?: number,
-    InnerRadius?: number,
-}
 
-export class StarMask extends Graphics {
 
-    public points = 5
-    public radius = 30
-    public InnerRadius = 0
+export class StarMask extends Mask {
+
+    private _numberOfPoints: number;
+    private _radius: number;
+    private _innerRadius: number | undefined;
     public constructor(props: StarMaskProps){
-        super()
+        super(props);
 
-        Object.assign(this, props);
+        this._numberOfPoints = props.numberOfPoints;
+        this._radius = props.radius;
+        this._innerRadius = props.innerRadius;
 
-        this.star(this.position.x + this.radius, this.position.y + this.radius, this.points, this.radius, this.InnerRadius, this.rotation)
+        this.star(this.position.x, this.position.y, this._numberOfPoints, this._radius, this._innerRadius, this.rotation)
         this.fill({color: '#FFF'})
     }
 }

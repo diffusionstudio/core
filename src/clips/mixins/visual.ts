@@ -13,7 +13,7 @@ import { Keyframe } from '../../models';
 import { Sprite } from 'pixi.js';
 
 import type { Serializer } from '../../services';
-import type { Container, Filter } from 'pixi.js';
+import type { Container, Filter, Graphics } from 'pixi.js';
 import type { Constructor, float, int, Anchor, Position, Scale, Translate2D, Percent, NumberCallback } from '../../types';
 
 type BaseClass = { view: Container } & Serializer;
@@ -26,6 +26,8 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * clip.filters = [new BlurFilter()];
 		 */
 		public filters?: Filter | Filter[];
+
+		private _mask?: Graphics;
 
 		@serializable(deserializers.Deserializer1D)
 		public _height?: int | Keyframe<int> | Percent | NumberCallback;
@@ -171,6 +173,18 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 
 		public set width(value: Keyframe<int> | Percent | int | NumberCallback) {
 			this._width = value;
+		}
+
+		/**
+		 * The mask to apply to the clip
+		 */
+		public get mask(): Graphics | undefined {
+			return this._mask;
+		}
+
+		public set mask(value: Graphics | undefined) {
+			this._mask = value;
+			this.view.mask = value ?? null;
 		}
 
 		/**

@@ -1,42 +1,20 @@
 import {Graphics} from "pixi.js";
-import { int } from "../../types";
+import { RoundRectangleMaskProps } from "./mask.types";
+
+export class RoundRectangleMask extends Graphics {
+    private _rectangleWidth: number;
+    private _rectangleHeight: number;
+    private _borderRadius: number;
 
 
-export interface roundRectangleMaskProps {
-    _width?: number,
-    _height?: number,
-    radius?: number,
-}
+    public constructor(props: RoundRectangleMaskProps) {
+        super(props);
 
-export class roundRectangleMask extends Graphics {
+        this._rectangleWidth = props.rectangleWidth;
+        this._rectangleHeight = props.rectangleHeight;
+        this._borderRadius = props.borderRadius;
 
-    public radius = 50
-
-    public constructor(props: roundRectangleMaskProps) {
-        super()
-
-        Object.assign(this, props);
-
-        this.roundRect(this.position.x, this.position.y, this._width, this._height, this.radius)
+        this.roundRect(this.position.x, this.position.y, this._rectangleWidth, this._rectangleHeight, this._borderRadius)
         this.fill({color: '#FFF'})
-    }
-
-    private _width = 100;
-    private _height = 100;
-
-    set width(val: int){
-        this._width = val
-    }
-
-    get width(){
-        return this._width;
-    }
-
-    set height(val: int){
-        this._height = val
-    }
-
-    get height(){
-        return this._height;
     }
 }
