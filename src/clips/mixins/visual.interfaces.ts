@@ -5,12 +5,13 @@
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
-import type { Filter } from 'pixi.js';
+import type { Filter, Graphics } from 'pixi.js';
 import type { Keyframe } from '../../models';
 import type { float, int, Anchor, Position, Scale, Translate2D, NumberCallback, Percent } from '../../types';
 
 export interface VisualMixinProps {
   filters?: Filter | Filter[];
+  mask?: Graphics;
   rotation?: number | Keyframe<number> | NumberCallback;
   alpha?: number | Keyframe<number> | NumberCallback;
   translate?: Translate2D;

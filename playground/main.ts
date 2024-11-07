@@ -13,6 +13,7 @@ const video = await composition.add(
     .from('/sample_aac_h264_yuv420p_1080p_60fps.mp4'), {
     volume: 0.1,
     anchor: 0.5,
+    mask: new core.CircleMask({ radius: 540, position: { x: 1920/2-540, y: 1080/2-540 } }),
     position: 'center',
     height: '100%',
   })

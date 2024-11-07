@@ -18,6 +18,7 @@ import { IOError } from '../../errors';
 import type { Track } from '../../tracks';
 import type { InitMessageData } from './worker.types';
 import type { VideoClipProps } from './video.interfaces';
+import { CircleMask } from '../../mask/circleMask';
 
 export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	public source = new VideoSource();
@@ -56,6 +57,9 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		(this.textrues.html5.source as any).autoPlay = false;
 		(this.textrues.html5.source as any).loop = false;
 		this.sprite.texture = this.textrues.html5;
+		if (props.mask) {
+			this.sprite.mask = props.mask;
+		}
 		this.view.addChild(this.sprite);
 
 		if (source instanceof VideoSource) {

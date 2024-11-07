@@ -17,3 +17,4 @@ export * from './mixins';
 export * from './services';
 export * from './errors';
 export * from './fixtures';
+export * from './mask';
