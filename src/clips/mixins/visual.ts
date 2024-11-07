@@ -27,8 +27,6 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 */
 		public filters?: Filter | Filter[];
 
-		private _mask?: Graphics;
-
 		@serializable(deserializers.Deserializer1D)
 		public _height?: int | Keyframe<int> | Percent | NumberCallback;
 
@@ -179,11 +177,10 @@ export function VisualMixin<T extends Constructor<BaseClass>>(Base: T) {
 		 * The mask to apply to the clip
 		 */
 		public get mask(): Graphics | undefined {
-			return this._mask;
+			return this.view.mask as Graphics | undefined;
 		}
 
 		public set mask(value: Graphics | undefined) {
-			this._mask = value;
 			this.view.mask = value ?? null;
 		}
 
