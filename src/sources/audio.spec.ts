@@ -70,6 +70,14 @@ describe('AudioSource', () => {
 		}]);
 	});
 
+	it('find silences correctly with too high minDuration', async () => {
+		const silences = await audioSource.silences({minDuration: 1e10});
+		expect(silences).toEqual([{
+			start: new Timestamp(0),
+			stop: new Timestamp(5000),
+		}]);
+	});
+
 	it('find silences correctly after caching', async () => {
 		const silences = await audioSource.silences({});
 		const cachedSilences = await audioSource.silences({threshold: 0, minDuration: 1e10, windowSize: 1e10});
