@@ -37,12 +37,10 @@ const audioTrack = new core.AudioTrack();
 const audioSource = await core.AudioSource.from('/silences.mp3');
 
 const silences = await audioSource.silences({});
-console.log(silences);
 
 const audioTest = await new core.AudioClip(audioSource, {
   volume: 0.1,
 }).offsetBy(new core.Timestamp(10000));
-console.log("duration", audioTest.duration.millis);
 
 await audioTrack.add(audioTest);
 await audioTrack.removeSilences();
