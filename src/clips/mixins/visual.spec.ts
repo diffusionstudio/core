@@ -6,11 +6,12 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { BlurFilter, Sprite, Texture } from 'pixi.js';
+import { BlurFilter, Graphics, Sprite, Texture } from 'pixi.js';
 import { VisualMixin } from './visual';
 import { Keyframe } from '../../models';
 import { Clip } from '../clip';
 import { Composition } from '../../composition';
+import { CircleMask } from '../mask';
 
 describe('The Visual Clip Mixin', () => {
 	const VisualClip = VisualMixin(Clip);
@@ -115,5 +116,23 @@ describe('The Visual Clip Mixin', () => {
 
 		expect(exitSpy).toHaveBeenCalledTimes(1);
 		expect(clip.view.filters).toBeNull();
+	});
+
+	it('should add a mask to the view', async () => {
+		const clip = new VisualClip();
+
+		expect(clip.mask).toBeUndefined();
+		expect(clip.view.mask).toBeUndefined();
+
+		clip.mask = new CircleMask({
+			radius: 1080/2,
+			position: {
+				x: 1920 / 2,
+				y: 1080 / 2,
+			},
+		});
+		
+		expect(clip.mask).toBeInstanceOf(CircleMask);
+		expect(clip.view.mask).toBeInstanceOf(Graphics);
 	});
 });
