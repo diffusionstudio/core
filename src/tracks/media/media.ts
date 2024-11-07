@@ -27,9 +27,6 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	 * @returns Array of silence periods with start and stop times in seconds
 	 */
 	public async removeSilences() {
-        // if (!(this.strategy instanceof StackInsertStrategy)) {
-        //     throw new Error("Cannot remove silences from a non-stacked track");
-        // }
 
 		// Process each clip
 		for (const clip of this.clips) {
