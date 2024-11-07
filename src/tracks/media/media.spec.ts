@@ -10,6 +10,19 @@ import { Composition } from '../../composition';
 import { MediaClip } from '../../clips';
 import { Timestamp } from '../../models';
 import { MediaTrack } from './media';
+import { AudioSource } from '../../sources';
+
+class MockMediaClip extends MediaClip {
+	constructor(duration: number, range: [Timestamp, Timestamp], silences: { start: Timestamp, stop: Timestamp }[], element: HTMLMediaElement) {
+		super();
+		this.duration.millis = range[1].millis - range[0].millis;
+		this.range = range;
+		this.source = {
+			silences: async () => silences,
+		} as any as AudioSource;
+		this.element = element;
+	}
+}
 
 describe('The Media Track Object', () => {
 	let comp: Composition;
@@ -21,6 +34,83 @@ describe('The Media Track Object', () => {
 		comp = new Composition();
 		track = comp.shiftTrack(new MediaTrack<MediaClip>());
 		track.on('update', updateMock);
+	});
+
+	it('ignores no silences', async () => {
+		const clip = new MediaClip();
+		clip.duration.frames = 30;
+		await track.add(clip);
+		await track.removeSilences();
+		expect(track.clips.length).toBe(1);
+	});
+
+	// it('ignores not applicable silences', async () => {
+	// 	const clip = new MockMediaClip(30000, [new Timestamp(10000), new Timestamp(20000)], [
+	// 		{
+	// 			start: new Timestamp(0),
+	// 			stop: new Timestamp(500),
+	// 		},
+	// 		{
+	// 			start: new Timestamp(30000),
+	// 			stop: new Timestamp(30500),
+	// 		},
+	// 	], new Audio());
+	// 	await track.add(clip);
+	// 	expect(clip.source).toBeDefined();
+	// 	await track.removeSilences();
+	// 	expect(track.clips.length).toBe(1);
+	// 	expect(track.clips.at(0)).toBe(clip);
+	// });
+
+	it('removes silences', async () => {
+		const clip = new MockMediaClip(30000, [new Timestamp(10000), new Timestamp(20000)], [
+			{
+				start: new Timestamp(0),
+				stop: new Timestamp(10050),
+			},
+			{
+				start: new Timestamp(11000),
+				stop: new Timestamp(15000),
+			},
+			{
+				start: new Timestamp(19000),
+				stop: new Timestamp(30500),
+			},
+		], new Audio());
+		await track.add(clip);
+		expect(clip.source).toBeDefined();
+		await track.removeSilences();
+		expect(track.clips.length).toBe(2);
+		expect(track.clips.at(0)?.range[0].millis).toBe(10051);
+		expect(track.clips.at(0)?.range[1].millis).toBe(11000);
+		expect(track.clips.at(1)?.range[0].millis).toBe(15001);
+		expect(track.clips.at(1)?.range[1].millis).toBe(19000);
+	});
+
+	it('removes silences stacked', async () => {
+		track.stacked(true);
+		const clip = new MockMediaClip(30000, [new Timestamp(10000), new Timestamp(20000)], [
+			{
+				start: new Timestamp(0),
+				stop: new Timestamp(10050),
+			},
+			{
+				start: new Timestamp(11000),
+				stop: new Timestamp(15000),
+			},
+			{
+				start: new Timestamp(19000),
+				stop: new Timestamp(30500),
+			},
+		], new Audio());
+		await track.add(clip);
+		expect(clip.source).toBeDefined();
+		await track.removeSilences();
+		expect(track.clips.length).toBe(2);
+		expect(track.clips.at(0)?.range[0].millis).toBe(10051);
+		expect(track.clips.at(0)?.range[1].millis).toBe(11000);
+		expect(track.clips.at(1)?.range[0].millis).toBe(11001);
+		expect(track.clips.at(1)?.range[1].millis).toBe(15000);
 	});
 
 	it('should propagate a seek call', async () => {

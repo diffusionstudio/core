@@ -41,10 +41,17 @@ console.log(silences);
 
 const audioTest = await new core.AudioClip(audioSource, {
   volume: 0.1,
-});
+}).offsetBy(new core.Timestamp(10000));
 console.log("duration", audioTest.duration.millis);
 
 await audioTrack.add(audioTest);
+await audioTrack.removeSilences();
+
+console.log("clips", audioTrack.clips);
+console.log("duration", audioTrack.clips.at(0)?.start);
+console.log("duration", audioTrack.clips.at(0)?.stop);
+console.log("duration", audioTrack.clips.at(1)?.start);
+console.log("duration", audioTrack.clips.at(1)?.stop);
 
 image.animate()
   .rotation(-16).to(14, 5).to(-7, 10).to(24, 7).to(-3, 9).to(19, 7).to(-14, 12).to(5, 9).to(-30, 13)
