@@ -32,19 +32,13 @@ const image = await composition.add(
   })
 );
 
-const audioTrack = new core.AudioTrack();
-
-const audioSource = await core.AudioSource.from('/silences.mp3');
-
-const silences = await audioSource.silences({});
-
-const audioTest = await new core.AudioClip(audioSource, {
-  volume: 0.1,
-}).offsetBy(new core.Timestamp(10000));
-
-await audioTrack.add(audioTest);
+const audioTrack = composition.createTrack('audio').stacked();
+await audioTrack.add(
+  await new core.AudioClip(
+    await core.AudioSource.from('/harvard.MP3')
+  )
+);
 await audioTrack.removeSilences();
-audioTrack.stacked(true);
 
 image.animate()
   .rotation(-16).to(14, 5).to(-7, 10).to(24, 7).to(-3, 9).to(19, 7).to(-14, 12).to(5, 9).to(-30, 13)
@@ -65,6 +59,7 @@ await composition.add(
 
 (await composition.add(
   new core.AudioClip(await core.AudioSource.from('/audio.mp3'), {
+    muted: true,
     transcript: core.Transcript.fromJSON(captions).optimize(),
   })
 )).addCaptions();

@@ -85,7 +85,7 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 		start = 0,
 		stop,
 		logarithmic = false,
-	}: FastSamplerOptions): Promise<Float32Array> {
+	}: FastSamplerOptions = {}): Promise<Float32Array> {
 		if (typeof start === 'object') start = start.millis;
 		if (typeof stop === 'object') stop = stop.millis;
 
@@ -141,7 +141,7 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 		threshold = -50,
 		minDuration = 5,
 		windowSize = 50,
-	}: SilenceOptions): Promise<{ start: Timestamp; stop: Timestamp }[]> {
+	}: SilenceOptions = {}): Promise<{ start: Timestamp; stop: Timestamp }[]> {
 		if (this._silences) return this._silences;
 
 		const audioBuffer = this.audioBuffer ?? (await this.decode(1, DEFAULT_SAMPLE_RATE, true));
