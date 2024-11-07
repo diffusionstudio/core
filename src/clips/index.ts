@@ -14,3 +14,4 @@ export * from './video';
 export * from './audio';
 export * from './utils';
 export * from './html';
+export * from './mask';
