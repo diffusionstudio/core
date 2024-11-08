@@ -139,7 +139,7 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 	 */
 	public async silences({
 		threshold = -50,
-		minDuration = 5,
+		minDuration = 100,
 		windowSize = 50,
 	}: SilenceOptions = {}): Promise<{ start: Timestamp; stop: Timestamp }[]> {
 		if (this._silences) return this._silences;

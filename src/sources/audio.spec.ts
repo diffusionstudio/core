@@ -29,7 +29,7 @@ vi.stubGlobal('OfflineAudioContext', MockOfflineAudioContext); // Stub the globa
 
 describe('AudioUtils', () => {
 	it('all silent', () => {
-		const silences = findSilences(new Float32Array(100).fill(1), -50, 100, 100);
+		const silences = findSilences(new Float32Array(100).fill(0), -50, 100, 100);
 		expect(silences).toEqual([{
 			start: new Timestamp(0),
 			stop: new Timestamp(100),
@@ -37,7 +37,7 @@ describe('AudioUtils', () => {
 	});
 
 	it('no silences', () => {
-		const silences = findSilences(new Float32Array(100).fill(0), -50, 100, 100);
+		const silences = findSilences(new Float32Array(100).fill(1), -50, 100, 100);
 		expect(silences).toEqual([]);
 	});
 
@@ -45,11 +45,8 @@ describe('AudioUtils', () => {
 		const samples = Array.from({ length: 500 }, (_, index) => index > 300 ? (index < 400 ? 0 : 1) : -1);
 		const silences = findSilences(new Float32Array(samples), -50, 100, 5000);
 		expect(silences).toEqual([{
-			start: new Timestamp(0),
-			stop: new Timestamp(3010),
-		}, {
-			start: new Timestamp(4000),
-			stop: new Timestamp(5000),
+			start: new Timestamp(3010),
+			stop: new Timestamp(4000),
 		}]);
 	});
 });
@@ -63,18 +60,32 @@ describe('AudioSource', () => {
 	});
 
 	it('find silences correctly', async () => {
+		const audioBuffer = {
+			duration: 16,
+			sampleRate: 1000,
+			length: 16000,
+			getChannelData: () => new Float32Array(16000).fill(0), // Return a dummy Float32Array
+		} as any as AudioBuffer;
+		audioSource.audioBuffer = audioBuffer;
 		const silences = await audioSource.silences({});
 		expect(silences).toEqual([{
 			start: new Timestamp(0),
-			stop: new Timestamp(5000),
+			stop: new Timestamp(16000),
 		}]);
 	});
 
 	it('find silences correctly with too high minDuration', async () => {
+		const audioBuffer = {
+			duration: 16,
+			sampleRate: 1000,
+			length: 16000,
+			getChannelData: () => new Float32Array(16000).fill(0), // Return a dummy Float32Array
+		} as any as AudioBuffer;
+		audioSource.audioBuffer = audioBuffer;
 		const silences = await audioSource.silences({minDuration: 1e10});
 		expect(silences).toEqual([{
 			start: new Timestamp(0),
-			stop: new Timestamp(5000),
+			stop: new Timestamp(16000),
 		}]);
 	});
 

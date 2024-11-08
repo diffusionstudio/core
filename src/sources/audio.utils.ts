@@ -21,7 +21,7 @@ export function findSilences(
 	let silenceStart: number | null = null;
 
 	for (let i = 0; i < decibelValues.length; i++) {
-		if (decibelValues[i] > threshold) {
+		if (decibelValues[i] < threshold) {
 			if (silenceStart === null) {
 				silenceStart = i;
 			}

@@ -9,7 +9,7 @@ import { Track } from '../track';
 
 import type { MediaClip } from '../../clips';
 import { Timestamp } from '../../models';
-import { StackInsertStrategy } from '../track/track.strategies';
+import { SilenceOptions } from '../../sources';
 
 export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	public clips: Clip[] = [];
@@ -26,15 +26,16 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	 *
 	 * @returns Array of silence periods with start and stop times in seconds
 	 */
-	public async removeSilences() {
-
+	public async removeSilences(options: SilenceOptions = {}) {
+		const numClips = this.clips.length;
 		// Process each clip
-		for (const clip of this.clips) {
+		for (let i = 0; i < numClips; i++) {
+			const clip = this.clips[i];
 			if (!clip.element) {
 				continue;
 			}
 
-			const silences = await clip.source.silences({});
+			const silences = await clip.source.silences(options);
 			if (silences.length === 0) {
 				continue;
 			}
@@ -54,7 +55,7 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
             let currentClip = clip;
 
 			for (const silence of applicableSilences) {
-                if (silence.start.millis < start.millis) {
+                if (silence.start.millis <= start.millis) {
                     const newClip = await currentClip.split(silence.stop.add(currentClip.offset));
                     currentClip.detach();
                     start = silence.stop;
@@ -62,13 +63,14 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
                     continue;
                 }
 
-                if (silence.stop.millis > currentClip.range[1].millis) {
+                if (silence.stop.millis >= currentClip.range[1].millis) {
                     currentClip = await currentClip.split(silence.start.add(currentClip.offset));
                     currentClip.detach();
                     continue;
                 }
                 
                 const middleClip = await currentClip.split(silence.start.add(currentClip.offset));
+				
                 currentClip = await middleClip.split(silence.stop.add(middleClip.offset));
                 middleClip.detach();
 			}
