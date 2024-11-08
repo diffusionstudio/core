@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2024 The Diffusion Studio Authors
  *
- * This Source Code Form is subject to the terms of the Mozilla 
+ * This Source Code Form is subject to the terms of the Mozilla
  * Public License, v. 2.0 that can be found in the LICENSE file.
  */
 
@@ -51,7 +51,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		this.element.controls = false;
 		this.element.playsInline = true;
 		this.element.style.display = 'hidden';
-		this.element.crossOrigin = "anonymous";
+		this.element.crossOrigin = 'anonymous';
 
 		(this.textrues.html5.source as any).autoPlay = false;
 		(this.textrues.html5.source as any).loop = false;
@@ -87,7 +87,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 
 				this.state = 'READY';
 				resolve();
-			}
+			};
 
 			this.element.onerror = () => {
 				this.state = 'ERROR';
@@ -98,7 +98,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 				});
 
 				reject(this.element.error ?? error);
-			}
+			};
 		});
 	}
 
@@ -132,7 +132,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	public exit(): void {
 		if (this.playing) {
 			this.element.pause();
-		};
+		}
 		if (this.filters && this.view.filters) {
 			this.view.filters = null as any;
 		}
