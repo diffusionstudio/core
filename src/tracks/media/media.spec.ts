@@ -13,7 +13,7 @@ import { MediaTrack } from './media';
 import { AudioSource } from '../../sources';
 
 class MockMediaClip extends MediaClip {
-	constructor(duration: number, range: [Timestamp, Timestamp], silences: { start: Timestamp, stop: Timestamp }[], element: HTMLMediaElement) {
+	constructor(range: [Timestamp, Timestamp], silences: { start: Timestamp, stop: Timestamp }[], element: HTMLMediaElement) {
 		super();
 		this.duration.millis = range[1].millis - range[0].millis;
 		this.range = range;
@@ -37,7 +37,7 @@ describe('The Media Track Object', () => {
 	});
 
 	it('ignores no silences', async () => {
-		const clip = new MockMediaClip(30000, [new Timestamp(10000), new Timestamp(20000)], [], new Audio());
+		const clip = new MockMediaClip([new Timestamp(10000), new Timestamp(20000)], [], new Audio());
 		clip.duration.frames = 30;
 		await track.add(clip);
 		await track.removeSilences();
@@ -45,7 +45,7 @@ describe('The Media Track Object', () => {
 	});
 
 	it('ignores not applicable silences', async () => {
-		const clip = new MockMediaClip(30000, [new Timestamp(10000), new Timestamp(20000)], [
+		const clip = new MockMediaClip([new Timestamp(10000), new Timestamp(20000)], [
 			{
 				start: new Timestamp(0),
 				stop: new Timestamp(500),
@@ -63,7 +63,7 @@ describe('The Media Track Object', () => {
 	});
 
 	it('removes silences', async () => {
-		const clip = new MockMediaClip(30000, [new Timestamp(10000), new Timestamp(20000)], [
+		const clip = new MockMediaClip([new Timestamp(10000), new Timestamp(20000)], [
 			{
 				start: new Timestamp(0),
 				stop: new Timestamp(10050),

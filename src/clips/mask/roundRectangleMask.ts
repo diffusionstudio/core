@@ -1,7 +1,7 @@
-import {Graphics} from "pixi.js";
 import { RoundRectangleMaskProps } from "./mask.types";
+import { Mask } from "./mask";
 
-export class RoundRectangleMask extends Graphics {
+export class RoundRectangleMask extends Mask {
     private _rectangleWidth: number;
     private _rectangleHeight: number;
     private _borderRadius: number;

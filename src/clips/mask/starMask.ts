@@ -1,9 +1,5 @@
-import {Graphics} from "pixi.js";
 import { StarMaskProps } from "./mask.types";
 import { Mask } from "./mask";
-
-
-
 
 export class StarMask extends Mask {
 
