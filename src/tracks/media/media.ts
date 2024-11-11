@@ -7,7 +7,7 @@
 
 import { Track } from '../track';
 
-import type { MediaClip } from '../../clips';
+import type { MediaClip, MediaClipProps } from '../../clips';
 import { Timestamp } from '../../models';
 import { SilenceOptions } from '../../sources';
 
@@ -28,6 +28,9 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	 */
 	public async removeSilences(options: SilenceOptions = {}) {
 		const numClips = this.clips.length;
+
+		let newClips: MediaClip<MediaClipProps>[] = [];
+		let clipsToDetach: MediaClip<MediaClipProps>[] = [];
 		// Process each clip
 		for (let i = 0; i < numClips; i++) {
 			const clip = this.clips[i];
@@ -51,29 +54,37 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 				continue;
 			}
 
+			clipsToDetach.push(clip);
 			let start = clip.range[0];
-            let currentClip = clip;
+            let currentClip = clip.copy();
 
 			for (const silence of applicableSilences) {
-                if (silence.start.millis <= start.millis) {
-                    const newClip = await currentClip.split(silence.stop.add(currentClip.offset));
-                    currentClip.detach();
-                    start = silence.stop;
-                    currentClip = newClip;
+				if (silence.start.millis <= start.millis) {
+					start = silence.stop;
+					currentClip.range[0] = silence.stop;
                     continue;
                 }
 
                 if (silence.stop.millis >= currentClip.range[1].millis) {
-                    currentClip = await currentClip.split(silence.start.add(currentClip.offset));
-                    currentClip.detach();
+					currentClip.range[1] = silence.start;
+					start = silence.stop;
+					newClips.push(currentClip);
                     continue;
                 }
-                
-                const middleClip = await currentClip.split(silence.start.add(currentClip.offset));
-				
-                currentClip = await middleClip.split(silence.stop.add(middleClip.offset));
-                middleClip.detach();
+                const middleClip = currentClip.copy();
+				middleClip.range[0] = silence.stop;
+
+                currentClip.range[1] = silence.start;
+				newClips.push(currentClip);	
+
+				currentClip = middleClip;
+			}
+			if (currentClip.id !== newClips.at(-1)?.id) {
+				newClips.push(currentClip);
 			}
 		}
+		clipsToDetach.forEach((clip) => clip.detach());
+		const promises = newClips.map((clip) => this.add(clip));
+		await Promise.all(promises);
 	}
 }
