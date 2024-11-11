@@ -167,6 +167,20 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		this.trigger('frame', this.fixedDuration?.frames ?? 0);
 	}
 
+	public resize(width: number, height: number) {
+		this.settings.width = width;
+		this.settings.height = height;
+		this.renderer?.resize(width, height);
+
+		if (this.canvas) {
+			this.canvas.height = height;
+			this.canvas.width = width;
+		}
+
+		this.trigger('resize', undefined);
+		this.computeFrame();
+	}
+
 	/**
 	 * Set the player as a child of the given html div element
 	 */
