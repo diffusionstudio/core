@@ -30,17 +30,16 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 		const numClips = this.clips.length;
 
 		let newClips: MediaClip<MediaClipProps>[] = [];
+		let clipsToDetach: MediaClip<MediaClipProps>[] = [];
 		// Process each clip
 		for (let i = 0; i < numClips; i++) {
 			const clip = this.clips[i];
 			if (!clip.element) {
-				newClips.push(clip);
 				continue;
 			}
 
 			const silences = await clip.source.silences(options);
 			if (silences.length === 0) {
-				newClips.push(clip);
 				continue;
 			}
 
@@ -52,11 +51,10 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 						silence.stop.millis > clip.range[0].millis),
 			);
 			if (applicableSilences.length === 0) {
-				newClips.push(clip);
 				continue;
 			}
 
-			clip.detach();
+			clipsToDetach.push(clip);
 			let start = clip.range[0];
             let currentClip = clip.copy();
 
@@ -85,7 +83,7 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 				newClips.push(currentClip);
 			}
 		}
-
+		clipsToDetach.forEach((clip) => clip.detach());
 		const promises = newClips.map((clip) => this.add(clip));
 		await Promise.all(promises);
 	}
