@@ -23,6 +23,8 @@ Object.assign(globalThis, {
 });
 vi.mock('pixi.js', async (importOriginal) => {
   class Renderer {
+    private _canvas = document.createElement('canvas');
+
     height: undefined | number;
     width: undefined | number;
 
@@ -32,7 +34,12 @@ vi.mock('pixi.js', async (importOriginal) => {
     }
 
     get canvas() {
-      return document.createElement('canvas');
+      return this._canvas;
+    }
+
+    resize(width: number, height: number) {
+      this._canvas.width = width;
+      this._canvas.height = height;
     }
 
     render = vi.fn();

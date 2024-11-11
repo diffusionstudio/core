@@ -54,6 +54,7 @@ export type CompositionEvents = {
 	attach: undefined;
 	detach: undefined;
 	load: undefined;
+	resize: undefined;
 };
 
 export type CompositionState = 'IDLE' | 'RENDER' | 'PLAY';

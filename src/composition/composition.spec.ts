@@ -454,6 +454,31 @@ describe('The composition', () => {
 		expect(computeMock).toBeCalledTimes(5);
 	});
 
+	it('should be able to resize the canvas', () => {
+		const div = document.createElement('div');
+		composition.attachPlayer(div);
+
+		const resizeMock = vi.spyOn(composition.renderer!, 'resize');
+		const resizeFn = vi.fn();
+		composition.on('resize', resizeFn);
+		
+		expect(composition.settings.width).toBe(1920);
+		expect(composition.settings.height).toBe(1080);
+		expect(composition.canvas?.width).toBe(1920);
+		expect(composition.canvas?.height).toBe(1080);
+
+		computeMock.mockClear();
+		composition.resize(100, 100);
+
+		expect(composition.settings.width).toBe(100);
+		expect(composition.settings.height).toBe(100);
+		expect(composition.canvas?.width).toBe(100);
+		expect(composition.canvas?.height).toBe(100);
+		expect(resizeMock).toBeCalledTimes(1);
+		expect(computeMock).toBeCalledTimes(1);
+		expect(resizeFn).toBeCalledTimes(1);
+	});
+
 	afterEach(() => {
 		frameMock.mockClear();
 		playMock.mockClear();
