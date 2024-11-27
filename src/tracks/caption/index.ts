@@ -15,3 +15,4 @@ export * from './preset.interface';
 export * from './preset.solar';
 export * from './preset.whisper';
 export * from './preset.verdant';
+export * from './preset.types';

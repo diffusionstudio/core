@@ -15,6 +15,7 @@ import type { CaptionPresetType, DefaultCaptionPresetConfig } from './preset.typ
 import type { CaptionTrack } from './caption';
 import type { GeneratorOptions } from '../../models';
 import type { CaptionPresetStrategy } from './preset.interface';
+import type { Position } from '../../types';
 
 export class SolarCaptionPreset extends Serializer implements CaptionPresetStrategy {
 	@serializable()
@@ -23,10 +24,14 @@ export class SolarCaptionPreset extends Serializer implements CaptionPresetStrat
 	@serializable()
 	public readonly type: CaptionPresetType = 'SOLAR';
 
+	@serializable()
+	public position: Position;
+
 	public constructor(config: Partial<DefaultCaptionPresetConfig> = {}) {
 		super();
 
 		this.generatorOptions = config.generatorOptions ?? { duration: [0.2] };
+		this.position = config.position ?? { x: '50%', y: '50%' };
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
@@ -65,7 +70,7 @@ export class SolarCaptionPreset extends Serializer implements CaptionPresetStrat
 						angle: Math.PI / 2.5,
 						alpha: 1,
 					},
-					position: 'center',
+					position: this.position,
 					stop: sequence.stop.add(offset),
 					start: sequence.start.add(offset),
 					scale: new Keyframe([0, 8], [0.96, 1], { easing: 'easeOut' }),

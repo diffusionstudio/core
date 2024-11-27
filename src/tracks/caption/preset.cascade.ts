@@ -14,6 +14,7 @@ import type { GeneratorOptions } from '../../models';
 import type { DefaultCaptionPresetConfig } from './preset.types';
 import type { CaptionTrack } from './caption';
 import type { CaptionPresetStrategy } from './preset.interface';
+import type { Position } from '../../types';
 
 export class CascadeCaptionPreset extends Serializer implements CaptionPresetStrategy {
 	@serializable()
@@ -22,10 +23,14 @@ export class CascadeCaptionPreset extends Serializer implements CaptionPresetStr
 	@serializable()
 	public readonly type = 'CASCADE';
 
+	@serializable()
+	public position: Position;
+
 	public constructor(config: Partial<DefaultCaptionPresetConfig> = {}) {
 		super();
 
 		this.generatorOptions = config.generatorOptions ?? { duration: [1.4] };
+		this.position = config.position ?? { x: '12%', y: '44%' };
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
@@ -70,10 +75,7 @@ export class CascadeCaptionPreset extends Serializer implements CaptionPresetStr
 							angle: Math.PI / 4,
 							distance: 2,
 						},
-						position: {
-							x: '12%',
-							y: '44%',
-						},
+						position: this.position,
 						stop: sequence.words[i].stop.add(offset),
 						start: sequence.words[i].start.add(offset),
 					})

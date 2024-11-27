@@ -14,7 +14,7 @@ import type { SingleColorCaptionPresetConfig, CaptionPresetType } from './preset
 import type { CaptionPresetStrategy } from './preset.interface';
 import type { GeneratorOptions } from '../../models';
 import type { CaptionTrack } from './caption';
-import type { hex } from '../../types';
+import type { hex, Position } from '../../types';
 
 export class VerdantCaptionPreset extends Serializer implements CaptionPresetStrategy {
 	@serializable()
@@ -26,11 +26,15 @@ export class VerdantCaptionPreset extends Serializer implements CaptionPresetStr
 	@serializable()
 	public color: hex;
 
+	@serializable()
+	public position: Position;
+
 	public constructor(config: Partial<SingleColorCaptionPresetConfig> = {}) {
 		super();
 
 		this.generatorOptions = config.generatorOptions ?? { duration: [1] };
 		this.color = config.color ?? '#69E34C';
+		this.position = config.position ?? { x: '50%', y: '50%' };
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
@@ -75,7 +79,7 @@ export class VerdantCaptionPreset extends Serializer implements CaptionPresetStr
 							fillStyle: this.color,
 							fontSize: 19,
 						}],
-						position: 'center',
+						position: this.position,
 						stop: sequence.words[i].stop.add(offset),
 						start: sequence.words[i].start.add(offset),
 						segments: [{
