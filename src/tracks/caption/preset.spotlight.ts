@@ -14,7 +14,7 @@ import type { SingleColorCaptionPresetConfig } from './preset.types';
 import type { CaptionPresetStrategy } from './preset.interface';
 import type { GeneratorOptions } from '../../models';
 import type { CaptionTrack } from './caption';
-import type { hex } from '../../types';
+import type { hex, Position } from '../../types';
 
 export class SpotlightCaptionPreset extends Serializer implements CaptionPresetStrategy {
 	@serializable()
@@ -26,11 +26,15 @@ export class SpotlightCaptionPreset extends Serializer implements CaptionPresetS
 	@serializable()
 	public color: hex;
 
+	@serializable()
+	public position: Position;
+
 	public constructor(config: Partial<SingleColorCaptionPresetConfig> = {}) {
 		super();
 
 		this.generatorOptions = config.generatorOptions ?? { duration: [0.2] };
 		this.color = config.color ?? '#00FF4C';
+		this.position = config.position ?? { x: '50%', y: '50%' };
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
@@ -69,7 +73,7 @@ export class SpotlightCaptionPreset extends Serializer implements CaptionPresetS
 							angle: Math.PI / 4,
 							distance: 2,
 						},
-						position: 'center',
+						position: this.position,
 						styles: [{
 							fillStyle: this.color,
 						}],

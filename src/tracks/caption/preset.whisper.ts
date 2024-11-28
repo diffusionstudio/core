@@ -14,7 +14,7 @@ import type { SingleColorCaptionPresetConfig } from './preset.types';
 import type { CaptionTrack } from './caption';
 import type { CaptionPresetStrategy } from './preset.interface';
 import type { GeneratorOptions } from '../../models';
-import type { hex } from '../../types';
+import type { hex, Position } from '../../types';
 
 export class WhisperCaptionPreset extends Serializer implements CaptionPresetStrategy {
 	@serializable()
@@ -26,11 +26,15 @@ export class WhisperCaptionPreset extends Serializer implements CaptionPresetStr
 	@serializable()
 	public color: hex;
 
+	@serializable()
+	public position: Position;
+
 	public constructor(config: Partial<SingleColorCaptionPresetConfig> = {}) {
 		super();
 
 		this.generatorOptions = config.generatorOptions ?? { length: [20] };
 		this.color = config.color ?? '#8c8c8c';
+		this.position = config.position ?? { x: '50%', y: '50%' };
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
@@ -65,7 +69,7 @@ export class WhisperCaptionPreset extends Serializer implements CaptionPresetStr
 						},
 						maxWidth: track.composition.width * 0.8,
 						font,
-						position: 'center',
+						position: this.position,
 						styles: [{
 							fillStyle: this.color,
 						}],

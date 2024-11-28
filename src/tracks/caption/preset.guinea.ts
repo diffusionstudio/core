@@ -15,7 +15,7 @@ import type { MultiColorCaptionPresetConfig, CaptionPresetType } from './preset.
 import type { CaptionPresetStrategy } from './preset.interface';
 import type { WordGroup, Word } from '../../models';
 import type { CaptionTrack } from './caption';
-import type { hex } from '../../types';
+import type { hex, Position } from '../../types';
 
 export class GuineaCaptionPreset extends Serializer implements CaptionPresetStrategy {
 	@serializable()
@@ -24,10 +24,14 @@ export class GuineaCaptionPreset extends Serializer implements CaptionPresetStra
 	@serializable()
 	public colors: hex[];
 
+	@serializable()
+	public position: Position;
+
 	public constructor(config: Partial<MultiColorCaptionPresetConfig> = {}) {
 		super();
 
 		this.colors = config.colors ?? ['#1BD724', '#FFEE0C', '#FF2E17'];
+		this.position = config.position ?? { x: '50%', y: '50%' };
 	}
 
 	public async applyTo(track: CaptionTrack): Promise<void> {
@@ -73,7 +77,7 @@ export class GuineaCaptionPreset extends Serializer implements CaptionPresetStra
 						leading: 1.3,
 						font,
 						textCase: 'upper',
-						position: 'center',
+						position: this.position,
 						stop: stop.add(offset),
 						start: start.add(offset),
 						styles: [

@@ -6,7 +6,7 @@
  */
 
 import type { GeneratorOptions } from '../../models';
-import type { hex } from '../../types';
+import type { hex, Position } from '../../types';
 
 export type CaptionPresetType =
 	| 'CLASSIC'
@@ -20,6 +20,7 @@ export type CaptionPresetType =
 
 export type DefaultCaptionPresetConfig = {
 	generatorOptions: GeneratorOptions;
+	position: Position;
 };
 
 export type SingleColorCaptionPresetConfig = {
