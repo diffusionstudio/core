@@ -233,6 +233,7 @@ export class Track<Clp extends Clip> extends EventEmitterMixin<Events, typeof Se
 			this.clips.splice(index, 1);
 			this.strategy.update(clip, this);
 			this.trigger('detach', undefined);
+			clip.off('*');
 
 			return clip;
 		}

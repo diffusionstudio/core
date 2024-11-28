@@ -36,8 +36,13 @@ export function EventEmitterMixin<Events = {}, T extends Constructor = Construct
 			return id;
 		}
 
-		public off(id?: string, ...ids: string[]) {
+		public off(id?: string | '*', ...ids: string[]) {
 			if (!id) return;
+
+			if (id === '*') {
+				this._handlers = {};
+				return;
+			}
 
 			for (const obj of Object.values(this._handlers)) {
 				if (id in obj) {

@@ -490,6 +490,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 		if (index != undefined && index >= 0) {
 			this.tracks.splice(index, 1);
 			this.trigger('detach', undefined);
+			track.off('*');
 			return track;
 		}
 	}

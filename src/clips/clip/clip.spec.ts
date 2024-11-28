@@ -84,6 +84,40 @@ describe('The Clip Object', () => {
 		expect(clip.track?.id).toBe(track.id);
 	});
 
+	it('should remove event listeners on detach', async () => {
+		const clip0 = new Clip({ start: 0, stop: 20 });
+		const clip1 = new Clip({ stop: 60, start: 30 });
+
+		const composition = new Composition();
+		const track0 = composition.createTrack('base');
+		const track1 = composition.createTrack('base');
+
+		await track0.add(clip0);
+		await track0.add(clip1);
+
+		expect(track0.clips.length).toBe(2);
+		expect(track0.clips[0].start.frames).toBe(0);
+		expect(track0.clips[0].stop.frames).toBe(20);
+
+		expect(track0.clips[1].start.frames).toBe(30);
+		expect(track0.clips[1].stop.frames).toBe(60);
+
+		clip1.detach();
+
+		expect(track0.clips.length).toBe(1);
+
+		await track1.add(clip1);
+
+		expect(track1.clips.length).toBe(1);
+		expect(track1.clips[0].start.frames).toBe(30);
+		expect(track1.clips[0].stop.frames).toBe(60);
+
+		clip1.start = 10;
+
+		expect(track1.clips[0].start.frames).toBe(10);
+		expect(track1.clips[0].stop.frames).toBe(60);
+	});
+
 	it('should be removable from the track', async () => {
 		const clip1 = new Clip({ stop: 900, start: 570 });
 
