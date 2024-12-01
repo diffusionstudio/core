@@ -7,9 +7,8 @@
 
 import { Track } from '../track';
 import { Timestamp } from '../../models';
-import { SilenceDetectionOptions } from '../../sources';
 
-import type { MediaClip } from '../../clips';
+import type { MediaClip, SilenceRemoveOptions } from '../../clips';
 
 export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	public clips: Clip[] = [];
@@ -24,7 +23,7 @@ export class MediaTrack<Clip extends MediaClip> extends Track<MediaClip> {
 	 *
 	 * @param options - Options for silence detection
 	 */
-	public async removeSilences(options: SilenceDetectionOptions = {}) {
+	public async removeSilences(options: SilenceRemoveOptions = {}) {
 		const clips: MediaClip[] = [];
 
 		for (const clip of this.clips.map((clip) => clip.detach())) {

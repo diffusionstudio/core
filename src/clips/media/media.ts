@@ -6,7 +6,7 @@
  */
 
 import { Timestamp, Transcript } from '../../models';
-import { AudioSource, SilenceDetectionOptions } from '../../sources';
+import { AudioSource } from '../../sources';
 import { RangeDeserializer } from './media.deserializer';
 import { serializable } from '../../services';
 import { replaceKeyframes } from '../clip/clip.utils';
@@ -16,6 +16,7 @@ import { Clip } from '../clip';
 import type { CaptionPresetStrategy, CaptionTrack } from '../../tracks';
 import type { float, frame } from '../../types';
 import type { MediaClipProps } from './media.interfaces';
+import type { SilenceRemoveOptions } from './media.types';
 
 export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Clip<MediaClipProps> {
 	public source = new AudioSource();
@@ -319,7 +320,7 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	 *
 	 * @param options - Options for silence detection
 	 */
-	public async removeSilences(options: SilenceDetectionOptions = {}): Promise<MediaClip<Props>[]> {
+	public async removeSilences(options: SilenceRemoveOptions = {}): Promise<MediaClip<Props>[]> {
 		const silences = (await this.source.silences(options))
 			.filter((silence) => inRange(silence, this.range))
 			.sort((a, b) => a.start.millis - b.start.millis);
@@ -328,6 +329,8 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 			return [this];
 		}
 
+		// default padding between clips
+		const padding = options.padding ?? 500;
 		const result: MediaClip<Props>[] = [this];
 
 		for (const silence of silences) {
@@ -336,17 +339,22 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 			if (!item) break;
 			if (!inRange(silence, item.range)) continue;
 
+			// start with padding
+			const start = new Timestamp(
+				Math.min(silence.start.millis + padding, silence.stop.millis)
+			);
+
 			if (silence.start.millis > item.range[0].millis && silence.stop.millis < item.range[1].millis) {
 				const copy = item.copy();
 
-				item.range[1] = silence.start;
+				item.range[1] = start;
 				copy.range[0] = silence.stop;
 
 				result.push(copy);
 			} else if (silence.start.millis <= item.range[0].millis) {
 				item.range[0] = silence.stop;
 			} else if (silence.stop.millis >= item.range[1].millis) {
-				item.range[1] = silence.start;
+				item.range[1] = start;
 			}
 		}
 

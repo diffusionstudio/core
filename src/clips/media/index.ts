@@ -7,3 +7,4 @@
 
 export * from './media';
 export * from './media.interfaces';
+export * from './media.types';
