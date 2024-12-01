@@ -6,14 +6,13 @@
  */
 
 import { Source } from './source';
+import { detectSilences } from './audio.utils';
+import { MIN_SAMPLE_RATE } from './audio.fixtures';
 
 import type { ClipType } from '../clips';
 import type { ArgumentTypes } from '../types';
-import type { FastSamplerOptions, SilenceOptions } from './audio.types';
+import type { AudioSlice, FastSamplerOptions, SilenceDetectionOptions } from './audio.types';
 import type { Timestamp, Transcript } from '../models';
-import { findSilences } from './audio.utils';
-
-const DEFAULT_SAMPLE_RATE = 3000;
 
 export class AudioSource<T extends Object = {}> extends Source<T> {
 	public readonly type: ClipType = 'audio';
@@ -89,12 +88,12 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 		if (typeof start === 'object') start = start.millis;
 		if (typeof stop === 'object') stop = stop.millis;
 
-		const audioBuffer = this.audioBuffer ?? (await this.decode(1, DEFAULT_SAMPLE_RATE, true));
+		const audioBuffer = this.audioBuffer ?? (await this.decode(1, MIN_SAMPLE_RATE, true));
 		const channelData = audioBuffer.getChannelData(0);
 
-		const firstSample = Math.floor(Math.max((start * DEFAULT_SAMPLE_RATE) / 1000, 0));
+		const firstSample = Math.floor(Math.max((start * MIN_SAMPLE_RATE) / 1000, 0));
 		const lastSample = stop
-			? Math.floor(Math.min((stop * DEFAULT_SAMPLE_RATE) / 1000, audioBuffer.length))
+			? Math.floor(Math.min((stop * MIN_SAMPLE_RATE) / 1000, audioBuffer.length))
 			: audioBuffer.length;
 
 		const windowSize = Math.floor((lastSample - firstSample) / length);
@@ -137,20 +136,18 @@ export class AudioSource<T extends Object = {}> extends Source<T> {
 	 * @param options - Silences options.
 	 * @returns An array of the silences (in ms) in the clip.
 	 */
-	public async silences({
-		threshold = -50,
-		minDuration = 100,
-		windowSize = 50,
-	}: SilenceOptions = {}): Promise<{ start: Timestamp; stop: Timestamp }[]> {
+	public async silences(options: SilenceDetectionOptions = {}): Promise<AudioSlice[]> {
 		if (this._silences) return this._silences;
 
-		const audioBuffer = this.audioBuffer ?? (await this.decode(1, DEFAULT_SAMPLE_RATE, true));
-		const length = Math.floor(audioBuffer.length / windowSize);
-		const samples = await this.fastsampler({ length, logarithmic: false });
+		const buffer = await this.arrayBuffer();
 
-		const silences = findSilences(samples, threshold, minDuration, this.duration.millis);
-		this._silences = silences;
+		const ctx = new AudioContext();
 
-		return silences;
+		const audioBuffer = await ctx.decodeAudioData(buffer);
+		this._silences = detectSilences(audioBuffer, options);
+
+		ctx.close();
+
+		return this._silences;
 	}
 }

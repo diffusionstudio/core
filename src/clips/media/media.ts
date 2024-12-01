@@ -6,7 +6,7 @@
  */
 
 import { Timestamp, Transcript } from '../../models';
-import { AudioSource } from '../../sources';
+import { AudioSource, SilenceDetectionOptions } from '../../sources';
 import { RangeDeserializer } from './media.deserializer';
 import { serializable } from '../../services';
 import { replaceKeyframes } from '../clip/clip.utils';
@@ -313,4 +313,58 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	) {
 		return this.addCaptions(strategy);
 	}
+
+	/**
+	 * Remove silences from the clip
+	 *
+	 * @param options - Options for silence detection
+	 */
+	public async removeSilences(options: SilenceDetectionOptions = {}): Promise<MediaClip<Props>[]> {
+		const silences = (await this.source.silences(options))
+			.filter((silence) => inRange(silence, this.range))
+			.sort((a, b) => a.start.millis - b.start.millis);
+
+		if (silences.length == 0) {
+			return [this];
+		}
+
+		const result: MediaClip<Props>[] = [this];
+
+		for (const silence of silences) {
+			const item = result.at(-1);
+
+			if (!item) break;
+			if (!inRange(silence, item.range)) continue;
+
+			if (silence.start.millis > item.range[0].millis && silence.stop.millis < item.range[1].millis) {
+				const copy = item.copy();
+
+				item.range[1] = silence.start;
+				copy.range[0] = silence.stop;
+
+				result.push(copy);
+			} else if (silence.start.millis <= item.range[0].millis) {
+				item.range[0] = silence.stop;
+			} else if (silence.stop.millis >= item.range[1].millis) {
+				item.range[1] = silence.start;
+			}
+		}
+
+		return result;
+	}
+}
+
+function inRange(
+	silence: {
+		start: Timestamp;
+		stop: Timestamp;
+	},
+	range: [Timestamp, Timestamp],
+): boolean {
+	return (
+		(silence.start.millis >= range[0].millis &&
+			silence.start.millis <= range[1].millis) ||
+		(silence.stop.millis <= range[1].millis &&
+			silence.stop.millis >= range[0].millis)
+	)
 }
