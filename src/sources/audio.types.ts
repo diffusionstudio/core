@@ -29,13 +29,13 @@ export type SilenceDetectionOptions = {
 	 */
 	threshold?: number;
 	/**
-	 * This parameter affect how accurately the algorithm captures short silences. 
+	 * This parameter affects how accurately the algorithm captures short silences. 
 	 * @default 1024
 	 */
 	hopSize?: number;
 	/**
-	 * Setting a minimum duration for a silence period helps avoid detecting brief gaps between sounds as silences. 
-	 * @default 0.5
+	 * Setting a minimum duration in **milliseconds** for a silence period helps avoid detecting brief gaps between sounds as silences. 
+	 * @default 500
 	 */
 	minDuration?: number;
 };

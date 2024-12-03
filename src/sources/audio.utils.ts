@@ -6,23 +6,20 @@ import type { AudioSlice, SilenceDetectionOptions } from './audio.types';
 /**
  * Detect silences in an audio buffer
  * @param audioBuffer - The web audio buffer.
- * @param threshold - The threshold for silence detection.
- * @param hopSize - The hop size between frames in samples.
- * @param minDuration - Minimum duration for a silence in seconds.
- * @returns An array of the silences in the clip.
+ * @param options - Options for silence detection
  */
 export function detectSilences(
 	audioBuffer: AudioBuffer,
 	options: SilenceDetectionOptions = {}
 ): AudioSlice[] {
-	const { threshold = 0.02, hopSize = 1024, minDuration = 0.5 } = options;
+	const { threshold = 0.02, hopSize = 1024, minDuration = 500 } = options;
 
 	const slices: AudioSlice[] = [];
 	const channel = audioBuffer.getChannelData(0);
 	const sampleRate = audioBuffer.sampleRate;
 
-	// Convert minDuration from seconds to samples
-	const minSamples = Math.floor(minDuration * sampleRate);
+	// Convert minDuration from milliseconds to samples
+	const minSamples = Math.floor((minDuration / 1000) * sampleRate);
 
 	let silenceStart: number | null = null;
 	let consecutiveSilentSamples = 0;

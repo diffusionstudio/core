@@ -321,6 +321,10 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	 * @param options - Options for silence detection
 	 */
 	public async removeSilences(options: SilenceRemoveOptions = {}): Promise<MediaClip<Props>[]> {
+		if (!['READY', 'ATTACHED'].includes(this.state)) {
+			await this.init();
+		}
+
 		const silences = (await this.source.silences(options))
 			.filter((silence) => inRange(silence, this.range))
 			.sort((a, b) => a.start.millis - b.start.millis);
