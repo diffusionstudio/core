@@ -16,6 +16,7 @@ import { Clip } from '../clip';
 import type { CaptionPresetStrategy, CaptionTrack } from '../../tracks';
 import type { float, frame } from '../../types';
 import type { MediaClipProps } from './media.interfaces';
+import type { SilenceRemoveOptions } from './media.types';
 
 export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Clip<MediaClipProps> {
 	public source = new AudioSource();
@@ -313,4 +314,69 @@ export class MediaClip<Props extends MediaClipProps = MediaClipProps> extends Cl
 	) {
 		return this.addCaptions(strategy);
 	}
+
+	/**
+	 * Remove silences from the clip
+	 *
+	 * @param options - Options for silence detection
+	 */
+	public async removeSilences(options: SilenceRemoveOptions = {}): Promise<MediaClip<Props>[]> {
+		if (!['READY', 'ATTACHED'].includes(this.state)) {
+			await this.init();
+		}
+
+		const silences = (await this.source.silences(options))
+			.filter((silence) => inRange(silence, this.range))
+			.sort((a, b) => a.start.millis - b.start.millis);
+
+		if (silences.length == 0) {
+			return [this];
+		}
+
+		// default padding between clips
+		const padding = options.padding ?? 500;
+		const result: MediaClip<Props>[] = [this];
+
+		for (const silence of silences) {
+			const item = result.at(-1);
+
+			if (!item) break;
+			if (!inRange(silence, item.range)) continue;
+
+			// start with padding
+			const start = new Timestamp(
+				Math.min(silence.start.millis + padding, silence.stop.millis)
+			);
+
+			if (silence.start.millis > item.range[0].millis && silence.stop.millis < item.range[1].millis) {
+				const copy = item.copy();
+
+				item.range[1] = start;
+				copy.range[0] = silence.stop;
+
+				result.push(copy);
+			} else if (silence.start.millis <= item.range[0].millis) {
+				item.range[0] = silence.stop;
+			} else if (silence.stop.millis >= item.range[1].millis) {
+				item.range[1] = start;
+			}
+		}
+
+		return result;
+	}
+}
+
+function inRange(
+	silence: {
+		start: Timestamp;
+		stop: Timestamp;
+	},
+	range: [Timestamp, Timestamp],
+): boolean {
+	return (
+		(silence.start.millis >= range[0].millis &&
+			silence.start.millis <= range[1].millis) ||
+		(silence.stop.millis <= range[1].millis &&
+			silence.stop.millis >= range[0].millis)
+	)
 }

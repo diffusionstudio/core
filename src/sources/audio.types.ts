@@ -22,17 +22,25 @@ export type FastSamplerOptions = {
 	logarithmic?: boolean;
 };
 
-export type SilenceOptions = {
+export type SilenceDetectionOptions = {
 	/**
-	 * The threshold to use for the silence detection in db.
-	 */	
+	 * If the RMS is below the threshold, the frame is considered silent. 
+	 * @default 0.02
+	 */
 	threshold?: number;
 	/**
-	 * The minimum duration of a silence to be considered a silence in milliseconds.
+	 * This parameter affects how accurately the algorithm captures short silences. 
+	 * @default 1024
+	 */
+	hopSize?: number;
+	/**
+	 * Setting a minimum duration in **milliseconds** for a silence period helps avoid detecting brief gaps between sounds as silences. 
+	 * @default 500
 	 */
 	minDuration?: number;
-	/**
-	 * The window size to use for the silence detection.
-	 */
-	windowSize?: number;
+};
+
+export type AudioSlice = {
+	start: Timestamp;
+	stop: Timestamp;
 };

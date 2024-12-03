@@ -47,10 +47,7 @@ const audioSource = await core.AudioSource.from('/harvard.MP3');
 await audioTrack.add(
   await new core.AudioClip(audioSource)
 );
-await audioTrack.removeSilences({
-  minDuration: 300,
-  windowSize: 1,
-});
+await audioTrack.removeSilences();
 
 image.animate()
   .rotation(-16).to(14, 5).to(-7, 10).to(24, 7).to(-3, 9).to(19, 7).to(-14, 12).to(5, 9).to(-30, 13)
