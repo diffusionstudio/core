@@ -306,4 +306,32 @@ is`
 
 		resetFetch();
 	});
+
+	it('should be able to create a deep copy of the transcript', () => {
+		const transcript = new Transcript([
+			new WordGroup([
+				new Word('Lorem', 0e3, 1e3),
+				new Word('Ipsum', 2e3, 3e3),
+			]),
+			new WordGroup([
+				new Word('is', 4e3, 5e3),
+				new Word('simply', 6e3, 7e3),
+			]),
+		]);
+
+		const copy = transcript.copy();
+
+		expect(copy.id).not.toBe(transcript.id);
+		expect(copy.groups.length).toBe(transcript.groups.length);
+		expect(copy.groups[0].words.length).toBe(transcript.groups[0].words.length);
+		expect(copy.groups[0].words[0].id).not.toBe(transcript.groups[0].words[0].id);
+
+		for (let i = 0; i < transcript.words.length; i++) {
+			expect(copy.words[i].text).toBe(transcript.words[i].text);
+		}
+
+		transcript.groups[0].words[0].text = 'Hello';
+
+		expect(copy.groups[0].words[0].text).not.toBe('Hello');
+	});
 });

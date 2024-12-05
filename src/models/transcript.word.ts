@@ -9,6 +9,10 @@ import { Timestamp } from './timestamp';
 
 export class Word {
 	/**
+	 * A unique identifier for the word
+	 */
+	public id = crypto.randomUUID();
+	/**
 	 * Defines the text to be displayed
 	 */
 	public text: string;

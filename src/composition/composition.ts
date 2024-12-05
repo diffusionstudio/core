@@ -268,6 +268,7 @@ export class Composition extends EventEmitterMixin<CompositionEvents, typeof Ser
 	public removeTracks(Track: new (composition: Composition) => Track<Clip>): Track<Clip>[] {
 		const removed = this.tracks.filter((track) => track instanceof Track);
 		this.tracks = this.tracks.filter((track) => !(track instanceof Track));
+		removed.forEach(track => this.removeTrack(track));
 
 		return removed;
 	}
