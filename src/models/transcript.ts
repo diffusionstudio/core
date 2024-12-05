@@ -149,6 +149,14 @@ export class Transcript implements Serializer {
 		return new Transcript([new WordGroup(words)]);
 	}
 
+	/**
+	 * Create a deep copy of the transcript
+	 * @returns A new Transcript instance
+	 */
+	public copy(): Transcript {
+		return Transcript.fromJSON(this.toJSON());
+	}
+
 	public static fromJSON(data: Captions): Transcript {
 		const transcipt = new Transcript();
 
