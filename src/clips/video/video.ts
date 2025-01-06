@@ -36,7 +36,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 	/**
 	 * Html5 and canvas video textures
 	 */
-	public readonly textrues = {
+	public readonly textures = {
 		html5: Texture.from(this.element),
 		canvas: Texture.from(this.canvas),
 	};
@@ -53,9 +53,9 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 		this.element.style.display = 'hidden';
 		this.element.crossOrigin = 'anonymous';
 
-		(this.textrues.html5.source as any).autoPlay = false;
-		(this.textrues.html5.source as any).loop = false;
-		this.sprite.texture = this.textrues.html5;
+		(this.textures.html5.source as any).autoPlay = false;
+		(this.textures.html5.source as any).loop = false;
+		this.sprite.texture = this.textures.html5;
 		this.view.addChild(this.sprite);
 
 		if (source instanceof VideoSource) {
@@ -181,7 +181,7 @@ export class VideoClip extends VisualMixin(MediaClip<VideoClipProps>) {
 
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.context.drawImage(frame, 0, 0);
-		this.textrues.canvas.source.update();
+		this.textures.canvas.source.update();
 
 		frame.close();
 	}
