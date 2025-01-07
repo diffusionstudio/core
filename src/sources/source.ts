@@ -150,7 +150,7 @@ export class Source<T extends Object = {}> extends EventEmitterMixin<Events, typ
 			this.state = 'READY';
 			this.trigger('load', undefined);
 		} catch (e) {
-			this.state == 'ERROR';
+			this.state = 'ERROR';
 			this.trigger('error', new Error(String(e)));
 			throw e;
 		}

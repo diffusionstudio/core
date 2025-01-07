@@ -80,7 +80,7 @@ export class VideoSource<T extends Object = {}> extends AudioSource<T> {
 			this.file = new File([blob], this.name, { type: blob.type });
 			this.trigger('load', undefined);
 		} catch (e) {
-			this.state == 'ERROR';
+			this.state = 'ERROR';
 			this.trigger('error', new Error(String(e)));
 		} finally {
 			this.downloadInProgress = false;
