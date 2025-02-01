@@ -1,6 +1,5 @@
-<br/>
 <p align="center">
-  <img src="./assets/icon.png" alt="Library Icon" width="164" height="164" />
+  <img src="./assets/banner.png" alt="Library Banner" style="aspect-ratio: 1200/500;width: 100%;" />
   <h1 align="center">diffusionstudio/core</h1>
 </p>
 
@@ -14,32 +13,32 @@
 <br/>
 
 # Getting Started
-
-`@diffusionstudio/core` is an open-source, browser-based video editing library that allows developers to automate video editing workflows at scale, build custom editing applications, or seamlessly integrate video processing capabilities into existing projects.
+`@diffusionstudio/core` is a 2D motion graphics and video rendering engine powered by WebCodecs. Developers commonly use it for video editing automations and to build editing [playgrounds/web apps](https://playground.diffusion.studio).
 
 ## Documentation
+Explore the full documentation at [our wiki](https://github.com/diffusionstudio/core/wiki).
 
-Visit https://docs.diffusion.studio to view the full documentation.
+## Credits
+This project owes much to [@Vanilagy's](https://github.com/Vanilagy) exceptional muxer implementations.
 
 ## Why Use Diffusion Studio
 💻 100% **client-side**<br/>
-📦 Fully **extensible** with [Pixi.js](https://pixijs.com/)<br/>
-🩸 Blazingly **fast** WebGPU/WebGL renderer<br/>
-🏎️ **Cutting edge** WebCodecs export<br/>
+🪽 **Tiny bundle size** – Only 38 KB with a single dependency<br/>
+🩸 Blazingly **fast** WebCodecs renderer<br/>
+🦾 **AI-first** architecture<br/>
 
 ## Getting Started
-
 ```sh
 npm install @diffusionstudio/core
 ```
 
 ## Basic Usage
-Let's take a look at an example:
+Here’s an example of how to use the library:
 
 ```typescript
 import * as core from '@diffusionstudio/core';
 
-const source = await core.VideoSource // convenience function for fetch -> blob -> file
+const source = await core.VideoSource
   .from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4');
 
 // create a video clip and trim it
@@ -50,7 +49,7 @@ const video = new core.VideoClip(source) // compatible with the File API
 const text = new core.TextClip({ 
   text: 'Bunny - Our Brave Hero', 
   position: 'center', 
-  stop: 80, 
+  duration: 80, 
   stroke: { color: '#000000' } 
 });
 
@@ -62,16 +61,16 @@ await composition.add(text);   // clip -> track -> composition
 
 // render video using webcodecs at 25 FPS
 // use resolution: 2 to render at 4k 
-new core.Encoder(composition, { fps: 25 }).render();
+const blob = await new core.Encoder(composition, { fps: 25 }).render();
 ```
 
-This may look familiar to some. That is because the API is heavily inspired by **Moviepy** and Swift UI. It models the structure of popular video editing applications such as Adobe Premiere or CapCut. The current state can be visualized as follows:
+The API models the structure of conventional video editing applications like Adobe Premiere or CapCut, using a track-based system. The current state can be visualized like this:
 
 ![Composition Visulization](./assets/composition.png)
 
-Whereas each track contains zero or more clips of a single type in ascending chronological order.
+Each track contains zero or more clips of a single type, arranged in ascending chronological order.
 
-A track will be created implicitly with `composition.add(clip)` however you can also create them manually like this:
+Tracks are created implicitly with `composition.add(clip)`, but you can also create them manually:
 
 ```typescript
 const track = composition.createTrack('text');
@@ -82,102 +81,75 @@ await track.add(text2);
 ```
 
 ## Examples
-You can find more [examples here.](https://github.com/diffusionstudio/examples), or give them a whirl on: https://examples.diffusion.studio
+Find more [examples here.](https://github.com/diffusionstudio/examples), or test all capabilities on our [Playground.]( https://app.diffusion.studio)
 
 https://github.com/user-attachments/assets/7a943407-e916-4d9f-b46a-3163dbff44c3
 
-## How does DS Core compare to Remotion and Motion Canvas?
+## How Does Diffusion Studio Compare?
 
-**Remotion** is a React-based video creation tool that transforms the entire DOM into videos. It's particularly suited for beginners, as web developers can start creating videos using the skills they already have.
+### Remotion
+A React-based video creation tool that converts the DOM into videos. It’s beginner-friendly, allowing web developers to leverage their existing skills.
 
-**Motion Canvas** is intended as a standalone editor for creating production-quality animations. It features a unique imperative API that adds elements to the timeline procedurally, rather than relying on keyframes like traditional video editing tools. This makes Motion Canvas ideal for crafting detailed, animated videos.
+### Motion Canvas 
+A standalone editor designed for high-quality animations. It features an imperative API, adding elements procedurally rather than relying on keyframes, making it ideal for detailed animations.
 
-In contrast, **Diffusion Studio** is not a framework with a visual editing interface but a **video editing library** that can be integrated into existing projects. It operates entirely on the **client-side**, eliminating the need for additional backend infrastructure. Diffusion Studio is also dedicated to supporting the latest rendering technologies, including WebGPU, WebGL, and WebCodecs. If a feature you need isn't available, you can **easily extend** it using [Pixi.js](https://github.com/pixijs/pixijs).
+### Diffusion Studio
+A video editing **library** rather than a framework with a visual interface. It’s lightweight, operates entirely on the **client-side**, and supports WebCodecs without relying on WebAssembly/ffmpeg. Ideal for integration into existing projects.
+
+## Contributing
+
+Currently, version ^2.0.0 is invite-only. You can request access on our Discord if you're interested in contributing. The source code for version ^1.0.0 is available in this repository.
 
 ## Current features
-* **Video/Audio** trim and offset
+* **Video/Audio** trimming and offsets
 * **Tracks & Layering**
 * **Splitting** clips
 * **Html & Image** rendering
+* **Relative** units (e.g. 80% clip height)
+* **Shapes** (e.g., rectangles, circles)
 * **Text** with multiple styles
+* **Audio Visualization**
+* High Quality **Captions**
+* **Silence Removal** for audio
 * Web & Local **Fonts**
-* **Custom Clips** based on Pixi.js
+* **Custom Clips**
 * **Filters**
+* **Masks**
+* **Blending** modes
 * **Keyframe** animations
-  * **Numbers, Degrees and Colors**
-  * **Easing** (easeIn, easeOut etc.)
+  * **Numbers, Text and Colors**
+  * **Easing** (ease in, ease out etc.)
   * **Extrapolation** `'clamp' | 'extend'`
 * **Realtime playback**
 * **Hardware accelerated** encoding via WebCodecs
 * **Dynamic render resolution and framerate**
 
-## Contributing
-Contributions to DS Core are welcome and highly appreciated. Simply fork this respository and run:
-
-```sh
-npm install
-```
-
-Before checking in a pull request please verify that all unit tests are still green by running:
-
-```sh
-npm run test
-```
-
 ## Background
 
-This project began in March 2023 with the mission of creating the "video processing toolkit for the era of AI." As someone passionate about video editing for over a decade, I saw Chrome’s release of Webcodecs and WebGPU without a feature flag as the perfect moment to build something new.
+This project was initiated in March 2023 with the mission of creating a “video processing toolkit for the era of AI.” As someone passionate about video editing for over a decade, the release of WebCodecs and WebGPU without feature flags in Chrome presented the perfect opportunity to build something new.
 
-Currently, most browser-based video editors rely on server-side rendering, requiring time-consuming uploads and downloads of large video files. With Webcodecs, video processing can now be handled directly in the browser, making it faster and more efficient.
+Traditional browser-based video editors rely on server-side rendering, requiring time-consuming uploads and downloads of large files. With WebCodecs, video processing can now be done directly in the browser, making it significantly faster and more efficient.
 
-I’m excited to be part of the next generation of video editing technology.
+I’m excited to contribute to the next generation of video editing technology.
 
-## Compatability
+Here’s a more human-readable and clearer license notice for your README that explicitly states that individuals and companies can use the library for free as long as they don’t monetize their project. It also clarifies that projects can later become commercial as long as they obtain a proper license at that time.
 
-✅ Supported 
-🧪 Experimental 
-❌ Not supported 
+## License
 
-### Desktop
+This library is free to use under the **Diffusion Studio Non-Commercial License**, as long as your project is **not monetized**.
 
-| Browser           |    | Operating System  |    |
-| ----------------- | -- | ----------------- | -- |
-| Chrome            | ✅ | Windows           | ✅ |
-| Edge              | ✅ | Macos             | ✅ |
-| Firefox           | ✅ | Linux             | ✅ |
-| Safari            | ✅ |
-| Opera             | ✅ |
-| Brave             | ✅ |
-| Vivaldi           | ✅ |
+All versions of the library prior to version 1.6.0 are available under the **MPL-2.0**.
 
+### ✅ You Can Use This Library for Free If:
+- You are an **individual or a company** and your project is **not generating revenue** (no sales, ads, donations beyond operational costs, or other forms of monetization).
+- Your project **may become commercial in the future**, as long as you obtain a commercial license before monetization.
 
-### Mobile
+### 💼 If Your Project Becomes Commercial:
+- If you decide to **monetize your project** (e.g., through sales, ads, premium features, or enterprise use), you must purchase a commercial license.
+- Visit our website to obtain a license when you’re ready to monetize.
 
-| Browser           |    | Operating System  |    |
-| ----------------- | -- | ----------------- | -- |
-| Brave Android     | ✅ | Android           | ✅ |
-| Chrome Android    | ✅ | iOS               | 🧪 |
-| Firefox Android   | 🧪 |
-| Opera Android     | ✅ |
-| Safari iOS        | 🧪 |
+### 📄 More Details:
+-	See LICENSE for the Non-Commercial License.
+-	See LICENSE_COMMERCIAL for the Commercial License terms.
 
-
-|             | Demultiplexing | Multiplexing |
-| ----------- | -------------- | -------------|
-| Mp4         | ✅             | ✅           |
-| Webm        | ✅             | ❌           |
-| Mov         | ✅             | ❌           |
-| Mkv         | ❌             | ❌           |
-| Avi         | ❌             | ❌           |
-
-|             | Decoding | Encoding          |
-| ----------- | -------- | ----------------- |
-| Avc1        | ✅       | ✅                |
-| AAC         | ✅       | ✅ (Chromium only)|
-| Opus        | ✅       | ✅                |
-| Wav         | ✅       | ✅                |
-| Hevc        | ✅       | ❌                |
-| VP9         | ✅       | ❌                |
-| VP8         | ✅       | ❌                |
-| Mp3         | ✅       | ❌                |
-| Ogg         | ✅       | ❌                |
+For any questions, feel free to [contact us](https://diffusion.studio).
