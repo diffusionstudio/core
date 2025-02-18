@@ -16,14 +16,14 @@
 `@diffusionstudio/core` is a 2D motion graphics and video rendering engine powered by WebCodecs. Developers commonly use it for video editing automations and to build editing [playgrounds/web apps](https://playground.diffusion.studio).
 
 ## Documentation
-Explore the full documentation at [our wiki](https://github.com/diffusionstudio/core/wiki).
+Explore the full documentation at [docs.diffusion.studio](https://docs.diffusion.studio/docs).
 
 ## Credits
 This project owes much to [@Vanilagy's](https://github.com/Vanilagy) exceptional muxer implementations.
 
 ## Why Use Diffusion Studio
 💻 100% **client-side**<br/>
-🪽 **Tiny bundle size** – Only 38 KB with a single dependency<br/>
+🪽 **Small bundle size** – Only 75 KB with a single dependency<br/>
 🩸 Blazingly **fast** WebCodecs renderer<br/>
 🦾 **AI-first** architecture<br/>
 
@@ -35,21 +35,19 @@ npm install @diffusionstudio/core
 ## Basic Usage
 Here’s an example of how to use the library:
 
-```typescript
+```javascript
 import * as core from '@diffusionstudio/core';
 
-const source = await core.VideoSource
-  .from('https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4');
+const url = 'https://diffusion-studio-public.s3.eu-central-1.amazonaws.com/videos/big_buck_bunny_1080p_30fps.mp4';
 
 // create a video clip and trim it
-const video = new core.VideoClip(source) // compatible with the File API
-  .subclip(0, 160); // The base unit is frames at 30 FPS
+const video = new core.VideoClip(url).subclip(0, '10s');
 
 // create a text clip and add styles
 const text = new core.TextClip({ 
   text: 'Bunny - Our Brave Hero', 
   position: 'center', 
-  duration: 80, 
+  duration: '5s', 
   stroke: { color: '#000000' } 
 });
 
@@ -59,24 +57,22 @@ const composition = new core.Composition(); // 1920x1080
 await composition.add(video);  // convenience function for 
 await composition.add(text);   // clip -> track -> composition
 
-// render video using webcodecs at 25 FPS
-// use resolution: 2 to render at 4k 
-const blob = await new core.Encoder(composition, { fps: 25 }).render();
+await new core.Encoder(composition).render('hello_world.mp4');
 ```
 
 The API models the structure of conventional video editing applications like Adobe Premiere or CapCut, using a track-based system. The current state can be visualized like this:
 
 ![Composition Visulization](./assets/composition.png)
 
-Each track contains zero or more clips of a single type, arranged in ascending chronological order.
+Each layer contains zero or more clips of a single type, arranged in ascending chronological order.
 
-Tracks are created implicitly with `composition.add(clip)`, but you can also create them manually:
+Layers are created implicitly with `composition.add(clip)`, but you can also create them manually:
 
 ```typescript
-const track = composition.createTrack('text');
-await track.add(text0);
-await track.add(text1);
-await track.add(text2);
+const layer = composition.createLayer();
+await layer.add(text0);
+await layer.add(text1);
+await layer.add(text2);
 ...
 ```
 
@@ -102,7 +98,7 @@ Currently, version ^2.0.0 is invite-only. You can request access on our Discord 
 
 ## Current features
 * **Video/Audio** trimming and offsets
-* **Tracks & Layering**
+* **Layering**
 * **Splitting** clips
 * **Html & Image** rendering
 * **Relative** units (e.g. 80% clip height)
@@ -138,8 +134,6 @@ Here’s a more human-readable and clearer license notice for your README that e
 
 This library is free to use under the **Diffusion Studio Non-Commercial License**, as long as your project is **not monetized**.
 
-All versions of the library prior to version 1.6.0 are available under the **MPL-2.0**.
-
 ### ✅ You Can Use This Library for Free If:
 - You are an **individual or a company** and your project is **not generating revenue** (no sales, ads, donations beyond operational costs, or other forms of monetization).
 - Your project **may become commercial in the future**, as long as you obtain a commercial license before monetization.
@@ -153,3 +147,31 @@ All versions of the library prior to version 1.6.0 are available under the **MPL
 -	See LICENSE_COMMERCIAL for the Commercial License terms.
 
 For any questions, feel free to [contact us](https://diffusion.studio).
+
+## Version History  
+
+### v1.x _(Released October 2024)_  
+- Fully open-source (MPL-2.0 license)  
+- Relied on Pixi.js for rendering (resulting in a large library size)  
+- WebGPU support  
+- FFmpeg-compiled demuxer  
+- Limited to short-form content  
+
+### v2.x _(Released February 1, 2025)_  
+- **Source code access by invite only** (Commercial & Non-Commercial license)  
+- Removed Pixi.js, significantly reducing library size  
+- Introduced a custom Canvas 2D renderer  
+- Continued FFmpeg-based demuxing  
+- Still limited to short-form content  
+
+### v3.x _(Released February 18, 2025)_  
+- **Source code access by invite only** (Commercial & Non-Commercial license)  
+- Removed all FFmpeg dependencies  
+- Retained Canvas 2D rendering  
+- Introduced pure TypeScript-based muxers/demuxers  
+- Added support for long-form content  
+
+### v4.x _(Estimated Release: July 2025)_  
+- **Source code access by invite only** (Commercial & Non-Commercial license)  
+- Introducing a custom WebGL2 renderer  
+
