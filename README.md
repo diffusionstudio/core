@@ -128,8 +128,6 @@ Traditional browser-based video editors rely on server-side rendering, requiring
 
 I’m excited to contribute to the next generation of video editing technology.
 
-Here’s a more human-readable and clearer license notice for your README that explicitly states that individuals and companies can use the library for free as long as they don’t monetize their project. It also clarifies that projects can later become commercial as long as they obtain a proper license at that time.
-
 ## License
 
 This library is free to use under the **Diffusion Studio Non-Commercial License**, as long as your project is **not monetized**.
