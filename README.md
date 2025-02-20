@@ -32,6 +32,9 @@ This project owes much to [@Vanilagy's](https://github.com/Vanilagy) exceptional
 npm install @diffusionstudio/core
 ```
 
+## Benchmarks
+![Benchmarks](./assets/benchmarks.png)
+
 ## Basic Usage
 Here’s an example of how to use the library:
 
@@ -55,16 +58,12 @@ const composition = new core.Composition(); // 1920x1080
 
 // this is how to compose your clips
 await composition.add(video);  // convenience function for 
-await composition.add(text);   // clip -> track -> composition
+await composition.add(text);   // clip -> layer -> composition
 
 await new core.Encoder(composition).render('hello_world.mp4');
 ```
 
-The API models the structure of conventional video editing applications like Adobe Premiere or CapCut, using a track-based system. The current state can be visualized like this:
-
-![Composition Visulization](./assets/composition.png)
-
-Each layer contains zero or more clips of a single type, arranged in ascending chronological order.
+The API models the structure of conventional video editing applications like Adobe Premiere or CapCut, using a layer-based system. Each layer contains zero or more clips of a single type, arranged in ascending chronological order.
 
 Layers are created implicitly with `composition.add(clip)`, but you can also create them manually:
 
@@ -172,4 +171,3 @@ For any questions, feel free to [contact us](https://diffusion.studio).
 ### v4.x _(Estimated Release: July 2025)_  
 - **Source code access by invite only** (Commercial & Non-Commercial license)  
 - Introducing a custom WebGL2 renderer  
-
