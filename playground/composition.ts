@@ -10,9 +10,9 @@ export async function main(composition: core.Composition) {
 
   const videoSource = await core.Source.from<core.VideoSource>('/bbb_1080p_30fps.mp4');
 
-  const CLIPS = 50;
+  const CLIPS = 40;
   const videoDuration = 20;
-  const minClipDuration = 4;
+  const minClipDuration = 3;
   const slideStep = videoDuration / CLIPS;
 
   const videoLayer = new core.Layer({ mode: 'SEQUENTIAL' });
