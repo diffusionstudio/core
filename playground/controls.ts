@@ -1,4 +1,4 @@
-import * as core from '@diffusionstudio/core-v4';
+import * as core from '@diffusionstudio/core';
 import { render } from './render';
 
 export function setupControls(composition: core.Composition) {

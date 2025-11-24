@@ -1,4 +1,4 @@
-import * as core from '@diffusionstudio/core-v4';
+import * as core from '@diffusionstudio/core';
 
 export const settings: core.CompositionSettings = {
   background: '#76b7f5',
@@ -22,49 +22,29 @@ export async function main(composition: core.Composition) {
     core.Source.from<core.ImageSource>('/parrot.jpg')
   ]);
 
-  const mask = new core.RectangleMask({
-    x: 1920 / 2,
-    y: 1080 / 2,
-    width: 1080,
-    height: 1080,
-    radius: 100,
-  });
+  const CLIPS = 50;
+  const videoDuration = 20;
+  const minClipDuration = 4;
+  const slideStep = videoDuration / CLIPS;
 
-  const videoClip = new core.VideoClip(sources[0], {
-    position: 'center',
-    mask,
-    height: '100%',
-    animations: [
-      {
-        key: 'scale',
-        frames: [
-          { time: 0, value: 0.5 },
-          { time: 2, value: 1 },
-        ],
-      },
-      {
-        key: 'rotation',
-        frames: [
-          { time: 0, value: 0 },
-          { time: 2, value: 720 },
-        ],
-      },
-      {
-        key: 'opacity',
-        frames: [
-          { time: 0, value: 100 },
-          { time: 1, value: 80 },
-          { time: 2, value: 100 },
-        ],
-      }
-    ],
-    range: [0.8, 18],
-    delay: 1,
-  })
-
-  const videoLayer = new core.Layer();
+  const videoLayer = new core.Layer({ mode: 'SEQUENTIAL' });
   await composition.add(videoLayer);
-  await videoLayer.add(videoClip);
+
+  for (let i = 0; i < CLIPS; i++) {
+    const startTime = i * slideStep;
+    const endTime = startTime + minClipDuration;
+
+    if (endTime > videoDuration) continue;
+
+    const videoClip = new core.VideoClip(sources[0], {
+      position: 'center',
+      height: '100%',
+      range: [startTime, endTime],
+      duration: minClipDuration,
+    });
+
+    await videoLayer.add(videoClip);
+  }
 
   const imageClip = new core.ImageClip(sources[1], {
     position: 'center',

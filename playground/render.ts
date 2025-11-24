@@ -1,4 +1,4 @@
-import * as core from '@diffusionstudio/core-v4';
+import * as core from '@diffusionstudio/core';
 
 let fps = 30;
 

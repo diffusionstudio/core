@@ -1,4 +1,4 @@
-import * as core from '@diffusionstudio/core-v4';
+import * as core from '@diffusionstudio/core';
 
 export function setupTimeline(composition: core.Composition) {
   composition.on('playback:time', () => {
